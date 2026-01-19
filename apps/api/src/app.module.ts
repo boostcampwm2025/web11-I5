@@ -14,6 +14,7 @@ import { CategoryModule } from './category/category.module';
 import { QuestionModule } from './question/question.module';
 import { AnswerSubmissionModule } from './answer-submission/answer-submission.module';
 import { GraphModule } from './graph/graph.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { GraphModule } from './graph/graph.module';
       envFilePath: ['.env.local', '.env'],
     }),
     TypeOrmModule.forRoot(typeOrmModuleOptions),
+    AuthModule,
     UserModule,
     AnswerEvaluationModule,
     AnswerSubmissionModule,
