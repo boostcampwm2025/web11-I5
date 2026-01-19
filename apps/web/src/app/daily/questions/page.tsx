@@ -35,11 +35,25 @@ interface QuestionListPageProps {
 async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   const { page, categoryId, subCategoryId, search, minImportance } =
     await searchParams;
-  const currentPage = Number(page) || 1;
-  const selectedCategoryId = categoryId ? Number(categoryId) : null;
-  const selectedSubCategoryId = subCategoryId ? Number(subCategoryId) : null;
+
+  const parseIntOrNull = (value: string | undefined): number | null => {
+    if (!value) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const parseFloatOrNull = (value: string | undefined): number | null => {
+    if (!value) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const parsedPage = parseIntOrNull(page);
+  const currentPage = parsedPage && parsedPage >= 1 ? parsedPage : 1;
+  const selectedCategoryId = parseIntOrNull(categoryId);
+  const selectedSubCategoryId = parseIntOrNull(subCategoryId);
   const searchQuery = search ?? "";
-  const selectedMinImportance = minImportance ? Number(minImportance) : null;
+  const selectedMinImportance = parseFloatOrNull(minImportance);
 
   const rootCategoriesPromise = fetchRootCategories();
   const categoryTreePromise = selectedCategoryId
@@ -63,8 +77,9 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   const { questions, totalCount, pageSize, totalPages } = questionsData;
   const subCategories = selectedCategoryTree?.children ?? [];
 
-  const startIndex = (currentPage - 1) * pageSize + 1;
-  const endIndex = Math.min(currentPage * pageSize, totalCount);
+  const startIndex = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endIndex =
+    totalCount === 0 ? 0 : Math.min(currentPage * pageSize, totalCount);
 
   const buildPaginationUrl = (pageNum: number) => {
     const params = new URLSearchParams();
@@ -127,7 +142,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
                   <QuestionLinkButton question={question} />
                 </TableCell>
                 <TableCell className="text-center">
-                  {question.avgImportance.toFixed(1)}
+                  {(question.avgImportance ?? 0).toFixed(1)}
                 </TableCell>
               </TableRow>
             ))
