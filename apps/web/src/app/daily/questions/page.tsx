@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -21,6 +20,7 @@ import {
   fetchCategoryTree,
 } from "./_lib/fetch-categories";
 import QuestionFilters from "./_components/question-filters";
+import { QuestionLinkButton } from "./_components/question-link-button";
 
 interface QuestionListPageProps {
   searchParams: Promise<{
@@ -124,12 +124,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
                   </span>
                 </TableCell>
                 <TableCell>
-                  <Link
-                    href={`/daily/questions/${question.id}`}
-                    className="hover:text-teal-600 hover:underline"
-                  >
-                    {question.title}
-                  </Link>
+                  <QuestionLinkButton question={question} />
                 </TableCell>
                 <TableCell className="text-center">
                   {question.avgImportance.toFixed(1)}
