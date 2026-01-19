@@ -84,6 +84,8 @@ function SegmentedControl({
           left: selectedButton.offsetLeft,
         });
       }
+    } else {
+      setIndicatorStyle(null);
     }
   }, [selectedIndex, options]);
 
