@@ -28,6 +28,7 @@ function GraphView({ mockData }: { mockData: GraphData }) {
   const {
     offset,
     scale,
+    hoveredNodeId,
     activeInteraction,
     handleMouseDown,
     handleMouseMove,
@@ -64,6 +65,7 @@ function GraphView({ mockData }: { mockData: GraphData }) {
         mockData.edges,
         offset.current,
         scale.current,
+        hoveredNodeId.current,
       );
 
       // 3. 애니메이션 지속 조건 확인
@@ -80,7 +82,16 @@ function GraphView({ mockData }: { mockData: GraphData }) {
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [ctx, width, height, mockData.edges, offset, scale, activeInteraction]);
+  }, [
+    ctx,
+    width,
+    height,
+    mockData.edges,
+    offset,
+    scale,
+    activeInteraction,
+    hoveredNodeId,
+  ]);
 
   return (
     // Canvas 엘리먼트에 마우스 이벤트 핸들러 바인딩
@@ -89,7 +100,7 @@ function GraphView({ mockData }: { mockData: GraphData }) {
     // onMouseUp: 드래그 종료
     // onMouseLeave: 캔버스 밖으로 나갈 때 드래그 종료 (마우스 업과 동일한 처리)
     <canvas
-      className="w-full h-full rounded-md border border-gray-300"
+      className="w-full h-full rounded-md border border-gray-300 "
       ref={canvasRef}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}

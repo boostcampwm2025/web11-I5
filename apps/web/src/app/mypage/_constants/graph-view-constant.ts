@@ -9,8 +9,10 @@ export const GRAPH_NUMBER_CONSTANT = {
 export const GRAPH_COLOR_CONSTANT = {
   QUESTION_NODE: "#ff7043",
   KEYWORD_NODE: "#282b2c",
-  EDGE: "#999",
-  LABEL: "#333",
+  EDGE: "#999999",
+  HOVERED: "#0D9488",
+  LABEL: "#333333",
+  NOT_HOVERED_ALPHA: 0.2,
 };
 
 export const PHISICS_CONSTANT = {

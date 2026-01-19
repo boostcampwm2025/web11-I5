@@ -27,6 +27,8 @@ function useGraphInteraction(
   // scale: 캔버스에서 휠움직임을 통해 줌을 할 때 줌 단계
   const scale = React.useRef(initialScale);
 
+  const hoveredNodeId = React.useRef<number | null>(null);
+
   // interaction 진행중인지 상태 확인 (드래그, 휠 등)
   const [activeInteraction, setActiveInteraction] = React.useState(false);
   // wheelTimeoutRef: 휠 이벤트 종료를 감지하기 위한 debounce 타이머
@@ -115,6 +117,17 @@ function useGraphInteraction(
         offset.current.y += dy;
 
         setDragStartOffset({ x: e.clientX, y: e.clientY });
+      } else {
+        const hoveredNode = findNodeAtPosition(x, y);
+        const newHoveredId = hoveredNode?.id ?? null;
+
+        // 호버 상태가 변경되었을 때만 리렌더링 트리거
+        if (hoveredNodeId.current !== newHoveredId) {
+          hoveredNodeId.current = newHoveredId;
+          setActiveInteraction(true);
+          // 짧은 딜레이 후 interaction 상태 해제
+          setTimeout(() => setActiveInteraction(false), 50);
+        }
       }
     },
     [
@@ -123,6 +136,7 @@ function useGraphInteraction(
       draggedNodeId,
       isDraggingCanvas,
       offset,
+      findNodeAtPosition,
     ],
   );
 
@@ -186,6 +200,7 @@ function useGraphInteraction(
   return {
     offset,
     scale,
+    hoveredNodeId,
     activeInteraction,
     handleMouseDown,
     handleMouseMove,
