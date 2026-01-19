@@ -1,12 +1,14 @@
 import { PaginatedQuestionsDTO } from "../_types/types";
 
-export interface FetchQuestionsParams {
+interface FetchQuestionsParams {
   page?: number;
   categoryId?: number;
   parentCategoryId?: number;
+  search?: string;
+  minImportance?: number;
 }
 
-export async function fetchQuestions(
+async function fetchQuestions(
   params: FetchQuestionsParams = {},
 ): Promise<PaginatedQuestionsDTO> {
   const apiUrl = process.env.API_URL;
@@ -20,6 +22,12 @@ export async function fetchQuestions(
   }
   if (params.parentCategoryId) {
     searchParams.set("parentCategoryId", params.parentCategoryId.toString());
+  }
+  if (params.search) {
+    searchParams.set("search", params.search);
+  }
+  if (params.minImportance !== undefined) {
+    searchParams.set("minImportance", params.minImportance.toString());
   }
 
   const queryString = searchParams.toString();
@@ -35,3 +43,6 @@ export async function fetchQuestions(
 
   return await response.json();
 }
+
+export { fetchQuestions };
+export type { FetchQuestionsParams };

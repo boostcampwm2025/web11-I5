@@ -49,6 +49,18 @@ export class QuestionService {
       });
     }
 
+    if (filter.search) {
+      queryBuilder.andWhere('question.title LIKE :search', {
+        search: `%${filter.search}%`,
+      });
+    }
+
+    if (filter.minImportance !== undefined) {
+      queryBuilder.andWhere('question.avgImportance >= :minImportance', {
+        minImportance: filter.minImportance,
+      });
+    }
+
     queryBuilder
       .orderBy('question.avgImportance', 'DESC')
       .skip(skip)
