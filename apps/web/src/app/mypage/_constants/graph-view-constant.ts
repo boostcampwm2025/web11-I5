@@ -9,7 +9,7 @@ export const GRAPH_NUMBER_CONSTANT = {
 export const GRAPH_COLOR_CONSTANT = {
   QUESTION_NODE: "#0d9488", // teal-600
   KEYWORD_NODE: "#334155", // slate-700
-  EDGE: "#e2e8f0", // slate-200
+  EDGE: "#94a3b8", // slate-400
   HOVERED: "#2dd4bf", // teal-400
   LABEL: "#333333",
   NOT_HOVERED_ALPHA: 0.2,
