@@ -68,11 +68,11 @@ function SegmentedControl({
   const [indicatorStyle, setIndicatorStyle] = React.useState<{
     width: number;
     left: number;
-  }>({ width: 0, left: 0 });
+  } | null>(null);
 
   const selectedIndex = options.findIndex((opt) => opt.value === value);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (containerRef.current && selectedIndex >= 0) {
       const container = containerRef.current;
       const buttons = container.querySelectorAll("[data-segment-item]");
@@ -94,13 +94,15 @@ function SegmentedControl({
       role="tablist"
       {...props}
     >
-      <div
-        className="absolute top-1 bottom-1 bg-background rounded-md shadow-sm transition-all duration-200 ease-out"
-        style={{
-          width: indicatorStyle.width,
-          left: indicatorStyle.left,
-        }}
-      />
+      {indicatorStyle && (
+        <div
+          className="absolute top-1 bottom-1 bg-background rounded-md shadow-sm transition-all duration-200 ease-out"
+          style={{
+            width: indicatorStyle.width,
+            left: indicatorStyle.left,
+          }}
+        />
+      )}
 
       {options.map((option) => {
         const isSelected = value === option.value;
