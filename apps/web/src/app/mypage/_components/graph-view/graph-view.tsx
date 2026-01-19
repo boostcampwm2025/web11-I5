@@ -4,7 +4,7 @@ import * as React from "react";
 import drawGraphView from "../../_lib/graph-view/draw-graph-view";
 import { GraphData } from "../../types/graph-view";
 import NodeMap from "./node-map";
-import useGraphInteraction from "./useGraphInteraction";
+import useGraphInteraction from "./use-graph-interaction";
 interface GraphViewProps {
   mockData: GraphData;
   textRenderScale?: number;
