@@ -47,6 +47,8 @@ function GraphView({
       nodeMapRef.current?.setNodeFixedCoords(nodeId, x, y),
     clearNodeFixedCoords: (nodeId) =>
       nodeMapRef.current?.clearNodeFixedCoords(nodeId),
+    getNodeQuestionId: (nodeId) =>
+      nodeMapRef?.current?.nodeMap.get(nodeId)?.questionId ?? null,
   });
 
   // 물리 엔진 기반 그래프 애니메이션 루프

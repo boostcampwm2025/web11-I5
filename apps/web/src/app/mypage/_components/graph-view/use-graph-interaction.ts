@@ -6,6 +6,7 @@ export interface GraphInteractionCallbacks {
   getNodeValues: () => IterableIterator<GraphNode & NodePosition>;
   setNodeFixedCoords: (nodeId: number, x: number, y: number) => void;
   clearNodeFixedCoords: (nodeId: number) => void;
+  getNodeQuestionId: (nodeId: number) => number | null;
 }
 
 function useGraphInteraction(
@@ -88,8 +89,10 @@ function useGraphInteraction(
   const handleMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       setActiveInteraction(true);
-      const { x, y } = convertCursorToCanvasCoords(e.clientX, e.clientY);
+      // 클릭 판정을 위해 항상 시작 위치 저장
+      setDragStartOffset({ x: e.clientX, y: e.clientY });
 
+      const { x, y } = convertCursorToCanvasCoords(e.clientX, e.clientY);
       const clickedNode = findNodeAtPosition(x, y);
 
       if (clickedNode) {
@@ -98,7 +101,6 @@ function useGraphInteraction(
         callbacksRef.current.setNodeFixedCoords(clickedNode.id, x, y);
       } else {
         setIsDraggingCanvas(true);
-        setDragStartOffset({ x: e.clientX, y: e.clientY });
       }
     },
     [convertCursorToCanvasCoords, findNodeAtPosition],
@@ -153,18 +155,23 @@ function useGraphInteraction(
   // 기대동작 2. 모든 드래그 상태 초기화
   const handleMouseUp = React.useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const clickedNodeId = draggedNodeId;
       if (draggedNodeId !== null) {
         callbacksRef.current.clearNodeFixedCoords(draggedNodeId);
-      }
-
-      if (dragStartOffset.x === e.clientX && dragStartOffset.y === e.clientY) {
-        if (clickEventDisabled) return;
-        // click시 페이지 이동 이벤트 추가
       }
 
       setDraggedNodeId(null);
       setIsDraggingCanvas(false);
       setActiveInteraction(false);
+
+      // 클릭 이벤트 처리 (드래그 없이 같은 위치에서 마우스 업)
+      if (dragStartOffset.x === e.clientX && dragStartOffset.y === e.clientY) {
+        if (clickEventDisabled || !clickedNodeId) return;
+        const questionId =
+          callbacksRef.current.getNodeQuestionId(clickedNodeId);
+        if (!questionId) return;
+        window.open(`/reports/${questionId}`);
+      }
     },
     [clickEventDisabled, draggedNodeId, dragStartOffset],
   );
