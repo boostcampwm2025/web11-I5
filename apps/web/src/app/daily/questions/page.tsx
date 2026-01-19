@@ -16,6 +16,7 @@ import {
   PaginationPrevious,
 } from "@/components/pagination/pagination";
 import { fetchQuestions } from "./_lib/fetch-questions";
+import { QuestionFilters } from "./_components/question-filters";
 
 interface QuestionListPageProps {
   searchParams: Promise<{ page?: string }>;
@@ -41,6 +42,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
           개의 문제가 준비되어 있습니다.
         </p>
       </div>
+      <QuestionFilters />
       <Table>
         <TableHeader>
           <TableRow>
