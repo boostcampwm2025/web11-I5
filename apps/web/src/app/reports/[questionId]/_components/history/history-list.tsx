@@ -8,7 +8,7 @@ interface HistoryListProps {
 
 function HistoryList({ history, selectedId }: HistoryListProps) {
   return (
-    <div className="w-60 flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden h-75 md:h-auto">
+    <div className="w-60 flex flex-col bg-white rounded-2xl border border-slate-200">
       <div className="p-4 border-b border-slate-200 flex justify-between items-center shrink-0">
         <span className="font-bold text-sm text-slate-900">시도 히스토리</span>
       </div>

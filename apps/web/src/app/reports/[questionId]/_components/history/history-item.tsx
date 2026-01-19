@@ -30,7 +30,7 @@ function HistoryItem({ item, isSelected, href, index }: HistoryItemProps) {
     <Link
       href={href}
       scroll={false}
-      className={`block w-full text-left pl-3.5 py-3 pr-2 rounded-lg transition-all duration-200 ${
+      className={`group block w-full text-left pl-3.5 py-3 pr-2 rounded-lg transition-all duration-200 ${
         isSelected
           ? "bg-teal-50 border-2 border-teal-400"
           : "bg-white border border-slate-200 hover:bg-teal-50/30 hover:border-teal-300"
