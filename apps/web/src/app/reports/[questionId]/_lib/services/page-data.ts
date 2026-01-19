@@ -14,10 +14,18 @@ async function getReportPageData(questionId: number, submissionId?: number) {
     ? await getReportEvaluation(selectedSubmissionId)
     : null;
 
+  const highestScore = Math.max(
+    ...history
+      .map((h) => h.totalScore)
+      .filter((score): score is number => score !== null),
+    0,
+  );
+
   return {
     question,
     history,
     evaluation,
+    highestScore,
   };
 }
 
