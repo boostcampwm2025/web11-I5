@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
+import { UserRole } from './user-role.enum';
 
 @Entity('users')
 export class User {
@@ -15,6 +16,13 @@ export class User {
 
   @Column({ type: 'varchar' })
   password: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
+  role: UserRole;
 
   @Column({ type: 'int', name: 'total_point', default: 0 })
   totalPoint: number | null;
