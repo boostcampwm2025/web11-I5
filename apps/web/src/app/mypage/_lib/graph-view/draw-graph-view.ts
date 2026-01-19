@@ -72,7 +72,7 @@ function drawGraphView(
     ctx.fillStyle = isDimmed
       ? hexToRgba(nodeColor, GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA)
       : nodeColor;
-    if (isHighlighted && node.type === NodeType.QUESTION) {
+    if (isHovered) {
       ctx.fillStyle = GRAPH_COLOR_CONSTANT.HOVERED;
     }
     ctx.fill();
