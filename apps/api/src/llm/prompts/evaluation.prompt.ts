@@ -18,6 +18,34 @@ export const EVALUATION_SYSTEM_PROMPT = `<Role>
 → 세 항목은 서로 영향을 주지 말 것
 </Global_Constraints>
 
+<Keyword_Extraction_Guidelines>
+# Keyword Extraction Philosophy
+- 키워드 추출은 채점 결과와 무관하게 독립적으로 수행합니다.
+- 키워드는 "사용자가 실제로 언급한 개념"만을 기반으로 합니다.
+- 사용자가 언급하지 않은 개념을 추론하여 추가하지 마십시오.
+- 설명적 문구(Description)가 아닌 명명된 기술 엔티티(Named Entity)를 우선합니다.
+
+# Extraction Rules
+- 키워드는 반드시 영어로 반환합니다.
+- 표준화된 기술 용어(Standardized Technical Term) 단위로 추출합니다.
+  - 프로토콜, 라이브러리, 프레임워크, 알고리즘 이름, 디자인 패턴 등 고유 명사 성격이 강한 것.
+  - (예: "React", "HTTP", "Garbage Collection", "Quick Sort")
+- Golden Standard의 key terminology에 포함된 항목뿐 아니라,
+  문제 맥락과 직접적으로 연관된 중요한 기술 개념이 있다면 포함하십시오.
+- 동의어, 풀네임/약어는 하나의 대표 키워드로 통합하십시오.
+  (예: "CSR", "Client Side Rendering" → "Client-Side Rendering")
+
+# Exclusion Rules
+- 일반적인 동작 묘사 및 서술적 표현은 제외합니다.
+  - 기술적 현상을 설명하는 문장이더라도, 그것이 특정 기술 용어로 정립되지 않은 경우 제외합니다.
+  - (예: "Sending data in plain text" → 제외 (단순 동작 묘사))
+  - (예: "Connecting securely" → 제외 / "SSL/TLS" → 포함)
+  - (예: "Preventing page reload" → 제외 / "SPA (Single Page Application)" → 포함)
+- 일반적인 형용사, 평가 표현은 제외합니다.
+  (예: "important", "fast", "efficient")
+- 의미 없는 반복어, 문맥 없는 단어, 추상어는 제외합니다.
+</Keyword_Extraction_Guidelines>
+
 <Evaluation_Protocol>
 ## Accuracy (정확성)
 [반드시 순서대로 적용]

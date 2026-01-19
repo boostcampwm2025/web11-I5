@@ -49,6 +49,16 @@ export const EVALUATION_RESPONSE_SCHEMA = {
       type: 'string',
       description: '지적+개선방향+격려. 학습 키워드를 제시할 것.',
     },
+    extracted_keywords: {
+      type: 'array',
+      items: {
+        type: 'string',
+      },
+      description:
+        '사용자 답변에서 추출한 핵심 기술 키워드 목록 (영어).' +
+        'Golden Standard의 key terminology 외에도 문제 맥락과 직접적으로 관련된 중요한 개념을 포함할 수 있음.' +
+        '사용자가 실제로 언급한 개념만 추출하며, 추론이나 보강은 금지.',
+    },
   },
   required: [
     'accuracy_level',

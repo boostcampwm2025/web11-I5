@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AudioAsset } from 'src/audio-stream/entities/audio-asset.entity';
 
 @Injectable()
 export class SttService {
+  private readonly logger = new Logger(SttService.name);
   private ncpSpeechInvokeUrl?: string;
   private ncpSpeechSecretKey?: string;
 
@@ -35,6 +36,15 @@ export class SttService {
         },
       ],
     };
+
+    const sanitizedParams = {
+      language: params.language,
+      completion: params.completion,
+      boostings: params.boostings,
+    };
+    this.logger.log(
+      `STT requested with params: ${JSON.stringify(sanitizedParams)}`,
+    );
 
     return fetch(requestUrl, {
       method: 'POST',

@@ -10,12 +10,11 @@ export interface RootTree extends Category {
   children: CategoryWithQuestions[];
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 async function getFullCategoryTree(): Promise<RootTree[]> {
+  const apiUrl = process.env.API_URL;
   try {
-    const res = await fetch(`${API_URL}/categories/roots`, {
-      next: { revalidate: 3600 },
+    const res = await fetch(`${apiUrl}/categories/roots`, {
+      cache: "no-store",
     });
 
     if (!res.ok) throw new Error("Failed to fetch roots");
@@ -24,7 +23,10 @@ async function getFullCategoryTree(): Promise<RootTree[]> {
     return Promise.all(
       roots.map(async (root): Promise<RootTree> => {
         const treeRes = await fetch(
-          `${API_URL}/categories/tree-by-id/${root.id}`,
+          `${apiUrl}/categories/tree-by-id/${root.id}`,
+          {
+            cache: "no-store",
+          },
         );
         if (!treeRes.ok) throw new Error("Failed to fetch tree");
         const treeData: Category = await treeRes.json();
@@ -33,7 +35,9 @@ async function getFullCategoryTree(): Promise<RootTree[]> {
 
         const childrenWithQuestions = await Promise.all(
           subCategories.map(async (sub): Promise<CategoryWithQuestions> => {
-            const qRes = await fetch(`${API_URL}/questions/category/${sub.id}`);
+            const qRes = await fetch(`${apiUrl}/questions/category/${sub.id}`, {
+              cache: "no-store",
+            });
             const questions = qRes.ok ? await qRes.json() : [];
 
             return {

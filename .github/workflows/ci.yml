@@ -41,7 +41,7 @@ jobs:
       - name: Build Check
         run: pnpm build
         env:
-          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
   check-changes:
     runs-on: ubuntu-latest

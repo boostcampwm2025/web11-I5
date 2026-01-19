@@ -44,30 +44,33 @@ export class GraphSeed extends BaseSeed {
     // 필요한 질문이 부족하면 기존 질문을 활용하거나 새로 생성
     // 여기서는 기존 질문을 최대한 활용하되, 요청된 구조에 맞게 조정
     let questionIds: number[] = [];
-    let questionLabels: string[] = [];
 
-    if (reactQuestions.length >= 1) {
-      // 기존 질문 활용
-      questionIds = reactQuestions.map((q) => q.id);
-      questionLabels = reactQuestions.map((q) => q.title);
-    } else {
-      // 질문이 없으면 기존 질문 중 하나를 사용하거나 새로 생성
+    // React 관련 질문을 기반으로 하되, 부족하면 다른 질문으로 채움
+    questionIds = reactQuestions.map((q) => q.id);
+
+    // 3개 미만이면 다른 질문으로 채움
+    if (questionIds.length < 3) {
       const allQuestions = (await queryRunner.query(`
         SELECT id, title FROM questions ORDER BY id LIMIT 3;
       `)) as QuestionRow[];
 
-      if (allQuestions.length > 0) {
-        questionIds = allQuestions.map((q) => q.id);
-        questionLabels = allQuestions.map((q) => q.title);
-        while (questionIds.length < 3) {
-          questionIds.push(allQuestions[0].id);
-          questionLabels.push(allQuestions[0].title);
-        }
-      } else {
-        // 질문이 전혀 없으면 에러 (QuestionSeed가 먼저 실행되어야 함)
+      if (allQuestions.length === 0) {
         throw new Error(
           'Questions must be seeded before GraphSeed. Please run QuestionSeed first.',
         );
+      }
+
+      // 기존 questionIds에 없는 질문으로 채움
+      for (const q of allQuestions) {
+        if (questionIds.length >= 3) break;
+        if (!questionIds.includes(q.id)) {
+          questionIds.push(q.id);
+        }
+      }
+
+      // 여전히 부족하면 첫 번째 질문으로 채움
+      while (questionIds.length < 3) {
+        questionIds.push(allQuestions[0].id);
       }
     }
 

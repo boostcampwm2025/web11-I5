@@ -11,7 +11,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "storybook": "pnpm --filter web storybook",
-    "prepare": "husky",
+    "prepare": "[ \"$CI\" != \"true\" ] && husky || true",
     "api:migration:create": "pnpm --filter api migration:create",
     "api:migration:generate": "pnpm --filter api migration:generate",
     "api:migration:run": "pnpm --filter api migration:run"

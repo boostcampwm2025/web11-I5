@@ -42,3 +42,4 @@ pgdata/
 
 # ngrok
 ngrok.exe
+.secrets

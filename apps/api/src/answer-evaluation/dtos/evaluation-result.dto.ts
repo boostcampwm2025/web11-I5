@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsObject,
   IsOptional,
+  IsArray,
 } from 'class-validator';
 import {
   AccuracyEval,
@@ -53,4 +54,8 @@ export class EvaluationResultDto {
   @IsOptional()
   @IsNumber()
   totalScore?: number;
+
+  @IsOptional()
+  @IsArray()
+  extractedKeywords: string[];
 }

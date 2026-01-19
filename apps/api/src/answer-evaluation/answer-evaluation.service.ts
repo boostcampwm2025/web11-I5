@@ -35,6 +35,7 @@ interface AiEvaluationRawResponse {
   is_complete_sentence: boolean;
   has_application: boolean;
   mentoring_feedback: string;
+  extracted_keywords: string[];
 }
 
 @Injectable()
@@ -166,6 +167,7 @@ export class AnswerEvaluationService {
           depthEval: result.depthLevel,
           hasApplication: result.hasApplication,
           isCompleteSentence: result.isCompleteSentence,
+          extractedKeywords: result.extractedKeywords,
         });
 
         await manager.update(AnswerSubmission, submission.id, {
@@ -208,6 +210,7 @@ export class AnswerEvaluationService {
       isCompleteSentence: rawResponse.is_complete_sentence,
       hasApplication: rawResponse.has_application,
       mentoringFeedback: rawResponse.mentoring_feedback,
+      extractedKeywords: rawResponse.extracted_keywords,
     };
   }
 
