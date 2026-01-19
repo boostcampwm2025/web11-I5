@@ -60,6 +60,14 @@ export class AnswerEvaluation {
   @Column({ name: 'is_complete_sentence', type: 'boolean', default: false })
   isCompleteSentence: boolean;
 
+  @Column({
+    name: 'extracted_keywords',
+    type: 'text',
+    array: true,
+    default: '{}',
+  })
+  extractedKeywords: string[];
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 
