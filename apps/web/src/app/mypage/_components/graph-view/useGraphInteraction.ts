@@ -10,6 +10,7 @@ export interface GraphInteractionCallbacks {
 
 function useGraphInteraction(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  clickEventDisabled: boolean = false,
   callbacks: GraphInteractionCallbacks,
   initialOffset: { x: number; y: number } = { x: 0, y: 0 },
   initialScale: number = 1,
@@ -143,15 +144,29 @@ function useGraphInteraction(
   // 마우스 클릭 해제 이벤트
   // 기대동작 1. 노드 드래그중이었다면 -> 노드 고정 해제 (fx, fy를 null로 설정)
   // 기대동작 2. 모든 드래그 상태 초기화
-  const handleMouseUp = React.useCallback(() => {
-    if (draggedNodeId !== null) {
-      callbacksRef.current.clearNodeFixedCoords(draggedNodeId);
-    }
+  const handleMouseUp = React.useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (draggedNodeId !== null) {
+        callbacksRef.current.clearNodeFixedCoords(draggedNodeId);
+      }
 
-    setDraggedNodeId(null);
-    setIsDraggingCanvas(false);
-    setActiveInteraction(false);
-  }, [draggedNodeId]);
+      const { x, y } = convertCursorToCanvasCoords(e.clientX, e.clientY);
+      if (dragStartOffset.x === x && dragStartOffset.y === y) {
+        if (clickEventDisabled) return;
+        // click시 페이지 이동 이벤트 추가
+      }
+
+      setDraggedNodeId(null);
+      setIsDraggingCanvas(false);
+      setActiveInteraction(false);
+    },
+    [
+      clickEventDisabled,
+      draggedNodeId,
+      dragStartOffset,
+      convertCursorToCanvasCoords,
+    ],
+  );
 
   // 휠 이벤트 리스너 등록 (줌 인/아웃 기능)
   // 기대동작: 마우스 휠을 움직이면 마우스 위치를 기준으로 줌 인/아웃 처리

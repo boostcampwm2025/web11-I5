@@ -5,8 +5,16 @@ import drawGraphView from "../../_lib/graph-view/draw-graph-view";
 import { GraphData } from "../../types/graph-view";
 import NodeMap from "./node-map";
 import useGraphInteraction from "./useGraphInteraction";
-
-function GraphView({ mockData }: { mockData: GraphData }) {
+interface GraphViewProps {
+  mockData: GraphData;
+  textRenderScale?: number;
+  clickEventDisabled?: boolean;
+}
+function GraphView({
+  mockData,
+  textRenderScale,
+  clickEventDisabled,
+}: GraphViewProps) {
   // canvasRef: Canvas DOM 참조
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   // ctx: Canvas 2D 렌더링 컨텍스트, width/height: 캔버스 크기
@@ -33,7 +41,7 @@ function GraphView({ mockData }: { mockData: GraphData }) {
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-  } = useGraphInteraction(canvasRef, {
+  } = useGraphInteraction(canvasRef, clickEventDisabled, {
     getNodeValues: () => nodeMapRef.current?.getNodeValues() ?? [].values(),
     setNodeFixedCoords: (nodeId, x, y) =>
       nodeMapRef.current?.setNodeFixedCoords(nodeId, x, y),
@@ -66,6 +74,7 @@ function GraphView({ mockData }: { mockData: GraphData }) {
         offset.current,
         scale.current,
         hoveredNodeId.current,
+        textRenderScale,
       );
 
       // 3. 애니메이션 지속 조건 확인
@@ -91,6 +100,7 @@ function GraphView({ mockData }: { mockData: GraphData }) {
     scale,
     activeInteraction,
     hoveredNodeId,
+    textRenderScale,
   ]);
 
   return (

@@ -18,6 +18,7 @@ function drawGraphView(
   offset: { x: number; y: number } = { x: 0, y: 0 },
   scale: number = 1,
   hoveredNode: number | null,
+  textRenderScale: number = 0.5,
 ) {
   ctx.save();
   ctx.translate(offset.x, offset.y);
@@ -67,9 +68,13 @@ function drawGraphView(
     ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
 
     const nodeColor = getNodeColor(node.type);
+
     ctx.fillStyle = isDimmed
       ? hexToRgba(nodeColor, GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA)
       : nodeColor;
+    if (isHighlighted && node.type === NodeType.QUESTION) {
+      ctx.fillStyle = GRAPH_COLOR_CONSTANT.HOVERED;
+    }
     ctx.fill();
 
     ctx.fillStyle = isDimmed
@@ -78,7 +83,8 @@ function drawGraphView(
           GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA,
         )
       : GRAPH_COLOR_CONSTANT.LABEL;
-    if (scale > 0.5) ctx.fillText(node.label, node.x, node.y + radius + 14);
+    if (scale > textRenderScale)
+      ctx.fillText(node.label, node.x, node.y + radius + 14);
   });
 
   ctx.restore();
