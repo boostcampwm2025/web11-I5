@@ -1,83 +1,200 @@
-import SearchHeader from "./_components/search-header";
-import RootCategorySection from "./_components/root-category-section";
-import { Category, Question } from "./_types/types";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/table/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/pagination/pagination";
+import { fetchQuestions } from "./_lib/fetch-questions";
+import {
+  fetchRootCategories,
+  fetchCategoryTree,
+} from "./_lib/fetch-categories";
+import QuestionFilters from "./_components/question-filters";
+import { QuestionLinkButton } from "./_components/question-link-button";
 
-export interface CategoryWithQuestions extends Category {
-  questions: Question[];
+interface QuestionListPageProps {
+  searchParams: Promise<{
+    page?: string;
+    categoryId?: string;
+    subCategoryId?: string;
+    search?: string;
+    minImportance?: string;
+  }>;
 }
 
-export interface RootTree extends Category {
-  children: CategoryWithQuestions[];
-}
+async function QuestionListPage({ searchParams }: QuestionListPageProps) {
+  const { page, categoryId, subCategoryId, search, minImportance } =
+    await searchParams;
 
-async function getFullCategoryTree(): Promise<RootTree[]> {
-  const apiUrl = process.env.API_URL;
-  try {
-    const res = await fetch(`${apiUrl}/categories/roots`, {
-      cache: "no-store",
-    });
+  const parseIntOrNull = (value: string | undefined): number | null => {
+    if (!value) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
 
-    if (!res.ok) throw new Error("Failed to fetch roots");
-    const roots: Category[] = await res.json();
+  const parseFloatOrNull = (value: string | undefined): number | null => {
+    if (!value) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
 
-    return Promise.all(
-      roots.map(async (root): Promise<RootTree> => {
-        const treeRes = await fetch(
-          `${apiUrl}/categories/tree-by-id/${root.id}`,
-          {
-            cache: "no-store",
-          },
-        );
-        if (!treeRes.ok) throw new Error("Failed to fetch tree");
-        const treeData: Category = await treeRes.json();
+  const parsedPage = parseIntOrNull(page);
+  const currentPage = parsedPage && parsedPage >= 1 ? parsedPage : 1;
+  const selectedCategoryId = parseIntOrNull(categoryId);
+  const selectedSubCategoryId = parseIntOrNull(subCategoryId);
+  const searchQuery = search ?? "";
+  const selectedMinImportance = parseFloatOrNull(minImportance);
 
-        const subCategories = treeData.children || [];
+  const rootCategoriesPromise = fetchRootCategories();
+  const categoryTreePromise = selectedCategoryId
+    ? fetchCategoryTree(selectedCategoryId)
+    : Promise.resolve(null);
+  const questionsPromise = fetchQuestions({
+    page: currentPage,
+    parentCategoryId: selectedCategoryId ?? undefined,
+    categoryId: selectedSubCategoryId ?? undefined,
+    search: searchQuery || undefined,
+    minImportance: selectedMinImportance ?? undefined,
+  });
 
-        const childrenWithQuestions = await Promise.all(
-          subCategories.map(async (sub): Promise<CategoryWithQuestions> => {
-            const qRes = await fetch(`${apiUrl}/questions/category/${sub.id}`, {
-              cache: "no-store",
-            });
-            const questions = qRes.ok ? await qRes.json() : [];
+  const [rootCategories, selectedCategoryTree, questionsData] =
+    await Promise.all([
+      rootCategoriesPromise,
+      categoryTreePromise,
+      questionsPromise,
+    ]);
 
-            return {
-              ...sub,
-              questions: Array.isArray(questions) ? questions : [],
-            };
-          }),
-        );
+  const { questions, totalCount, pageSize, totalPages } = questionsData;
+  const subCategories = selectedCategoryTree?.children ?? [];
 
-        return { ...root, children: childrenWithQuestions };
-      }),
-    );
-  } catch (error) {
-    console.error("Data fetching failed during build/runtime:", error);
-    return [];
-  }
-}
+  const startIndex = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endIndex =
+    totalCount === 0 ? 0 : Math.min(currentPage * pageSize, totalCount);
 
-async function QuestionListPage() {
-  const roots = await getFullCategoryTree();
+  const buildPaginationUrl = (pageNum: number) => {
+    const params = new URLSearchParams();
+    params.set("page", pageNum.toString());
+    if (categoryId) params.set("categoryId", categoryId);
+    if (subCategoryId) params.set("subCategoryId", subCategoryId);
+    if (searchQuery) params.set("search", searchQuery);
+    if (minImportance) params.set("minImportance", minImportance);
+    return `/daily/questions?${params.toString()}`;
+  };
 
   return (
-    <main className="max-w-4xl mx-auto p-8 space-y-8 bg-gray-50/30 min-h-screen">
-      <section className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-          데일리 모드
-        </h1>
+    <main className="max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-screen">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">문제 리스트</h1>
         <p className="text-muted-foreground">
-          원하는 CS 문제를 선택해서 학습하세요
+          총 <span className="font-semibold text-teal-600">{totalCount}</span>
+          개의 문제가 준비되어 있습니다.
         </p>
-      </section>
-
-      <SearchHeader />
-
-      <section className="space-y-6">
-        {roots.map((root) => (
-          <RootCategorySection key={root.id} root={root} />
-        ))}
-      </section>
+      </div>
+      <QuestionFilters
+        categories={rootCategories}
+        subCategories={subCategories}
+        selectedCategoryId={selectedCategoryId}
+        selectedSubCategoryId={selectedSubCategoryId}
+        searchQuery={searchQuery}
+        selectedMinImportance={selectedMinImportance}
+      />
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-28">대분류</TableHead>
+            <TableHead className="w-32">중분류</TableHead>
+            <TableHead>문제 제목</TableHead>
+            <TableHead className="w-20 text-center">중요도</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {questions.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={4}
+                className="h-32 text-center text-muted-foreground"
+              >
+                검색 결과가 없습니다.
+              </TableCell>
+            </TableRow>
+          ) : (
+            questions.map((question) => (
+              <TableRow key={question.id}>
+                <TableCell className="text-muted-foreground font-medium">
+                  {question.category?.parent?.name ?? "-"}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  <span className="text-sm py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
+                    {question.category?.name ?? "-"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <QuestionLinkButton question={question} />
+                </TableCell>
+                <TableCell className="text-center">
+                  {(question.avgImportance ?? 0).toFixed(1)}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+        <TableFooter>
+          <TableRow className="hover:bg-transparent">
+            <TableCell colSpan={2}>
+              <span className="text-muted-foreground text-sm">
+                {startIndex} - {endIndex} / 총 {totalCount}개
+              </span>
+            </TableCell>
+            <TableCell colSpan={2} className="text-right">
+              <Pagination className="justify-end">
+                <PaginationContent>
+                  <PaginationItem>
+                    {currentPage > 1 ? (
+                      <PaginationPrevious
+                        href={buildPaginationUrl(currentPage - 1)}
+                      />
+                    ) : (
+                      <PaginationPrevious
+                        className="pointer-events-none opacity-50"
+                        aria-disabled="true"
+                      />
+                    )}
+                  </PaginationItem>
+                  <PaginationItem>
+                    <div className="px-2">
+                      {currentPage} / {totalPages}
+                    </div>
+                  </PaginationItem>
+                  <PaginationItem>
+                    {currentPage < totalPages ? (
+                      <PaginationNext
+                        href={buildPaginationUrl(currentPage + 1)}
+                      />
+                    ) : (
+                      <PaginationNext
+                        className="pointer-events-none opacity-50"
+                        aria-disabled="true"
+                      />
+                    )}
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
     </main>
   );
 }
+
 export default QuestionListPage;
