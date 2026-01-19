@@ -21,6 +21,10 @@ import { AnswerSubmission } from './entities/answer-submission.entity';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
 import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
 
+interface AvgImportanceResult {
+  avg: string | null;
+}
+
 @Injectable()
 export class AnswerSubmissionService {
   private readonly logger = new Logger(AnswerSubmissionService.name);
@@ -208,7 +212,28 @@ export class AnswerSubmissionService {
     }
 
     latestSubmission.selfImportanceRating = selfImportanceRating;
+    const savedSubmission =
+      await this.answerSubmissionRepository.save(latestSubmission);
 
-    return await this.answerSubmissionRepository.save(latestSubmission);
+    this.calculateAvgImportance(questionId).catch((err) =>
+      this.logger.error('평균 중요도 업데이트 실패', err),
+    );
+
+    return savedSubmission;
+  }
+
+  private async calculateAvgImportance(questionId: number): Promise<void> {
+    const result = await this.answerSubmissionRepository
+      .createQueryBuilder('submission')
+      .select('AVG(submission.self_importance_rating)', 'avg')
+      .where('submission.questionId = :questionId', { questionId })
+      .andWhere('submission.self_importance_rating IS NOT NULL')
+      .getRawOne<AvgImportanceResult>();
+
+    const newAverage = result?.avg ? parseFloat(result.avg) : 0;
+
+    await this.questionRepository.update(questionId, {
+      avgImportance: newAverage,
+    });
   }
 }
