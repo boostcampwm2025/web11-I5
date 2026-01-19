@@ -103,29 +103,40 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {questions.map((question) => (
-            <TableRow key={question.id}>
-              <TableCell className="text-muted-foreground font-medium">
-                {question.category?.parent?.name ?? "-"}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                <span className="text-sm py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
-                  {question.category?.name ?? "-"}
-                </span>
-              </TableCell>
-              <TableCell>
-                <Link
-                  href={`/daily/questions/${question.id}`}
-                  className="hover:text-teal-600 hover:underline"
-                >
-                  {question.title}
-                </Link>
-              </TableCell>
-              <TableCell className="text-center">
-                {question.avgImportance.toFixed(1)}
+          {questions.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={4}
+                className="h-32 text-center text-muted-foreground"
+              >
+                검색 결과가 없습니다.
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            questions.map((question) => (
+              <TableRow key={question.id}>
+                <TableCell className="text-muted-foreground font-medium">
+                  {question.category?.parent?.name ?? "-"}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  <span className="text-sm py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
+                    {question.category?.name ?? "-"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Link
+                    href={`/daily/questions/${question.id}`}
+                    className="hover:text-teal-600 hover:underline"
+                  >
+                    {question.title}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-center">
+                  {question.avgImportance.toFixed(1)}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
         <TableFooter>
           <TableRow className="hover:bg-transparent">
