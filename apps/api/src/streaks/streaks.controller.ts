@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   ParseIntPipe,
@@ -9,22 +8,18 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-  ApiBody,
   ApiCookieAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import type { Request } from 'express';
 import {
   GetConsecutiveDayCountResponseDto,
   GetYearlyActivityCountResponseDto,
 } from './dtos/streaks-count.dto';
-import {
-  RecordDailyActivityRequestDto,
-  RecordDailyActivityResponseDto,
-} from './dtos/streaks-reocrd.dto';
+import { RecordDailyActivityResponseDto } from './dtos/streaks-reocrd.dto';
 import { StreaksService } from './streaks.service';
 
 @ApiTags('streaks')
@@ -90,7 +85,6 @@ export class StreaksController {
   @Post()
   @ApiOperation({ summary: '일일 학습 활동 기록' })
   @ApiCookieAuth('userId')
-  @ApiBody({ type: RecordDailyActivityRequestDto, required: false })
   @ApiResponse({
     status: 200,
     description: '학습 활동 기록 성공',
@@ -102,15 +96,12 @@ export class StreaksController {
   })
   async recordDailyActivity(
     @Req() req: Request,
-    @Body() requestDto?: RecordDailyActivityRequestDto,
   ): Promise<RecordDailyActivityResponseDto> {
     const userId = Number((req.cookies as { userId?: string })?.userId);
     if (!userId) {
       throw new UnauthorizedException('로그인이 필요합니다.');
     }
-    const submittedAt = requestDto?.submittedAt
-      ? new Date(requestDto.submittedAt)
-      : new Date();
-    return this.streaksService.recordDailyActivity(userId, submittedAt);
+
+    return this.streaksService.recordDailyActivity(userId);
   }
 }
