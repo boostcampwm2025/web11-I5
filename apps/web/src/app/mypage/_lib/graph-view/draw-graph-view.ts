@@ -2,8 +2,11 @@ import hexToRgba from "@/lib/hex-to-rgba";
 import { GRAPH_COLOR_CONSTANT, GRAPH_NUMBER_CONSTANT } from "../../_constants/graph-view-constant";
 import { GraphEdge, NodeMapType, NodeType } from "../../_types/graph-view";
 
+
 function getNodeColor(type: NodeType) {
-  return type === NodeType.QUESTION ? GRAPH_COLOR_CONSTANT.QUESTION_NODE : GRAPH_COLOR_CONSTANT.KEYWORD_NODE;
+  return type === NodeType.QUESTION
+    ? GRAPH_COLOR_CONSTANT.QUESTION_NODE
+    : GRAPH_COLOR_CONSTANT.KEYWORD_NODE;
 }
 
 function drawGraphView(
@@ -27,8 +30,14 @@ function drawGraphView(
     const target = nodes.get(edge.targetId);
     if (!source || !target) return;
 
+<<<<<<< HEAD
     const isConnectedToHovered = source.id === hoveredNode || target.id === hoveredNode;
     const isDimmed = hoveredNode !== null && !isConnectedToHovered;
+=======
+    const isConnectedToHovered =
+      source.id === hoveredNode || target.id === hoveredNode;
+    const isDimmed = hoveredNode && !isConnectedToHovered;
+>>>>>>> 57ae4f6 (feat(#175): 노드 호버시 호버된 노드와 연결된 엣지 색상 변경 & 노드 투명도 조절)
     if (isConnectedToHovered) {
       ctx.strokeStyle = GRAPH_COLOR_CONSTANT.HOVERED;
       hoveredSet.add(source.id);
