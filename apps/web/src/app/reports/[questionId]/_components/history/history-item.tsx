@@ -18,9 +18,23 @@ function HistoryItem({ item, isSelected, href, index }: HistoryItemProps) {
           <span className="font-bold text-slate-500">{item.totalScore}</span>
         );
       case "PENDING":
-        return <Spinner className="w-4 h-4 text-slate-400" />;
+        return (
+          <span
+            className="flex items-center"
+            role="status"
+            aria-label="분석 중"
+          >
+            <Spinner className="w-4 h-4 text-slate-400" aria-hidden />
+            <span className="sr-only">분석 중</span>
+          </span>
+        );
       case "FAILED":
-        return <AlertCircle className="w-4 h-4 text-red-300" />;
+        return (
+          <span className="flex items-center" aria-label="실패">
+            <AlertCircle className="w-4 h-4 text-red-300" aria-hidden />
+            <span className="sr-only">실패</span>
+          </span>
+        );
       default:
         return null;
     }
