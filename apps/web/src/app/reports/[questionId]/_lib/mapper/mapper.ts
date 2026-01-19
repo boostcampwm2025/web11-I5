@@ -75,6 +75,7 @@ function mapToReportDetail(
       logicReason: evaluation.detailAnalysis.logic,
       depthReason: evaluation.detailAnalysis.depth,
       scoreDetails: evaluation.scoreDetails,
+      extractedKeywords: evaluation.extractedKeywords,
     },
   };
 }

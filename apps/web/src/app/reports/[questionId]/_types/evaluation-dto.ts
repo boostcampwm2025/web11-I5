@@ -26,6 +26,7 @@ export interface EvaluationDTO {
 
   hasApplication: boolean;
   isCompleteSentence: boolean;
+  extractedKeywords: string[];
 
   createdAt: string;
 }
