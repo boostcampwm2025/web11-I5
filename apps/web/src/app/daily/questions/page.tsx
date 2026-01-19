@@ -16,22 +16,65 @@ import {
   PaginationPrevious,
 } from "@/components/pagination/pagination";
 import { fetchQuestions } from "./_lib/fetch-questions";
-import { QuestionFilters } from "./_components/question-filters";
+import {
+  fetchRootCategories,
+  fetchCategoryTree,
+} from "./_lib/fetch-categories";
+import QuestionFilters from "./_components/question-filters";
 
 interface QuestionListPageProps {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    categoryId?: string;
+    subCategoryId?: string;
+    search?: string;
+    minImportance?: string;
+  }>;
 }
 
 async function QuestionListPage({ searchParams }: QuestionListPageProps) {
-  const { page } = await searchParams;
+  const { page, categoryId, subCategoryId, search, minImportance } =
+    await searchParams;
   const currentPage = Number(page) || 1;
+  const selectedCategoryId = categoryId ? Number(categoryId) : null;
+  const selectedSubCategoryId = subCategoryId ? Number(subCategoryId) : null;
+  const searchQuery = search ?? "";
+  const selectedMinImportance = minImportance ? Number(minImportance) : null;
 
-  const { questions, totalCount, pageSize, totalPages } = await fetchQuestions({
+  const rootCategoriesPromise = fetchRootCategories();
+  const categoryTreePromise = selectedCategoryId
+    ? fetchCategoryTree(selectedCategoryId)
+    : Promise.resolve(null);
+  const questionsPromise = fetchQuestions({
     page: currentPage,
+    parentCategoryId: selectedCategoryId ?? undefined,
+    categoryId: selectedSubCategoryId ?? undefined,
+    search: searchQuery || undefined,
+    minImportance: selectedMinImportance ?? undefined,
   });
+
+  const [rootCategories, selectedCategoryTree, questionsData] =
+    await Promise.all([
+      rootCategoriesPromise,
+      categoryTreePromise,
+      questionsPromise,
+    ]);
+
+  const { questions, totalCount, pageSize, totalPages } = questionsData;
+  const subCategories = selectedCategoryTree?.children ?? [];
 
   const startIndex = (currentPage - 1) * pageSize + 1;
   const endIndex = Math.min(currentPage * pageSize, totalCount);
+
+  const buildPaginationUrl = (pageNum: number) => {
+    const params = new URLSearchParams();
+    params.set("page", pageNum.toString());
+    if (categoryId) params.set("categoryId", categoryId);
+    if (subCategoryId) params.set("subCategoryId", subCategoryId);
+    if (searchQuery) params.set("search", searchQuery);
+    if (minImportance) params.set("minImportance", minImportance);
+    return `/daily/questions?${params.toString()}`;
+  };
 
   return (
     <main className="max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-screen">
@@ -42,7 +85,14 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
           개의 문제가 준비되어 있습니다.
         </p>
       </div>
-      <QuestionFilters />
+      <QuestionFilters
+        categories={rootCategories}
+        subCategories={subCategories}
+        selectedCategoryId={selectedCategoryId}
+        selectedSubCategoryId={selectedSubCategoryId}
+        searchQuery={searchQuery}
+        selectedMinImportance={selectedMinImportance}
+      />
       <Table>
         <TableHeader>
           <TableRow>
@@ -90,7 +140,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
                   <PaginationItem>
                     {currentPage > 1 ? (
                       <PaginationPrevious
-                        href={`/daily/questions?page=${currentPage - 1}`}
+                        href={buildPaginationUrl(currentPage - 1)}
                       />
                     ) : (
                       <PaginationPrevious
@@ -107,7 +157,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
                   <PaginationItem>
                     {currentPage < totalPages ? (
                       <PaginationNext
-                        href={`/daily/questions?page=${currentPage + 1}`}
+                        href={buildPaginationUrl(currentPage + 1)}
                       />
                     ) : (
                       <PaginationNext
