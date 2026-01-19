@@ -2,6 +2,9 @@ import { Category } from "../_types/types";
 
 async function fetchRootCategories(): Promise<Category[]> {
   const apiUrl = process.env.API_URL;
+  if (!apiUrl) {
+    throw new Error("API_URL environment variable is not defined");
+  }
 
   const response = await fetch(`${apiUrl}/categories/roots`, {
     cache: "no-store",
@@ -16,6 +19,9 @@ async function fetchRootCategories(): Promise<Category[]> {
 
 async function fetchCategoryTree(categoryId: number): Promise<Category | null> {
   const apiUrl = process.env.API_URL;
+  if (!apiUrl) {
+    throw new Error("API_URL environment variable is not defined");
+  }
 
   const response = await fetch(
     `${apiUrl}/categories/tree-by-id/${categoryId}`,

@@ -12,6 +12,9 @@ async function fetchQuestions(
   params: FetchQuestionsParams = {},
 ): Promise<PaginatedQuestionsDTO> {
   const apiUrl = process.env.API_URL;
+  if (!apiUrl) {
+    throw new Error("API_URL environment variable is not defined");
+  }
 
   const searchParams = new URLSearchParams();
   if (params.page) {
