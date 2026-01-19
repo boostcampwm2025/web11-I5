@@ -1,8 +1,8 @@
 export const GRAPH_NUMBER_CONSTANT = {
   NODE_RADIUS: 5,
-  MIN_SCALE: 0.5,
-  MAX_SCALE: 1.5,
-  EDGE_DISTANCE: 100,
+  MIN_SCALE: 0.3,
+  MAX_SCALE: 2.3,
+  EDGE_DISTANCE: 200,
   VELOCITY_THRESHOLD: 0.05, // 기존 0.01에서 수렴 속도 빠르게 조정하기 위해 0.05 높임
 } as const;
 

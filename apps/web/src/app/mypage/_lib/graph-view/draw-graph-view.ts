@@ -78,7 +78,7 @@ function drawGraphView(
           GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA,
         )
       : GRAPH_COLOR_CONSTANT.LABEL;
-    ctx.fillText(node.label, node.x, node.y + radius + 14);
+    if (scale > 0.5) ctx.fillText(node.label, node.x, node.y + radius + 14);
   });
 
   ctx.restore();
