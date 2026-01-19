@@ -10,11 +10,7 @@ interface GraphViewProps {
   textRenderScale?: number;
   clickEventDisabled?: boolean;
 }
-function GraphView({
-  mockData,
-  textRenderScale,
-  clickEventDisabled,
-}: GraphViewProps) {
+function GraphView({ mockData, textRenderScale, clickEventDisabled }: GraphViewProps) {
   // canvasRef: Canvas DOM 참조
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   // ctx: Canvas 2D 렌더링 컨텍스트, width/height: 캔버스 크기
@@ -33,23 +29,13 @@ function GraphView({
   // offset: 캔버스 이동 오프셋, scale: 줌 레벨
   // activeInteraction: 인터랙션 진행 여부 (드래그, 휠 등)
   // handleMouseDown/Move/Up: 마우스 이벤트 핸들러
-  const {
-    offset,
-    scale,
-    hoveredNodeId,
-    activeInteraction,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-  } = useGraphInteraction(canvasRef, clickEventDisabled, {
-    getNodeValues: () => nodeMapRef.current?.getNodeValues() ?? [].values(),
-    setNodeFixedCoords: (nodeId, x, y) =>
-      nodeMapRef.current?.setNodeFixedCoords(nodeId, x, y),
-    clearNodeFixedCoords: (nodeId) =>
-      nodeMapRef.current?.clearNodeFixedCoords(nodeId),
-    getNodeQuestionId: (nodeId) =>
-      nodeMapRef?.current?.nodeMap.get(nodeId)?.questionId ?? null,
-  });
+  const { offset, scale, hoveredNodeId, activeInteraction, handleMouseDown, handleMouseMove, handleMouseUp } =
+    useGraphInteraction(canvasRef, clickEventDisabled, {
+      getNodeValues: () => nodeMapRef.current?.getNodeValues() ?? [].values(),
+      setNodeFixedCoords: (nodeId, x, y) => nodeMapRef.current?.setNodeFixedCoords(nodeId, x, y),
+      clearNodeFixedCoords: (nodeId) => nodeMapRef.current?.clearNodeFixedCoords(nodeId),
+      getNodeQuestionId: (nodeId) => nodeMapRef?.current?.nodeMap.get(nodeId)?.questionId ?? null,
+    });
 
   // 물리 엔진 기반 그래프 애니메이션 루프
   // 기대동작: 물리 시뮬레이션을 통해 노드들이 안정적인 위치로 이동하며, 수렴 또는 인터랙션이 있을 때만 애니메이션 실행
@@ -93,17 +79,7 @@ function GraphView({
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [
-    ctx,
-    width,
-    height,
-    mockData.edges,
-    offset,
-    scale,
-    activeInteraction,
-    hoveredNodeId,
-    textRenderScale,
-  ]);
+  }, [ctx, width, height, mockData.edges, offset, scale, activeInteraction, hoveredNodeId, textRenderScale]);
 
   return (
     // Canvas 엘리먼트에 마우스 이벤트 핸들러 바인딩
