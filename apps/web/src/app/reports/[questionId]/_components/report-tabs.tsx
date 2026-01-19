@@ -55,18 +55,21 @@ function ReportTabs({ selectedAttempt, evaluation }: ReportTabsProps) {
                   나의 답변 원문
                 </h3>
               </div>
-
-              <div className="flex items-center gap-2 px-3 py-1.5">
-                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-                <span className="text-xs text-slate-500">
-                  AI 음성 복원 완료
-                </span>
-              </div>
+              {selectedAttempt.status !== "FAILED" && (
+                <div className="flex items-center gap-2 px-3 py-1.5">
+                  <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
+                  <span className="text-xs text-slate-500">
+                    AI 음성 복원 완료
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="bg-white rounded-lg py-6 border-y border-slate-200">
               <p className="text-[0.9375rem] leading-relaxed text-slate-700 whitespace-pre-wrap">
-                {selectedAttempt.answerContent}
+                {selectedAttempt.answerContent
+                  ? selectedAttempt.answerContent
+                  : "저장된 답변이 없습니다."}
               </p>
             </div>
 
