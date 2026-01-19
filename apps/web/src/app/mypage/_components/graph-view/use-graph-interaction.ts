@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GRAPH_NUMBER_CONSTANT } from "../../_constants/graph-view-constant";
-import { GraphNode, NodePosition } from "../../types/graph-view";
+import { GraphNode, NodePosition } from "../../_types/graph-view";
 
 export interface GraphInteractionCallbacks {
   getNodeValues: () => IterableIterator<GraphNode & NodePosition>;

@@ -3,7 +3,7 @@ import {
   GRAPH_COLOR_CONSTANT,
   GRAPH_NUMBER_CONSTANT,
 } from "../../_constants/graph-view-constant";
-import { GraphEdge, NodeMapType, NodeType } from "../../types/graph-view";
+import { GraphEdge, NodeMapType, NodeType } from "../../_types/graph-view";
 
 function getNodeColor(type: NodeType) {
   return type === NodeType.QUESTION

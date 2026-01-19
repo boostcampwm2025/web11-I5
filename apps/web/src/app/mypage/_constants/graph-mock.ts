@@ -1,4 +1,4 @@
-import { GraphData, NodeType } from "../types/graph-view";
+import { GraphData, NodeType } from "../_types/graph-view";
 
 export const mockGraphData: GraphData = {
   nodes: [
