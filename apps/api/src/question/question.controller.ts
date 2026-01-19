@@ -1,19 +1,64 @@
-import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { QuestionService } from './question.service';
 import { FindOneParams } from './dtos/find-one-params.dto';
+import { QuestionFilterDto } from './dtos/question-filter.dto';
+import { PaginatedQuestionsDto } from './dtos/paginated-questions.dto';
 import { Question } from './entities/question.entity';
 
 @ApiTags('questions')
 @Controller('questions')
 export class QuestionController {
   constructor(private readonly questionService: QuestionService) {}
+
+  @Get()
+  @ApiOperation({
+    summary: '질문 목록 조회',
+    description:
+      '페이지네이션과 카테고리 필터를 적용하여 질문 목록을 조회합니다.',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: '페이지 번호 (기본값: 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    type: Number,
+    description: '중분류 카테고리 ID',
+  })
+  @ApiQuery({
+    name: 'parentCategoryId',
+    required: false,
+    type: Number,
+    description: '대분류 카테고리 ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '질문 목록 조회 성공',
+    type: PaginatedQuestionsDto,
+  })
+  async getPaginated(
+    @Query() filter: QuestionFilterDto,
+  ): Promise<PaginatedQuestionsDto> {
+    return await this.questionService.findPaginated(filter);
+  }
 
   @Get('category/:categoryId')
   async getBySubCategory(@Param('categoryId') categoryId: string) {
