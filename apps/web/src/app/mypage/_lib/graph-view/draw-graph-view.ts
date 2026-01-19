@@ -34,7 +34,7 @@ function drawGraphView(
 
     const isConnectedToHovered =
       source.id === hoveredNode || target.id === hoveredNode;
-    const isDimmed = hoveredNode && !isConnectedToHovered;
+    const isDimmed = hoveredNode !== null && !isConnectedToHovered;
     if (isConnectedToHovered) {
       ctx.strokeStyle = GRAPH_COLOR_CONSTANT.HOVERED;
       hoveredSet.add(source.id);

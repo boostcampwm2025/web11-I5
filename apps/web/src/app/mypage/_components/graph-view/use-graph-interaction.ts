@@ -29,6 +29,9 @@ function useGraphInteraction(
   const scale = React.useRef(initialScale);
 
   const hoveredNodeId = React.useRef<number | null>(null);
+  const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   // interaction 진행중인지 상태 확인 (드래그, 휠 등)
   const [activeInteraction, setActiveInteraction] = React.useState(false);
@@ -127,7 +130,11 @@ function useGraphInteraction(
           hoveredNodeId.current = newHoveredId;
           setActiveInteraction(true);
           // 짧은 딜레이 후 interaction 상태 해제
-          setTimeout(() => setActiveInteraction(false), 50);
+          if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+          hoverTimeoutRef.current = setTimeout(
+            () => setActiveInteraction(false),
+            50,
+          );
         }
       }
     },
@@ -150,8 +157,7 @@ function useGraphInteraction(
         callbacksRef.current.clearNodeFixedCoords(draggedNodeId);
       }
 
-      const { x, y } = convertCursorToCanvasCoords(e.clientX, e.clientY);
-      if (dragStartOffset.x === x && dragStartOffset.y === y) {
+      if (dragStartOffset.x === e.clientX && dragStartOffset.y === e.clientY) {
         if (clickEventDisabled) return;
         // click시 페이지 이동 이벤트 추가
       }
@@ -160,12 +166,7 @@ function useGraphInteraction(
       setIsDraggingCanvas(false);
       setActiveInteraction(false);
     },
-    [
-      clickEventDisabled,
-      draggedNodeId,
-      dragStartOffset,
-      convertCursorToCanvasCoords,
-    ],
+    [clickEventDisabled, draggedNodeId, dragStartOffset],
   );
 
   // 휠 이벤트 리스너 등록 (줌 인/아웃 기능)
@@ -211,6 +212,12 @@ function useGraphInteraction(
       canvas.removeEventListener("wheel", handleWheel);
     };
   }, [canvasRef]);
+
+  React.useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+  }, []);
 
   return {
     offset,
