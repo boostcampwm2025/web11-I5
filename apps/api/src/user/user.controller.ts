@@ -21,13 +21,18 @@ import { UserService } from './user.service';
 import type { User } from './entities/user.entity';
 import { LoginResponseDto } from './dtos/login.response.dto';
 import { LoginRequestDto } from './dtos/login.request.dto';
+import { AuthService } from '../auth/auth.service';
 
 const COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7; // 7일
+const ACCESS_TOKEN_MAX_AGE_MS = 1000 * 60 * 15; // 15분 (Access Token 만료 시간)
 
 @ApiTags('users')
 @Controller('api/users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Get('test-users')
   @ApiOperation({ summary: '테스트 사용자 목록 조회' })
@@ -62,7 +67,18 @@ export class UserController {
       loginRequestDto.password,
     );
 
-    // HTTP 응답 처리 (쿠키 설정)
+    // Access Token 발급
+    const accessToken = await this.authService.generateAccessToken(user);
+
+    // Access Token을 HttpOnly Cookie로 설정
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true, // JavaScript에서 접근 불가 (XSS 방지)
+      secure: process.env.NODE_ENV === 'production', // HTTPS에서만 전송 (프로덕션)
+      sameSite: 'strict', // CSRF 방지
+      maxAge: ACCESS_TOKEN_MAX_AGE_MS, // 15분
+    });
+
+    // 기존 userId 쿠키는 하위 호환성을 위해 유지 (추후 제거 예정)
     res.cookie('userId', user.id.toString(), {
       httpOnly: false, // 프론트엔드에서도 접근 가능하도록
       maxAge: COOKIE_MAX_AGE_MS,
@@ -93,6 +109,7 @@ export class UserController {
     },
   })
   logout(@Res() res: Response): void {
+    res.clearCookie('accessToken');
     res.clearCookie('userId');
     res.json({ message: '로그아웃 성공' });
   }
