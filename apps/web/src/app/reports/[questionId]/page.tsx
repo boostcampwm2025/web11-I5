@@ -30,7 +30,7 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
 
   return (
     <main className="max-w-4xl mx-auto px-8 py-15 flex gap-8">
-      <div className="flex flex-col gap-14">
+      <div className="flex flex-col gap-14 flex-1">
         <ReportHeader
           category={question.category}
           subcategory={question.subCategory}
@@ -48,7 +48,7 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
         <ReportTabs selectedAttempt={selectedAttempt} evaluation={evaluation} />
       </div>
 
-      <div>
+      <div className="sticky top-8 self-start">
         <HistoryList
           history={history}
           selectedId={selectedAttempt.submissionId}
