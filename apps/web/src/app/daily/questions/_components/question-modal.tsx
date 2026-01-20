@@ -4,25 +4,14 @@ import * as React from "react";
 import { Button } from "@/components/button/button";
 import { Toggle } from "@/components/toggle/toggle";
 import Link from "next/link";
-
-export interface QuestionData {
-  id: number;
-  title: string;
-  content: string;
-  avgImportance: number;
-}
+import { Question } from "../_types/types";
 
 interface QuestionModalProps {
-  question: QuestionData | null;
-  categoryName: string;
+  question: Question;
   onClose: () => void;
 }
 
-function QuestionModal({
-  question,
-  categoryName,
-  onClose,
-}: QuestionModalProps) {
+function QuestionModal({ question, onClose }: QuestionModalProps) {
   const [answerMode, setAnswerMode] = React.useState<string>("text");
   if (!question) return null;
 
@@ -39,7 +28,7 @@ function QuestionModal({
           {/* 배지 영역 */}
           <div className="flex gap-2 mb-4">
             <span className="px-2.5 py-1 rounded-md bg-gray-100 text-gray-500 text-xs font-medium">
-              {categoryName}
+              {question.category?.name}
             </span>
             {/* 중요도 숫자 표기 */}
             <span className="px-2.5 py-1 rounded-md bg-yellow-50 text-yellow-600 text-xs font-medium flex items-center gap-1">

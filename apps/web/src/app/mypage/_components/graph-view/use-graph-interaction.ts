@@ -1,15 +1,17 @@
 import * as React from "react";
 import { GRAPH_NUMBER_CONSTANT } from "../../_constants/graph-view-constant";
-import { GraphNode, NodePosition } from "../../types/graph-view";
+import { GraphNode, NodePosition } from "../../_types/graph-view";
 
 export interface GraphInteractionCallbacks {
   getNodeValues: () => IterableIterator<GraphNode & NodePosition>;
   setNodeFixedCoords: (nodeId: number, x: number, y: number) => void;
   clearNodeFixedCoords: (nodeId: number) => void;
+  getNodeQuestionId: (nodeId: number) => number | null;
 }
 
 function useGraphInteraction(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  clickEventDisabled: boolean = false,
   callbacks: GraphInteractionCallbacks,
   initialOffset: { x: number; y: number } = { x: 0, y: 0 },
   initialScale: number = 1,
@@ -26,6 +28,11 @@ function useGraphInteraction(
 
   // scale: 캔버스에서 휠움직임을 통해 줌을 할 때 줌 단계
   const scale = React.useRef(initialScale);
+
+  const hoveredNodeId = React.useRef<number | null>(null);
+  const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   // interaction 진행중인지 상태 확인 (드래그, 휠 등)
   const [activeInteraction, setActiveInteraction] = React.useState(false);
@@ -82,8 +89,10 @@ function useGraphInteraction(
   const handleMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       setActiveInteraction(true);
-      const { x, y } = convertCursorToCanvasCoords(e.clientX, e.clientY);
+      // 클릭 판정을 위해 항상 시작 위치 저장
+      setDragStartOffset({ x: e.clientX, y: e.clientY });
 
+      const { x, y } = convertCursorToCanvasCoords(e.clientX, e.clientY);
       const clickedNode = findNodeAtPosition(x, y);
 
       if (clickedNode) {
@@ -92,7 +101,6 @@ function useGraphInteraction(
         callbacksRef.current.setNodeFixedCoords(clickedNode.id, x, y);
       } else {
         setIsDraggingCanvas(true);
-        setDragStartOffset({ x: e.clientX, y: e.clientY });
       }
     },
     [convertCursorToCanvasCoords, findNodeAtPosition],
@@ -115,6 +123,21 @@ function useGraphInteraction(
         offset.current.y += dy;
 
         setDragStartOffset({ x: e.clientX, y: e.clientY });
+      } else {
+        const hoveredNode = findNodeAtPosition(x, y);
+        const newHoveredId = hoveredNode?.id ?? null;
+
+        // 호버 상태가 변경되었을 때만 리렌더링 트리거
+        if (hoveredNodeId.current !== newHoveredId) {
+          hoveredNodeId.current = newHoveredId;
+          setActiveInteraction(true);
+          // 짧은 딜레이 후 interaction 상태 해제
+          if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+          hoverTimeoutRef.current = setTimeout(
+            () => setActiveInteraction(false),
+            50,
+          );
+        }
       }
     },
     [
@@ -123,21 +146,35 @@ function useGraphInteraction(
       draggedNodeId,
       isDraggingCanvas,
       offset,
+      findNodeAtPosition,
     ],
   );
 
   // 마우스 클릭 해제 이벤트
   // 기대동작 1. 노드 드래그중이었다면 -> 노드 고정 해제 (fx, fy를 null로 설정)
   // 기대동작 2. 모든 드래그 상태 초기화
-  const handleMouseUp = React.useCallback(() => {
-    if (draggedNodeId !== null) {
-      callbacksRef.current.clearNodeFixedCoords(draggedNodeId);
-    }
+  const handleMouseUp = React.useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const clickedNodeId = draggedNodeId;
+      if (draggedNodeId !== null) {
+        callbacksRef.current.clearNodeFixedCoords(draggedNodeId);
+      }
 
-    setDraggedNodeId(null);
-    setIsDraggingCanvas(false);
-    setActiveInteraction(false);
-  }, [draggedNodeId]);
+      setDraggedNodeId(null);
+      setIsDraggingCanvas(false);
+      setActiveInteraction(false);
+
+      // 클릭 이벤트 처리 (드래그 없이 같은 위치에서 마우스 업)
+      if (dragStartOffset.x === e.clientX && dragStartOffset.y === e.clientY) {
+        if (clickEventDisabled || !clickedNodeId) return;
+        const questionId =
+          callbacksRef.current.getNodeQuestionId(clickedNodeId);
+        if (!questionId) return;
+        window.open(`/reports/${questionId}`);
+      }
+    },
+    [clickEventDisabled, draggedNodeId, dragStartOffset],
+  );
 
   // 휠 이벤트 리스너 등록 (줌 인/아웃 기능)
   // 기대동작: 마우스 휠을 움직이면 마우스 위치를 기준으로 줌 인/아웃 처리
@@ -183,9 +220,16 @@ function useGraphInteraction(
     };
   }, [canvasRef]);
 
+  React.useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+  }, []);
+
   return {
     offset,
     scale,
+    hoveredNodeId,
     activeInteraction,
     handleMouseDown,
     handleMouseMove,

@@ -42,6 +42,7 @@ export const Success: Story = {
           completeness: 5,
           application: 5,
         },
+        extractedKeywords: ["가상DOM", "Reconciliation", "Diffing", "렌더링"],
       },
     } satisfies ReportDetail,
   },

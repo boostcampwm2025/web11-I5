@@ -1,5 +1,4 @@
 import { ReportHistoryItem } from "../../_types/report-detail";
-import { Badge } from "@/components/badge/badge";
 import HistoryItem from "./history-item";
 
 interface HistoryListProps {
@@ -9,13 +8,12 @@ interface HistoryListProps {
 
 function HistoryList({ history, selectedId }: HistoryListProps) {
   return (
-    <div className="w-full md:w-72 flex flex-col bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-sm h-75 md:h-auto">
-      <div className="p-5 border-b border-zinc-100 bg-zinc-50/50 flex justify-between items-center shrink-0">
-        <span className="font-bold text-zinc-900">답변 기록</span>
-        <Badge variant="secondary">{history.length}</Badge>
+    <div className="w-60 flex flex-col bg-white rounded-2xl border border-slate-200">
+      <div className="p-4 border-b border-slate-200 flex justify-between items-center shrink-0">
+        <span className="font-bold text-sm text-slate-900">시도 히스토리</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {history.map((item) => (
           <HistoryItem
             key={item.submissionId}

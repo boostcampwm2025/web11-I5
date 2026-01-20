@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
 import ReportHeader from "./_components/report-header";
-import FeedbackSection from "./_components/feedback/feedback-section";
-import HistorySection from "./_components/history/history-section";
-import NavButton from "./_components/nav-button";
-import { List, RotateCcw, User } from "lucide-react";
+import HistoryList from "./_components/history/history-list";
 import { getReportPageData } from "./_lib/services/page-data";
 import ReportRefresh from "./_components/report-refresh";
+import ReportTabs from "./_components/report-tabs";
 
 interface ReportPageProps {
   params: Promise<{ questionId: string }>;
@@ -20,10 +18,8 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
     notFound();
   }
 
-  const { question, history, evaluation } = await getReportPageData(
-    Number(questionId),
-    Number(submissionId),
-  );
+  const { question, history, evaluation, highestScore } =
+    await getReportPageData(Number(questionId), Number(submissionId));
   const selectedAttempt = history.find(
     (h) => h.submissionId === Number(submissionId),
   );
@@ -33,51 +29,31 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
   }
 
   return (
-    <main className="max-w-4xl mx-auto w-full px-6 pt-12 pb-24 flex flex-col gap-6">
-      <ReportHeader
-        category={question.category}
-        subcategory={question.subCategory}
-        title={question.title}
-        description={question.content}
-      />
+    <main className="max-w-4xl mx-auto px-8 py-15 flex gap-8">
+      <div className="flex flex-col gap-14 flex-1">
+        <ReportHeader
+          category={question.category}
+          subcategory={question.subCategory}
+          title={question.title}
+          description={question.content}
+          highestScore={highestScore}
+        />
 
-      <ReportRefresh
-        pendingSubmissionIds={history
-          .filter((h) => h.status === "PENDING")
-          .map((h) => h.submissionId)}
-      />
+        <ReportRefresh
+          pendingSubmissionIds={history
+            .filter((h) => h.status === "PENDING")
+            .map((h) => h.submissionId)}
+        />
 
-      <FeedbackSection
-        attempt={selectedAttempt.displayIndex}
-        status={selectedAttempt.status}
-        data={evaluation}
-      />
+        <ReportTabs selectedAttempt={selectedAttempt} evaluation={evaluation} />
+      </div>
 
-      <HistorySection history={history} selectedAttempt={selectedAttempt} />
-
-      <nav className="flex flex-col sm:flex-row gap-3 mt-4">
-        <NavButton
-          href="/daily/questions"
-          icon={<List className="mr-1.5" />}
-          variant="outline"
-        >
-          문제 목록
-        </NavButton>
-        <NavButton
-          href={`/daily/questions/${question.id}`}
-          icon={<RotateCcw className="mr-1.5" />}
-          variant="default"
-        >
-          다시 시도
-        </NavButton>
-        <NavButton
-          href="/mypage"
-          variant="outline"
-          icon={<User className="mr-1.5" />}
-        >
-          마이페이지
-        </NavButton>
-      </nav>
+      <div className="sticky top-8 self-start">
+        <HistoryList
+          history={history}
+          selectedId={selectedAttempt.submissionId}
+        />
+      </div>
     </main>
   );
 }

@@ -92,6 +92,7 @@ export class GraphService {
       id: node.id,
       type: node.type,
       label: node.label,
+      questionId: node.questionId,
     }));
 
     const edgeDtos: GraphEdgeDto[] = edges.map((edge) => ({

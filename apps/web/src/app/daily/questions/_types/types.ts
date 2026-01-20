@@ -1,3 +1,12 @@
+export interface Category {
+  id: number;
+  name: string;
+  depth: number;
+  parentId: number | null;
+  parent?: Category;
+  children?: Category[];
+}
+
 export interface Question {
   id: number;
   title: string;
@@ -9,10 +18,10 @@ export interface Question {
   category?: Category;
 }
 
-export interface Category {
-  id: number;
-  name: string;
-  depth: number;
-  parentId: number | null;
-  children?: Category[];
+export interface PaginatedQuestionsDTO {
+  questions: Question[];
+  totalCount: number;
+  pageSize: number;
+  currentPage: number;
+  totalPages: number;
 }
