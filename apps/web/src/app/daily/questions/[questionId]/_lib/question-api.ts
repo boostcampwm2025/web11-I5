@@ -8,14 +8,21 @@ import { redirect } from "next/navigation";
 export async function getQuestion(
   questionId: string,
 ): Promise<Question | null> {
+  let caughtError: unknown = null;
+
   try {
     return await apiGet<Question>(`/questions/${questionId}`);
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
-      redirect("/signin");
-      return null;
-    }
-    console.error("Error fetching question:", error);
-    return null;
+    caughtError = error;
   }
+
+  if (caughtError instanceof ApiError && caughtError.status === 401) {
+    redirect("/signin");
+  }
+
+  if (caughtError) {
+    console.error("Error fetching question:", caughtError);
+  }
+
+  return null;
 }
