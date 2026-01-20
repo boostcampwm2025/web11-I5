@@ -12,6 +12,7 @@ import {
   ApiQuery,
   ApiResponse,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UserId } from '../auth/decorators/user-id.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -21,6 +22,8 @@ import {
 } from './dtos/streaks-count.dto';
 import { RecordDailyActivityResponseDto } from './dtos/streaks-record.dto';
 import { StreaksService } from './streaks.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserId } from '../auth/decorators/user-id.decorator';
 
 @ApiTags('streaks')
 @Controller('streaks')
