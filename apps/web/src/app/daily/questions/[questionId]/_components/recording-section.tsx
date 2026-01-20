@@ -36,14 +36,6 @@ function RecordingSection({ questionId }: RecordingSectionProps) {
     FormData
   >(submitAnswerAction, null);
 
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    if (state?.success) {
-      setIsModalOpen(true);
-    }
-  }, [state]);
-
   const handleSubmitClick = async (
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
@@ -136,10 +128,9 @@ function RecordingSection({ questionId }: RecordingSectionProps) {
         })()}
       </div>
       <ImportanceRating
-        open={isModalOpen}
+        open={Boolean(state?.success)}
         questionId={questionId}
         onSuccess={() => {
-          setIsModalOpen(false);
           if (state?.submissionId) {
             router.push(`/reports/${questionId}?attempt=${state.submissionId}`);
           }
