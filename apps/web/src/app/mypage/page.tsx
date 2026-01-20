@@ -10,25 +10,25 @@ import { mockGraphData } from "./_constants/graph-mock";
 import GraphContent from "./_contents/graph-content";
 import SolvedContent from "./_contents/solved-content";
 import StreakContent from "./_contents/streak-content";
+import { fetchGraph } from "./_lib/fetch/fetch-graph";
+import { fetchStreaks } from "./_lib/fetch/fetch-streaks";
+import { fetchUserInfo } from "./_lib/fetch/fetch-user-info";
 
 async function MyPage() {
-  //실제 api 연동시 여기에 데이터 패칭 로직
-  const userData = {
-    id: 1,
-    nickname: "김개발",
-    email: "@malman_dev",
-    totalPoint: 200,
-    role: "FRONTEND DEV",
-  };
-  const consecutiveDayCount = 0;
-  const mockData = mockGraphData;
-  const streakCount = 40;
+  const [userData, _graphData, streakData] = await Promise.all([
+    fetchUserInfo(),
+    fetchGraph(),
+    fetchStreaks(),
+  ]);
+  const { streakCount, consecutiveDayCount } = streakData;
+
   const imageSrc = "/starry-night.jpg";
+  const mockData = mockGraphData; // 추후 리팩토링시 해당 부분 삭제
   return (
     <div className="w-4xl px-8 py-15 max-w-4xl flex flex-col gap-10">
       <UserStatsCard
         nickname={userData.nickname}
-        email={userData.email}
+        email={userData.email || "@test123"} // 추후 작업에서 해당 부분 email 리턴하도록 수정 필요.
         totalPoint={userData.totalPoint}
         role={userData.role}
         consecutiveDayCount={consecutiveDayCount}

@@ -1,5 +1,5 @@
 "use client";
-import { Maximize2 } from "lucide-react";
+import { BarChart3, Maximize2 } from "lucide-react";
 import * as React from "react";
 import GraphView from "../_components/graph-view/graph-view";
 import { GraphData } from "../_types/graph-view";
@@ -25,12 +25,27 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
         </div>
         <button
           onClick={handleModalOpen}
-          className="flex justify-center items-center w-10 h-10 border border-slate-200 bg-white rounded-xl"
+          disabled={graphData.nodes.length === 0}
+          className="flex justify-center items-center w-10 h-10 border border-slate-200 bg-white rounded-xl disabled:cursor-not-allowed"
         >
           <Maximize2 className="w-5 h-5" stroke="#94A3B8" />
         </button>
       </div>
-      <GraphView graphData={graphData} />
+      {graphData.nodes.length === 0 ? (
+        <div className="flex flex-col h-full w-full items-center justify-center py-12 text-center">
+          <div className="w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <BarChart3 className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            아직 학습 데이터가 없습니다
+          </h3>
+          <p className="text-sm text-gray-500">
+            문제를 풀면 학습 그래프가 생성됩니다
+          </p>
+        </div>
+      ) : (
+        <GraphView graphData={graphData} />
+      )}
       {openModalStatus && (
         <div
           onClick={handleModalClose}
