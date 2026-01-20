@@ -65,7 +65,7 @@ function ReportTabs({ selectedAttempt, evaluation }: ReportTabsProps) {
               )}
             </div>
 
-            <div className="bg-white rounded-lg py-6 border-y border-slate-200">
+            <div className="bg-white py-6 border-y border-slate-200">
               <p className="text-[0.9375rem] leading-relaxed text-slate-700 whitespace-pre-wrap">
                 {selectedAttempt.answerContent
                   ? selectedAttempt.answerContent
