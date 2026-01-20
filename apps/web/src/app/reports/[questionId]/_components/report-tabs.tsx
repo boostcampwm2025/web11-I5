@@ -67,7 +67,7 @@ function ReportTabs({
                   나의 답변 원문
                 </h3>
               </div>
-              {selectedAttempt.status !== "FAILED" && (
+              {selectedAttempt.answerContent && (
                 <div className="flex items-center gap-2 px-3 py-1.5">
                   <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
                   <span className="text-xs text-slate-500">
@@ -78,11 +78,15 @@ function ReportTabs({
             </div>
 
             <div className="bg-white py-6 border-y border-slate-200">
-              <p className="text-[0.9375rem] leading-relaxed text-slate-700 whitespace-pre-wrap">
-                {selectedAttempt.answerContent
-                  ? selectedAttempt.answerContent
-                  : "저장된 답변이 없습니다."}
-              </p>
+              {selectedAttempt.answerContent ? (
+                <p className="text-[0.9375rem] leading-relaxed text-slate-700 whitespace-pre-wrap">
+                  {selectedAttempt.answerContent}
+                </p>
+              ) : (
+                <p className="py-4 text-sm text-center text-slate-400">
+                  저장된 답변이 없습니다.
+                </p>
+              )}
             </div>
 
             {keywords.length > 0 && (
