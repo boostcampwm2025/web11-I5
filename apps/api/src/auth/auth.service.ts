@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../user/entities/user.entity';
 import { UserRole } from '../user/entities/user-role.enum';
@@ -35,13 +35,14 @@ export class AuthService {
    * Access Token 검증 및 페이로드 추출
    * @param token Access Token 문자열
    * @returns JWT 페이로드
+   * @throws UnauthorizedException 토큰이 유효하지 않은 경우
    */
   async verifyAccessToken(token: string): Promise<JwtPayload> {
     try {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
       return payload;
     } catch {
-      throw new Error('유효하지 않은 토큰입니다.');
+      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
     }
   }
 
@@ -53,16 +54,11 @@ export class AuthService {
    */
   async getUserIdFromRequest(authHeader: string | undefined): Promise<number> {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new Error('로그인이 필요합니다.');
+      throw new UnauthorizedException('로그인이 필요합니다.');
     }
 
     const token = authHeader.substring(7); // 'Bearer ' 제거
-
-    try {
-      const payload = await this.verifyAccessToken(token);
-      return payload.sub;
-    } catch {
-      throw new Error('유효하지 않은 토큰입니다.');
-    }
+    const payload = await this.verifyAccessToken(token);
+    return payload.sub;
   }
 }
