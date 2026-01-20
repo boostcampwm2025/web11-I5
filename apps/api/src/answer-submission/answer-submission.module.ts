@@ -14,6 +14,6 @@ import { AnswerSubmission } from './entities/answer-submission.entity';
   ],
   controllers: [AnswerSubmissionController],
   providers: [AnswerSubmissionService],
-  exports: [AnswerSubmissionService],
+  exports: [AnswerSubmissionService, TypeOrmModule],
 })
 export class AnswerSubmissionModule {}
