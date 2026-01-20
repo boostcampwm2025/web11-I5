@@ -7,7 +7,6 @@ import {
   Res,
   HttpCode,
   HttpStatus,
-  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -110,15 +109,10 @@ export class UserController {
     description: '로그인이 필요합니다',
   })
   async getCurrentUser(@Req() req: Request): Promise<User> {
-    try {
-      const userId = await this.authService.getUserIdFromRequest(
-        req.headers.authorization,
-      );
-      return this.userService.getCurrentUser(userId);
-    } catch (error) {
-      throw new UnauthorizedException(
-        error instanceof Error ? error.message : '로그인이 필요합니다.',
-      );
-    }
+    const userId = await this.authService.getUserIdFromRequest(
+      req.headers.authorization,
+    );
+
+    return this.userService.getCurrentUser(userId);
   }
 }

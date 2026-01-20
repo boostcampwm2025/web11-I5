@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -44,15 +44,10 @@ export class GraphController {
     },
   })
   async getGraph(@Req() req: Request): Promise<GraphResponseDto> {
-    try {
-      const userId = await this.authService.getUserIdFromRequest(
-        req.headers.authorization,
-      );
-      return await this.graphService.getGraphByUserId(userId);
-    } catch (error) {
-      throw new UnauthorizedException(
-        error instanceof Error ? error.message : '로그인이 필요합니다.',
-      );
-    }
+    const userId = await this.authService.getUserIdFromRequest(
+      req.headers.authorization,
+    );
+
+    return await this.graphService.getGraphByUserId(userId);
   }
 }

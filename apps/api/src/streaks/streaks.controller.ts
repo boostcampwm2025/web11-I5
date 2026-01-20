@@ -5,7 +5,6 @@ import {
   Post,
   Query,
   Req,
-  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -54,19 +53,14 @@ export class StreaksController {
     @Req() req: Request,
     @Query('year', new ParseIntPipe({ optional: true })) year?: number,
   ): Promise<GetYearlyActivityCountResponseDto> {
-    try {
-      const userId = await this.authService.getUserIdFromRequest(
-        req.headers.authorization,
-      );
-      if (!year) {
-        year = new Date().getFullYear();
-      }
-      return this.streaksService.getYearlyActivityCount(userId, year);
-    } catch (error) {
-      throw new UnauthorizedException(
-        error instanceof Error ? error.message : '로그인이 필요합니다.',
-      );
+    const userId = await this.authService.getUserIdFromRequest(
+      req.headers.authorization,
+    );
+
+    if (!year) {
+      year = new Date().getFullYear();
     }
+    return this.streaksService.getYearlyActivityCount(userId, year);
   }
 
   @Get('/sequence')
@@ -84,16 +78,11 @@ export class StreaksController {
   async getConsecutiveDayCount(
     @Req() req: Request,
   ): Promise<GetConsecutiveDayCountResponseDto> {
-    try {
-      const userId = await this.authService.getUserIdFromRequest(
-        req.headers.authorization,
-      );
-      return this.streaksService.getConsecutiveDayCount(userId);
-    } catch (error) {
-      throw new UnauthorizedException(
-        error instanceof Error ? error.message : '로그인이 필요합니다.',
-      );
-    }
+    const userId = await this.authService.getUserIdFromRequest(
+      req.headers.authorization,
+    );
+
+    return this.streaksService.getConsecutiveDayCount(userId);
   }
 
   @Post()
@@ -111,15 +100,9 @@ export class StreaksController {
   async recordDailyActivity(
     @Req() req: Request,
   ): Promise<RecordDailyActivityResponseDto> {
-    try {
-      const userId = await this.authService.getUserIdFromRequest(
-        req.headers.authorization,
-      );
-      return this.streaksService.recordDailyActivity(userId);
-    } catch (error) {
-      throw new UnauthorizedException(
-        error instanceof Error ? error.message : '로그인이 필요합니다.',
-      );
-    }
+    const userId = await this.authService.getUserIdFromRequest(
+      req.headers.authorization,
+    );
+    return this.streaksService.recordDailyActivity(userId);
   }
 }
