@@ -41,12 +41,13 @@ export async function submitAnswerAction(
     };
   }
 
-  if (response) {
-    redirect(`/reports/${questionId}?attempt=${response.id}`);
+  if (!response || typeof response.id === "undefined") {
+    return {
+      success: false,
+      message: "",
+      error: "응답에서 제출 ID를 받지 못했습니다.",
+    };
   }
 
-  return {
-    success: true,
-    message: "",
-  };
+  redirect(`/reports/${questionId}?attempt=${response.id}`);
 }

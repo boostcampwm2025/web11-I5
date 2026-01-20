@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AudioStreamService } from './audio-stream.service';
@@ -92,7 +93,7 @@ export class AudioStreamController {
     try {
       const result = await this.audioStreamService.finalizeSession(
         data.sessionId,
-        userId, // TODO: 실제 userID로 변경하기
+        userId,
       );
 
       return result;
@@ -112,13 +113,15 @@ export class AudioStreamController {
     status: 200,
     description: '업로드 상태 조회 성공',
   })
+  @UseGuards(JwtAuthGuard)
   async getUploadStatus(
+    @UserId() userId: number,
     @Param('assetId', ParseIntPipe) assetId: number,
   ): Promise<{ uploadStatus: string }> {
     const asset = await this.audioStreamService.findAudioAsset(assetId);
 
-    if (!asset) {
-      return { uploadStatus: 'not_found' };
+    if (!asset || asset.userId !== userId) {
+      throw new NotFoundException('Audio asset not found');
     }
 
     return { uploadStatus: asset.uploadStatus };
