@@ -2,32 +2,38 @@ import {
   Controller,
   Get,
   ParseIntPipe,
+  Post,
   Query,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
 import {
-  ApiCookieAuth,
   ApiOperation,
   ApiQuery,
   ApiResponse,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import type { Request } from 'express';
 import {
   GetConsecutiveDayCountResponseDto,
   GetYearlyActivityCountResponseDto,
 } from './dtos/streaks-count.dto';
+import { RecordDailyActivityResponseDto } from './dtos/streaks-reocrd.dto';
 import { StreaksService } from './streaks.service';
+import { AuthService } from '../auth/auth.service';
 
 @ApiTags('streaks')
 @Controller('streaks')
 export class StreaksController {
-  constructor(private readonly streaksService: StreaksService) {}
+  constructor(
+    private readonly streaksService: StreaksService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: '연간 학습일 수 조회' })
-  @ApiCookieAuth('userId')
+  @ApiBearerAuth('JWT-auth')
   @ApiQuery({
     name: 'year',
     required: false,
@@ -48,19 +54,24 @@ export class StreaksController {
     @Req() req: Request,
     @Query('year', new ParseIntPipe({ optional: true })) year?: number,
   ): Promise<GetYearlyActivityCountResponseDto> {
-    const userId = Number((req.cookies as { userId?: string })?.userId);
-    if (!userId) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
+    try {
+      const userId = await this.authService.getUserIdFromRequest(
+        req.headers.authorization,
+      );
+      if (!year) {
+        year = new Date().getFullYear();
+      }
+      return this.streaksService.getYearlyActivityCount(userId, year);
+    } catch (error) {
+      throw new UnauthorizedException(
+        error instanceof Error ? error.message : '로그인이 필요합니다.',
+      );
     }
-    if (!year) {
-      year = new Date().getFullYear();
-    }
-    return this.streaksService.getYearlyActivityCount(userId, year);
   }
 
   @Get('/sequence')
   @ApiOperation({ summary: '연속 학습일 수 조회' })
-  @ApiCookieAuth('userId')
+  @ApiBearerAuth('JWT-auth')
   @ApiResponse({
     status: 200,
     description: '연속 학습일 수',
@@ -73,10 +84,42 @@ export class StreaksController {
   async getConsecutiveDayCount(
     @Req() req: Request,
   ): Promise<GetConsecutiveDayCountResponseDto> {
-    const userId = Number((req.cookies as { userId?: string })?.userId);
-    if (!userId) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
+    try {
+      const userId = await this.authService.getUserIdFromRequest(
+        req.headers.authorization,
+      );
+      return this.streaksService.getConsecutiveDayCount(userId);
+    } catch (error) {
+      throw new UnauthorizedException(
+        error instanceof Error ? error.message : '로그인이 필요합니다.',
+      );
     }
-    return this.streaksService.getConsecutiveDayCount(userId);
+  }
+
+  @Post()
+  @ApiOperation({ summary: '일일 학습 활동 기록' })
+  @ApiBearerAuth('JWT-auth')
+  @ApiResponse({
+    status: 200,
+    description: '학습 활동 기록 성공',
+    type: RecordDailyActivityResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: '로그인이 필요합니다',
+  })
+  async recordDailyActivity(
+    @Req() req: Request,
+  ): Promise<RecordDailyActivityResponseDto> {
+    try {
+      const userId = await this.authService.getUserIdFromRequest(
+        req.headers.authorization,
+      );
+      return this.streaksService.recordDailyActivity(userId);
+    } catch (error) {
+      throw new UnauthorizedException(
+        error instanceof Error ? error.message : '로그인이 필요합니다.',
+      );
+    }
   }
 }
