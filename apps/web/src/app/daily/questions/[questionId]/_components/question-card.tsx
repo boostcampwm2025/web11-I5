@@ -28,13 +28,11 @@ export default function QuestionCard({
         {isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
 
-      <p className="text-gray-500 text-xs mb-3">
-        {(parentCategoryName || categoryName) && (
-          <p className="text-gray-500 text-xs mb-3">
-            {[parentCategoryName, categoryName].filter(Boolean).join(" | ")}
-          </p>
-        )}
-      </p>
+      {(parentCategoryName || categoryName) && (
+        <p className="text-gray-500 text-xs mb-3">
+          {[parentCategoryName, categoryName].filter(Boolean).join(" | ")}
+        </p>
+      )}
 
       {isVisible ? (
         <>

@@ -240,8 +240,12 @@ export class AnswerSubmissionService {
       return;
     }
 
-    // 멱등성 가드: sttStatus가 PENDING일 때만 STT 요청
-    if (submission.sttStatus !== ProcessStatus.PENDING) {
+    const updateResult = await this.answerSubmissionRepository.update(
+      { audioAssetId, sttStatus: ProcessStatus.PENDING },
+      { sttStatus: ProcessStatus.IN_PROGRESS },
+    );
+
+    if (updateResult.affected === 0) {
       this.logger.log(
         `Submission ${submission.id} sttStatus is ${submission.sttStatus}, not PENDING. Skipping STT.`,
       );
@@ -255,15 +259,15 @@ export class AnswerSubmissionService {
 
     if (!audioAsset) {
       this.logger.error(`AudioAsset not found for id: ${audioAssetId}`);
+      await this.answerSubmissionRepository.update(
+        { audioAssetId },
+        { sttStatus: ProcessStatus.PENDING },
+      );
       return;
     }
 
     // STT 요청
     try {
-      // sttStatus를 IN_PROGRESS로 변경하여 중복 요청 방지
-      submission.sttStatus = ProcessStatus.IN_PROGRESS;
-      await this.answerSubmissionRepository.save(submission);
-
       await this.sttService.requestStt(audioAsset);
       this.logger.log(
         `STT requested for audioAssetId: ${audioAssetId} after upload completed`,
@@ -275,8 +279,15 @@ export class AnswerSubmissionService {
       );
 
       // STT 요청 실패 시 상태 업데이트
-      submission.sttStatus = ProcessStatus.FAILED;
-      await this.answerSubmissionRepository.save(submission);
+      try {
+        submission.sttStatus = ProcessStatus.FAILED;
+        await this.answerSubmissionRepository.save(submission);
+      } catch (updateError) {
+        this.logger.error(
+          `Failed to update submission status after STT failure for audioAssetId: ${audioAssetId}`,
+          updateError,
+        );
+      }
     }
   }
 }
