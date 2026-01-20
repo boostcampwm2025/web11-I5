@@ -12,6 +12,7 @@ export interface FeedbackResult {
     completeness: number;
     application: number;
   };
+  extractedKeywords: string[];
 }
 
 export interface BaseReportDetail {
