@@ -61,7 +61,9 @@ function RecordingSection({
     <Tabs defaultValue="voice" className="w-full">
       <TabsList className="w-full justify-start">
         <TabsTrigger value="voice">음성 답변하기</TabsTrigger>
-        <TabsTrigger value="text">텍스트 답변하기</TabsTrigger>
+        <TabsTrigger value="text" disabled>
+          텍스트 답변하기
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="voice">
         <div className="bg-white border rounded-xl h-100 flex flex-col items-center justify-center">
@@ -100,7 +102,7 @@ function RecordingSection({
                   <div>
                     <h3 className="text-2xl font-bold mb-3">녹음 완료</h3>
                     <p className="text-muted-foreground">
-                      답변을 확인하고 제출하세요!
+                      답변을 제출하고 채점 결과를 확인해보세요
                     </p>
                   </div>
                 );
