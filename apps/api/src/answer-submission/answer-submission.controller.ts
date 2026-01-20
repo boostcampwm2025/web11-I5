@@ -12,7 +12,7 @@ import {
 import {
   ApiTags,
   ApiOperation,
-  ApiCookieAuth,
+  ApiBearerAuth,
   ApiResponse,
   ApiBadRequestResponse,
   ApiNotFoundResponse,
@@ -26,12 +26,14 @@ import { AnswerSubmissionService } from './answer-submission.service';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
+import { AuthService } from '../auth/auth.service';
 
 @ApiTags('answer-submissions')
 @Controller('answer-submissions')
 export class AnswerSubmissionController {
   constructor(
     private readonly answerSubmissionService: AnswerSubmissionService,
+    private readonly authService: AuthService,
   ) {}
 
   @Post()
@@ -40,7 +42,7 @@ export class AnswerSubmissionController {
     description:
       '오디오 에셋 ID와 질문 ID를 받아 답변을 제출합니다. 답변 제출 레코드를 생성하고 STT 처리를 요청합니다.',
   })
-  @ApiCookieAuth('userId')
+  @ApiBearerAuth('JWT-auth')
   @ApiResponse({
     status: 201,
     description: '답변이 성공적으로 제출됨',
@@ -53,11 +55,26 @@ export class AnswerSubmissionController {
   @ApiNotFoundResponse({
     description: '오디오 에셋 또는 질문을 찾을 수 없음',
   })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다',
+  })
   async submitAnswer(
     @Req() req: Request,
     @Body() submitAnswerDto: SubmitAnswerDto,
   ): Promise<AnswerSubmission> {
-    return await this.answerSubmissionService.submitAnswer(1, submitAnswerDto);
+    try {
+      const userId = await this.authService.getUserIdFromRequest(
+        req.headers.authorization,
+      );
+      return await this.answerSubmissionService.submitAnswer(
+        userId,
+        submitAnswerDto,
+      );
+    } catch (error) {
+      throw new UnauthorizedException(
+        error instanceof Error ? error.message : '로그인이 필요합니다.',
+      );
+    }
   }
 
   @Get()
@@ -65,6 +82,7 @@ export class AnswerSubmissionController {
     summary: '문제별 제출 기록 조회',
     description: '특정 문제에 대한 사용자의 제출 기록을 최신순으로 조회합니다.',
   })
+  @ApiBearerAuth('JWT-auth')
   @ApiQuery({
     name: 'questionId',
     type: 'number',
@@ -80,22 +98,24 @@ export class AnswerSubmissionController {
     description: '로그인 필요',
   })
   async getDailySubmissionListByQuestionId(
+    @Req() req: Request,
     @Query('questionId', ParseIntPipe) questionId: number,
   ) {
-    // TODO: userId 실제 값 가지고 오도록 수정 필요
-    const userId = 1;
-
-    if (!userId || isNaN(userId)) {
-      throw new UnauthorizedException('로그인이 필요한 서비스입니다.');
-    }
-
-    const result =
-      await this.answerSubmissionService.getHistoryListByQuestionId(
-        userId,
-        questionId,
+    try {
+      const userId = await this.authService.getUserIdFromRequest(
+        req.headers.authorization,
       );
-
-    return result;
+      const result =
+        await this.answerSubmissionService.getHistoryListByQuestionId(
+          userId,
+          questionId,
+        );
+      return result;
+    } catch (error) {
+      throw new UnauthorizedException(
+        error instanceof Error ? error.message : '로그인이 필요합니다.',
+      );
+    }
   }
 
   @Get(':id')
@@ -104,6 +124,7 @@ export class AnswerSubmissionController {
     description:
       '제출 ID(submissionId)를 통해 사용자가 작성한 답안 내용을 조회합니다.',
   })
+  @ApiBearerAuth('JWT-auth')
   @ApiParam({
     name: 'id',
     description: '조회할 제출 ID',
@@ -118,8 +139,22 @@ export class AnswerSubmissionController {
     status: 404,
     description: '해당 ID의 제출 내역을 찾을 수 없습니다.',
   })
-  async getSubmissionById(@Param('id', ParseIntPipe) id: number) {
-    const userId = 1; // TODO: 실제 유저 아이디 필요
-    return await this.answerSubmissionService.getSubmissionById(id, userId);
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다',
+  })
+  async getSubmissionById(
+    @Req() req: Request,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      const userId = await this.authService.getUserIdFromRequest(
+        req.headers.authorization,
+      );
+      return await this.answerSubmissionService.getSubmissionById(id, userId);
+    } catch (error) {
+      throw new UnauthorizedException(
+        error instanceof Error ? error.message : '로그인이 필요합니다.',
+      );
+    }
   }
 }

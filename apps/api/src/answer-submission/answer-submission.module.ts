@@ -7,12 +7,14 @@ import { SttModule } from '../stt/stt.module';
 import { AnswerSubmissionController } from './answer-submission.controller';
 import { AnswerSubmissionService } from './answer-submission.service';
 import { AnswerSubmission } from './entities/answer-submission.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AnswerSubmission, AudioAsset, Question]),
     forwardRef(() => SttModule),
     StreaksModule,
+    AuthModule,
   ],
   controllers: [AnswerSubmissionController],
   providers: [AnswerSubmissionService],
