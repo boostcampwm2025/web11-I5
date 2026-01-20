@@ -106,6 +106,14 @@ export class AnswerSubmissionService {
     });
 
     await this.streaksService.recordDailyActivity(userId);
+    try {
+      await this.streaksService.recordDailyActivity(userId);
+    } catch (error) {
+      this.logger.error(
+        `Failed to record daily activity for userId: ${userId}`,
+        error,
+      );
+    }
 
     return savedSubmission;
   }

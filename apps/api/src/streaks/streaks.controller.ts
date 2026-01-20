@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   ParseIntPipe,
-  Post,
   Query,
   Req,
   UnauthorizedException,
@@ -19,7 +18,6 @@ import {
   GetConsecutiveDayCountResponseDto,
   GetYearlyActivityCountResponseDto,
 } from './dtos/streaks-count.dto';
-import { RecordDailyActivityResponseDto } from './dtos/streaks-reocrd.dto';
 import { StreaksService } from './streaks.service';
 
 @ApiTags('streaks')
@@ -80,28 +78,5 @@ export class StreaksController {
       throw new UnauthorizedException('로그인이 필요합니다.');
     }
     return this.streaksService.getConsecutiveDayCount(userId);
-  }
-
-  @Post()
-  @ApiOperation({ summary: '일일 학습 활동 기록' })
-  @ApiCookieAuth('userId')
-  @ApiResponse({
-    status: 200,
-    description: '학습 활동 기록 성공',
-    type: RecordDailyActivityResponseDto,
-  })
-  @ApiResponse({
-    status: 401,
-    description: '로그인이 필요합니다',
-  })
-  async recordDailyActivity(
-    @Req() req: Request,
-  ): Promise<RecordDailyActivityResponseDto> {
-    const userId = Number((req.cookies as { userId?: string })?.userId);
-    if (!userId) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
-    }
-
-    return this.streaksService.recordDailyActivity(userId);
   }
 }
