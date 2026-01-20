@@ -6,6 +6,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AudioStreamService } from './audio-stream.service';
@@ -17,6 +18,8 @@ import {
   AudioFinalizeRequestDto,
   AudioFinalizeResponseDto,
 } from './dtos/audio-finalize.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { UserId } from 'src/auth/decorators/user-id.decorator';
 
 /**
  * AudioStreamController
@@ -41,7 +44,9 @@ export class AudioStreamController {
     description: '세션 시작 성공',
     type: AudioStartResponseDto,
   })
+  @UseGuards(JwtAuthGuard)
   async start(
+    @UserId() userId: number,
     @Body() data: AudioStartRequestDto,
   ): Promise<AudioStartResponseDto> {
     this.logger.log(
@@ -50,6 +55,7 @@ export class AudioStreamController {
 
     try {
       const sessionId = await this.audioStreamService.startSession(
+        userId,
         data.codec,
         data.sampleRate,
         data.channels,
@@ -74,15 +80,19 @@ export class AudioStreamController {
     description: '세션 종료 성공',
     type: AudioFinalizeResponseDto,
   })
+  @UseGuards(JwtAuthGuard)
   async finalize(
+    @UserId() userId: number,
     @Body() data: AudioFinalizeRequestDto,
   ): Promise<AudioFinalizeResponseDto> {
-    this.logger.log(`POST /audio-stream/finalize: session=${data.sessionId}`);
+    this.logger.log(
+      `POST /audio-stream/finalize: session=${data.sessionId} userId=${userId}`,
+    );
 
     try {
       const result = await this.audioStreamService.finalizeSession(
         data.sessionId,
-        1, // TODO: 실제 userID로 변경하기
+        userId, // TODO: 실제 userID로 변경하기
       );
 
       return result;

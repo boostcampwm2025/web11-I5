@@ -16,6 +16,7 @@ import { AudioUploadCompletedEvent } from './events/audio-upload-completed.event
  * MVP: 서버 재시작 시 세션 정보 손실됨 (RDB/Redis 미사용)
  */
 interface AudioSession {
+  userId: number;
   sessionId: string;
   status: AudioSessionStatus;
   lastSeq: number;
@@ -56,6 +57,7 @@ export class AudioStreamService {
    * 새로운 세션을 생성하고 로컬 디렉토리 및 writeStream을 준비한다.
    */
   async startSession(
+    userId: number,
     codec: string,
     sampleRate: number,
     channels: number,
@@ -71,6 +73,7 @@ export class AudioStreamService {
     const writeStream = createWriteStream(filePath, { flags: 'a' });
 
     const session: AudioSession = {
+      userId,
       sessionId,
       status: AudioSessionStatus.OPEN,
       lastSeq: 0,
