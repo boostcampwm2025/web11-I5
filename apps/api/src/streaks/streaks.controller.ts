@@ -18,7 +18,7 @@ import {
   GetConsecutiveDayCountResponseDto,
   GetYearlyActivityCountResponseDto,
 } from './dtos/streaks-count.dto';
-import { RecordDailyActivityResponseDto } from './dtos/streaks-reocrd.dto';
+import { RecordDailyActivityResponseDto } from './dtos/streaks-record.dto';
 import { StreaksService } from './streaks.service';
 import { AuthService } from '../auth/auth.service';
 
