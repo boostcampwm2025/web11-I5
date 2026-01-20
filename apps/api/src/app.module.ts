@@ -28,7 +28,6 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
     UserModule,
     AnswerEvaluationModule,
-    AnswerSubmissionModule,
     AudioStreamModule,
     CategoryModule,
     QuestionModule,
