@@ -15,20 +15,24 @@ export async function apiClient(
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...options.headers,
-  };
-
-  // Access Token이 있으면 Authorization Bearer 헤더 추가
-  if (accessToken) {
-    (headers as Record<string, string>)["Authorization"] =
-      `Bearer ${accessToken}`;
+  const headers = new Headers(options.headers);
+  if (
+    !headers.has("Content-Type") &&
+    options.body &&
+    !(options.body instanceof FormData)
+  ) {
+    headers.set("Content-Type", "application/json");
   }
 
   const url = endpoint.startsWith("http")
     ? endpoint
     : `${API_BASE_URL}${endpoint}`;
+
+  const apiOrigins = new URL(API_BASE_URL).origin;
+  const targetOrigin = new URL(url).origin;
+  if (accessToken && targetOrigin !== apiOrigins) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
+  }
 
   // 디버깅용 로그 (개발 환경에서만)
   if (process.env.NODE_ENV === "development") {
