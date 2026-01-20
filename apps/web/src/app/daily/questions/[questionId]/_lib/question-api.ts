@@ -1,25 +1,15 @@
+"use server";
+
 import { Question } from "@/app/daily/questions/_types/types";
+import { apiGet } from "@/lib/api-client";
 
 export async function getQuestion(
   questionId: string,
 ): Promise<Question | null> {
-  const apiUrl = process.env.API_URL;
-
   try {
-    const response = await fetch(`${apiUrl}/questions/${questionId}`, {
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error(`Failed to fetch question: ${response.statusText}`);
-    }
-
-    return await response.json();
+    return await apiGet<Question>(`/api/questions/${questionId}`);
   } catch (error) {
     console.error("Error fetching question:", error);
-    throw error;
+    return null;
   }
 }
