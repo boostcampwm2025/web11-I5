@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useStarRating } from "./_hooks/use-star-rating";
 
 interface StarRatingProps {
   value: number;
@@ -12,56 +13,14 @@ interface StarRatingProps {
   max?: number;
 }
 
-export function StarRating({
-  value,
-  onChange,
-  readOnly = false,
-  className,
-  max = 5,
-}: StarRatingProps) {
-  const [hoverValue, setHoverValue] = React.useState<number | null>(null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = React.useState(false);
+export function StarRating(props: StarRatingProps) {
+  const { max = 5, readOnly = false, className } = props;
 
-  const displayValue = hoverValue !== null ? hoverValue : value;
-
-  const calculateRating = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return 0;
-
-    const { left, width } = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - left;
-
-    let percent = x / width;
-    if (percent < 0) percent = 0;
-    if (percent > 1) percent = 1;
-
-    return Math.round(percent * max * 10) / 10;
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (readOnly) return;
-    const rating = calculateRating(e);
-    setHoverValue(rating);
-    if (isDragging && onChange) onChange(rating);
-  };
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (readOnly) return;
-    setIsDragging(true);
-    const rating = calculateRating(e);
-    setHoverValue(rating);
-    onChange?.(rating);
-  };
-
-  const handlePointerUp = () => {
-    setIsDragging(false);
-    if (hoverValue !== null && onChange) onChange(hoverValue);
-  };
-
-  const handlePointerLeave = () => {
-    setIsDragging(false);
-    setHoverValue(null);
-  };
+  const { containerRef, displayValue, eventHandlers } = useStarRating({
+    ...props,
+    max,
+    readOnly,
+  });
 
   const fillWidthPercent = (displayValue / max) * 100;
 
@@ -74,10 +33,7 @@ export function StarRating({
           "relative cursor-pointer touch-none select-none",
           readOnly && "cursor-default",
         )}
-        onPointerMove={handlePointerMove}
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerLeave}
+        {...eventHandlers}
       >
         {/* Layer 1: 배경 (회색 별) */}
         <div className="absolute inset-0 flex justify-between z-0">
