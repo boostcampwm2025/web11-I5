@@ -119,7 +119,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
   describe('오디오 스트리밍 시작', () => {
     it('오디오 스트리밍 시작 시 세션이 생긴다', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       expect(sessionId).toBe(FIXED_SESSION_ID);
       expect(mkdirSpy).toHaveBeenCalledTimes(1);
@@ -130,7 +130,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
     });
 
     it('오디오 스트리밍 시작 시 새로 생긴 세션의 상태는 OPEN이다.', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       const sessions = (service as any).sessions as Map<string, any>;
       const session = sessions.get(sessionId);
@@ -145,7 +145,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
   describe('오디오 청크 저장', () => {
     it('열린 스트리밍 세션에 오디오 청크 저장을 할 수 있다.', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       const buf = Buffer.from([1, 2, 3]);
       await service.saveChunk(sessionId, 1, buf);
@@ -161,7 +161,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
     });
 
     it('닫힌 스트리밍 세션에 오디오 청크 저장할 시 에러가 발생한다.', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       const sessions = (service as any).sessions as Map<string, any>;
       sessions.get(sessionId).status = AudioSessionStatus.FINALIZED;
@@ -174,7 +174,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
     });
 
     it('오디오 청크가 올바른 순서에 맞게 저장된다.', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       await service.saveChunk(sessionId, 1, Buffer.from([1]));
       await service.saveChunk(sessionId, 2, Buffer.from([2]));
@@ -187,7 +187,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
     });
 
     it('오디오 청크를 잘못된 순서로 저장하려고 할 시 (현재 구현 기준) 무시된다.', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       await service.saveChunk(sessionId, 2, Buffer.from([2])); // OK
       await service.saveChunk(sessionId, 2, Buffer.from([9])); // duplicate -> ignore
@@ -202,7 +202,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
   describe('오디오 스트리밍 종료', () => {
     it('오디오 스트리밍 세션 종료 시 세션이 제거된다.', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       jest
         .spyOn(service as any, 'uploadToStorageAsync')
@@ -215,7 +215,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
     });
 
     it('OPEN 상태가 아닌 스트리밍 세션을 종료하려고 하면 에러가 발생한다.', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       const sessions = (service as any).sessions as Map<string, any>;
       sessions.get(sessionId).status = AudioSessionStatus.FINALIZED;
@@ -226,7 +226,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
     });
 
     it('오디오 스트리밍 세션 종료 시 오디오 에셋이 생성된다.', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       jest
         .spyOn(service as any, 'uploadToStorageAsync')
@@ -259,7 +259,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
     });
 
     it('오디오 스트리밍 세션 종료 시 Object Storage 업로드가 시작된다.', async () => {
-      const sessionId = await service.startSession('pcm', 16000, 1);
+      const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       const uploadSpy = jest
         .spyOn(service as any, 'uploadToStorageAsync')
