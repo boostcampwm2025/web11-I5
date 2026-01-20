@@ -10,11 +10,21 @@ import {
   startAudioSession,
 } from "../_lib/audio-session-api";
 
-function useAudioStreamSession() {
+interface UseAudioStreamSessionOptions {
+  maxDurationSeconds?: number;
+  onMaxDurationReached?: () => void;
+}
+
+function useAudioStreamSession(options: UseAudioStreamSessionOptions = {}) {
+  const { maxDurationSeconds = 300, onMaxDurationReached } = options;
+
   const [isRecording, setIsRecording] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [sessionId, setSessionId] = React.useState<string | null>(null);
   const [assetId, setAssetId] = React.useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
+
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const streamerRef = React.useRef<AudioStreamerHandle | null>(null);
   const lastUpdateTimeRef = React.useRef<number>(0);
@@ -46,6 +56,34 @@ function useAudioStreamSession() {
       streamerRef.current = null;
     };
   }, []);
+
+  // 녹음 타이머
+  React.useEffect(() => {
+    if (isRecording) {
+      setElapsedSeconds(0);
+      timerRef.current = setInterval(() => {
+        setElapsedSeconds((prev) => {
+          const next = prev + 1;
+          if (next >= maxDurationSeconds) {
+            onMaxDurationReached?.();
+          }
+          return next;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isRecording, maxDurationSeconds, onMaxDurationReached]);
 
   // sessionId 변경 시 onAudioChunk 콜백 업데이트
   React.useEffect(() => {
@@ -171,6 +209,9 @@ function useAudioStreamSession() {
 
     isLoading,
     isRecording,
+
+    elapsedSeconds,
+    maxDurationSeconds,
 
     startRecording,
     stopRecording,
