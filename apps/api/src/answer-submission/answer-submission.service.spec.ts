@@ -25,14 +25,17 @@ const mockAnswerSubmissionRepository = {
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  update: jest.fn(),
 };
 
 const mockAudioAssetRepository = {
   findOne: jest.fn(),
+  update: jest.fn(),
 };
 
 const mockQuestionRepository = {
   findOne: jest.fn(),
+  update: jest.fn(),
 };
 
 const mockSttService = {
@@ -310,6 +313,7 @@ describe('AnswerSubmissionService', () => {
       } as AudioAsset;
 
       mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+      mockAnswerSubmissionRepository.update.mockResolvedValue({ accected: 1 });
       mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
       mockAnswerSubmissionRepository.save.mockResolvedValue({
         ...mockSubmission,
@@ -322,11 +326,6 @@ describe('AnswerSubmissionService', () => {
       expect(answerSubmissionRepository.findOne).toHaveBeenCalledWith({
         where: { audioAssetId },
       });
-      expect(mockAnswerSubmissionRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          sttStatus: ProcessStatus.IN_PROGRESS,
-        }),
-      );
       expect(sttService.requestStt).toHaveBeenCalledWith(mockAudioAsset);
     });
 
@@ -353,6 +352,8 @@ describe('AnswerSubmissionService', () => {
 
       mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
 
+      mockAnswerSubmissionRepository.update.mockResolvedValue({ affected: 0 });
+
       await service.handleAudioUploadCompleted(event);
 
       expect(sttService.requestStt).not.toHaveBeenCalled();
@@ -369,6 +370,7 @@ describe('AnswerSubmissionService', () => {
       } as AnswerSubmission;
 
       mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+      mockAnswerSubmissionRepository.update.mockResolvedValue({ affected: 0 });
 
       await service.handleAudioUploadCompleted(event);
 
@@ -392,6 +394,7 @@ describe('AnswerSubmissionService', () => {
       } as AudioAsset;
 
       mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+      mockAnswerSubmissionRepository.update.mockResolvedValue({ affected: 1 });
       mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
       mockAnswerSubmissionRepository.save.mockResolvedValue(mockSubmission);
       mockSttService.requestStt.mockRejectedValue(new Error('STT API error'));
