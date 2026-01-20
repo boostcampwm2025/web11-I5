@@ -17,6 +17,12 @@ class UserInfoDto {
 
 export class LoginResponseDto {
   @ApiProperty({
+    description: 'Access Token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  accessToken: string;
+
+  @ApiProperty({
     description: '로그인한 사용자 정보',
     type: UserInfoDto,
   })
