@@ -1,6 +1,6 @@
 import * as React from "react";
 import { GRAPH_NUMBER_CONSTANT } from "../../_constants/graph-view-constant";
-import { GraphNode, NodePosition } from "../../types/graph-view";
+import { GraphNode, NodePosition } from "../../_types/graph-view";
 
 export interface GraphInteractionCallbacks {
   getNodeValues: () => IterableIterator<GraphNode & NodePosition>;
@@ -30,16 +30,12 @@ function useGraphInteraction(
   const scale = React.useRef(initialScale);
 
   const hoveredNodeId = React.useRef<number | null>(null);
-  const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // interaction 진행중인지 상태 확인 (드래그, 휠 등)
   const [activeInteraction, setActiveInteraction] = React.useState(false);
   // wheelTimeoutRef: 휠 이벤트 종료를 감지하기 위한 debounce 타이머
-  const wheelTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const wheelTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // isDraggingCanvas: 캔버스를 드래그중인지 여부
   const [isDraggingCanvas, setIsDraggingCanvas] = React.useState(false);
@@ -67,21 +63,18 @@ function useGraphInteraction(
   );
 
   // 캔버스 내의 좌표에서 해당하는 노드가 있는지 확인하고, 있으면 해당 node 리턴
-  const findNodeAtPosition = React.useCallback(
-    (graphX: number, graphY: number) => {
-      // 모든 노드를 순회하며 클릭된 위치에 노드가 있는지 확인
-      for (const node of callbacksRef.current.getNodeValues()) {
-        const dx = graphX - node.x;
-        const dy = graphY - node.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        //노드 반지름 + 5해서 노드 보다 조금 넓은 범위 클릭하면 선택할 수 있게
-        if (distance <= GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 5) {
-          return node;
-        }
+  const findNodeAtPosition = React.useCallback((graphX: number, graphY: number) => {
+    // 모든 노드를 순회하며 클릭된 위치에 노드가 있는지 확인
+    for (const node of callbacksRef.current.getNodeValues()) {
+      const dx = graphX - node.x;
+      const dy = graphY - node.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      //노드 반지름 + 5해서 노드 보다 조금 넓은 범위 클릭하면 선택할 수 있게
+      if (distance <= GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 5) {
+        return node;
       }
-    },
-    [],
-  );
+    }
+  }, []);
 
   // 클릭 이벤트
   // 기대동작 1. 노드 클릭 x -> dragStartOffset에 현재 마우스 좌표 값 저장 & 드래그 상태 저장
@@ -133,21 +126,11 @@ function useGraphInteraction(
           setActiveInteraction(true);
           // 짧은 딜레이 후 interaction 상태 해제
           if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-          hoverTimeoutRef.current = setTimeout(
-            () => setActiveInteraction(false),
-            50,
-          );
+          hoverTimeoutRef.current = setTimeout(() => setActiveInteraction(false), 50);
         }
       }
     },
-    [
-      convertCursorToCanvasCoords,
-      dragStartOffset,
-      draggedNodeId,
-      isDraggingCanvas,
-      offset,
-      findNodeAtPosition,
-    ],
+    [convertCursorToCanvasCoords, dragStartOffset, draggedNodeId, isDraggingCanvas, offset, findNodeAtPosition],
   );
 
   // 마우스 클릭 해제 이벤트
@@ -167,8 +150,7 @@ function useGraphInteraction(
       // 클릭 이벤트 처리 (드래그 없이 같은 위치에서 마우스 업)
       if (dragStartOffset.x === e.clientX && dragStartOffset.y === e.clientY) {
         if (clickEventDisabled || !clickedNodeId) return;
-        const questionId =
-          callbacksRef.current.getNodeQuestionId(clickedNodeId);
+        const questionId = callbacksRef.current.getNodeQuestionId(clickedNodeId);
         if (!questionId) return;
         window.open(`/reports/${questionId}`);
       }

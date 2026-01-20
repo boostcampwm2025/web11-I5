@@ -64,10 +64,10 @@ export class StreaksService {
     return { sequencyDailyCount: count };
   }
 
-  async recordDailyActivity(
-    userId: number,
-    submittedAt: Date,
-  ): Promise<{ success: boolean }> {
+  async recordDailyActivity(userId: number): Promise<{ success: boolean }> {
+    // 한국 시간으로 submittedAt 구하기 -> UTC + 9시간
+    const utcDate = new Date();
+    const submittedAt = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
     const checkDay = await this.streaksRepository.findOneBy({
       userId: userId,
       activityDate: submittedAt,

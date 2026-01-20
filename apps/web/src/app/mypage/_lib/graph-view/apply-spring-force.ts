@@ -2,7 +2,7 @@ import {
   GRAPH_NUMBER_CONSTANT,
   PHISICS_CONSTANT,
 } from "../../_constants/graph-view-constant";
-import { GraphEdge, NodeMapType } from "../../types/graph-view";
+import { GraphEdge, NodeMapType } from "../../_types/graph-view";
 
 // 당기는 힘 => F = strength * (currentDistance - targetDistance)
 function applySpringForce(edges: GraphEdge[], nodes: NodeMapType) {
