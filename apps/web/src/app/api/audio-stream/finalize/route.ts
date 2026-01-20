@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const { sessionId } = body;
 
     // NestJS API 호출 (Bearer 토큰 자동 포함)
-    const response = await apiClient("/api/audio-stream/finalize", {
+    const response = await apiClient("/audio-stream/finalize", {
       method: "POST",
       body: JSON.stringify({
         sessionId,
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error in /api/audio-stream/finalize:", error);
+    console.error("Error in /audio-stream/finalize:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

@@ -8,7 +8,7 @@ async function fetchSubmissionsByQuestionId(
 ): Promise<SubmissionDTO[]> {
   try {
     return await apiGet<SubmissionDTO[]>(
-      `/api/answer-submissions?questionId=${questionId}`,
+      `/answer-submissions?questionId=${questionId}`,
     );
   } catch (error) {
     console.error(error);

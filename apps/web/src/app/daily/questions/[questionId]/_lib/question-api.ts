@@ -7,7 +7,7 @@ export async function getQuestion(
   questionId: string,
 ): Promise<Question | null> {
   try {
-    return await apiGet<Question>(`/api/questions/${questionId}`);
+    return await apiGet<Question>(`/questions/${questionId}`);
   } catch (error) {
     console.error("Error fetching question:", error);
     return null;
