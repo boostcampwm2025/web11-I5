@@ -5,15 +5,15 @@ import type { User } from "../_utils/auth";
 
 interface LoginFormProps {
   testUsers: User[];
-  loginAction: (nickname: string, password?: string) => Promise<void>;
+  loginAction: (email: string, password?: string) => Promise<void>;
 }
 
 function LoginForm({ testUsers, loginAction }: LoginFormProps) {
   const router = useRouter();
 
-  const handleLogin = async (nickname: string) => {
+  const handleLogin = async (email: string) => {
     try {
-      await loginAction(nickname);
+      await loginAction(email);
       router.push("/");
       router.refresh(); // 서버 컴포넌트 재렌더링을 위해
     } catch {
@@ -26,7 +26,7 @@ function LoginForm({ testUsers, loginAction }: LoginFormProps) {
       {testUsers.map((testUser) => (
         <button
           key={testUser.id}
-          onClick={() => handleLogin(testUser.nickname ?? "")}
+          onClick={() => handleLogin(testUser.email ?? "")}
           className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-3 text-left transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
         >
           <div className="font-medium text-black dark:text-zinc-50">
