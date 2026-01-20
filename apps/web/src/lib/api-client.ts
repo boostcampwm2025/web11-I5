@@ -5,6 +5,33 @@ import { cookies } from "next/headers";
 const API_BASE_URL = process.env.API_URL || "http://localhost:8000";
 
 /**
+ * API 에러 클래스
+ * status: HTTP 상태 코드
+ * statusText: HTTP 상태 텍스트
+ * body: 응답 본문 (JSON 파싱 가능한 경우)
+ */
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly statusText: string,
+    public readonly body?: unknown,
+  ) {
+    super(`API 요청 실패: ${status} ${statusText}`);
+    this.name = "ApiError";
+  }
+}
+
+async function handleErrorResponse(response: Response): Promise<never> {
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    // JSON 파싱 실패 시 body는 undefined
+  }
+  throw new ApiError(response.status, response.statusText, body);
+}
+
+/**
  * BFF 공통 API 클라이언트
  * 쿠키에서 Access Token을 읽어 Authorization Bearer 헤더로 변환
  */
@@ -56,7 +83,7 @@ export async function apiGet<T>(endpoint: string): Promise<T> {
   const response = await apiClient(endpoint, { method: "GET" });
 
   if (!response.ok) {
-    throw new Error(`API 요청 실패: ${response.statusText}`);
+    await handleErrorResponse(response);
   }
 
   return response.json();
@@ -72,7 +99,7 @@ export async function apiPost<T>(endpoint: string, body?: unknown): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`API 요청 실패: ${response.statusText}`);
+    await handleErrorResponse(response);
   }
 
   return response.json();
@@ -88,7 +115,7 @@ export async function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`API 요청 실패: ${response.statusText}`);
+    await handleErrorResponse(response);
   }
 
   return response.json();
@@ -101,7 +128,7 @@ export async function apiDelete<T>(endpoint: string): Promise<T> {
   const response = await apiClient(endpoint, { method: "DELETE" });
 
   if (!response.ok) {
-    throw new Error(`API 요청 실패: ${response.statusText}`);
+    await handleErrorResponse(response);
   }
 
   return response.json();
