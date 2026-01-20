@@ -23,7 +23,7 @@ function ReportHeader({
       <h2 className="text-xl font-bold mb-3">{title}</h2>
       <p className="text-gray-600 leading-relaxed mb-6">{description}</p>
       <hr className="border-gray-200 mb-6" />
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between">
         <div className="bg-teal-50 border border-teal-100 text-teal-600 px-4 py-2.5 rounded-xl text-sm font-bold">
           나의 최고 점수 : {highestScore ?? 0}점
         </div>
