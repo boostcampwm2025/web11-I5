@@ -313,7 +313,7 @@ describe('AnswerSubmissionService', () => {
       } as AudioAsset;
 
       mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
-      mockAnswerSubmissionRepository.update.mockResolvedValue({ accected: 1 });
+      mockAnswerSubmissionRepository.update.mockResolvedValue({ affected: 1 });
       mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
       mockAnswerSubmissionRepository.save.mockResolvedValue({
         ...mockSubmission,
@@ -420,6 +420,7 @@ describe('AnswerSubmissionService', () => {
       } as AnswerSubmission;
 
       mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+      mockAnswerSubmissionRepository.update.mockResolvedValue({ affected: 1 });
       mockAudioAssetRepository.findOne.mockResolvedValue(null);
 
       await service.handleAudioUploadCompleted(event);
