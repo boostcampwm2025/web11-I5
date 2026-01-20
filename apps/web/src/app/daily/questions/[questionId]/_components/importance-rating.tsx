@@ -4,6 +4,10 @@ import * as React from "react";
 import { Button } from "@/components/button/button";
 import { StarRating } from "@/components/star/star-rating";
 import { cn } from "@/lib/cn";
+import {
+  updateImportanceAction,
+  type ActionState,
+} from "../_lib/submit-importance-action";
 
 interface ImportanceRatingProps {
   open?: boolean;
@@ -11,44 +15,33 @@ interface ImportanceRatingProps {
   onSuccess?: () => void;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 function ImportanceRating({
   open,
   questionId,
   onSuccess,
 }: ImportanceRatingProps) {
   const [score, setScore] = React.useState(0);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const [state, formAction, isPending] = React.useActionState<
+    ActionState | null,
+    { questionId: number; score: number }
+  >(updateImportanceAction, null);
+
+  React.useEffect(() => {
+    if (!state) return;
+
+    if (state.success) {
+      alert(state.message);
+      if (onSuccess) onSuccess();
+    } else {
+      alert(state.message);
+    }
+  }, [state, onSuccess]);
+
   if (!open) return null;
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      const response = await fetch(`${API_URL}/answer-submissions/importance`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          questionId: questionId,
-          selfImportanceRating: score,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("중요도 업데이트에 실패했습니다.");
-      }
-
-      // 성공 시 처리
-      if (onSuccess) onSuccess();
-      alert("평가가 기록되었습니다.");
-    } catch (error) {
-      console.error(error);
-      alert("오류가 발생했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSubmit = () => {
+    formAction({ questionId, score });
   };
 
   return (
@@ -69,7 +62,7 @@ function ImportanceRating({
 
         <Button
           onClick={handleSubmit}
-          disabled={isSubmitting || score === 0}
+          disabled={isPending || score === 0}
           size="lg"
           className={cn(
             "w-full rounded-xl text-base font-semibold transition-all duration-200",
@@ -78,7 +71,7 @@ function ImportanceRating({
               : "bg-zinc-100 text-zinc-400 hover:bg-zinc-100 cursor-not-allowed",
           )}
         >
-          {isSubmitting ? "분석 중..." : "평가 제출하기"}
+          {isPending ? "분석 중..." : "평가 제출하기"}
         </Button>
       </div>
     </div>
