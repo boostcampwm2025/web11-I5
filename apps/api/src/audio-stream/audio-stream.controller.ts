@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Logger, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Logger,
+  Get,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AudioStreamService } from './audio-stream.service';
 import {
@@ -95,9 +103,9 @@ export class AudioStreamController {
     description: '업로드 상태 조회 성공',
   })
   async getUploadStatus(
-    @Param('assetId') assetId: string,
+    @Param('assetId', ParseIntPipe) assetId: number,
   ): Promise<{ uploadStatus: string }> {
-    const asset = await this.audioStreamService.findAudioAsset(Number(assetId));
+    const asset = await this.audioStreamService.findAudioAsset(assetId);
 
     if (!asset) {
       return { uploadStatus: 'not_found' };
