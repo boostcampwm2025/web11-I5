@@ -30,7 +30,7 @@ function MetricItem({ label, score, max, reason, value }: MetricItemProps) {
 
         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full transition-all duration-1000 ease-out bg-slate-600"
+            className="h-full rounded-full transition-all duration-1000 ease-out bg-teal-400"
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -61,7 +61,7 @@ function MetricItem({ label, score, max, reason, value }: MetricItemProps) {
 
             <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full transition-all duration-1000 ease-out bg-slate-600"
+                className="h-full rounded-full transition-all duration-1000 ease-out bg-teal-400"
                 style={{ width: `${percentage}%` }}
               />
             </div>

@@ -70,7 +70,7 @@ function FeedbackSection({ attempt, status, data }: FeedbackSectionProps) {
           <div className="text-xs font-extrabold text-zinc-400 tracking-widest uppercase mb-1">
             TRIAL #{attempt}
           </div>
-          <h2 className="text-2xl font-extrabold text-zinc-900">분석 리포트</h2>
+          <h2 className="text-2xl font-bold text-zinc-900">분석 리포트</h2>
           <div className="text-xs text-zinc-400">{data.date} 완료</div>
         </div>
 

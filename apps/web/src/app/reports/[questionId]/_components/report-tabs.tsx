@@ -51,7 +51,7 @@ function ReportTabs({ selectedAttempt, evaluation }: ReportTabsProps) {
           <div className="p-9 bg-slate-50/30">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-[1.125rem] font-extrabold text-slate-900">
+                <h3 className="text-[1.125rem] font-bold text-slate-900">
                   나의 답변 원문
                 </h3>
               </div>
