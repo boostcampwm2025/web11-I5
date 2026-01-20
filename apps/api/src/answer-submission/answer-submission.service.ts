@@ -105,7 +105,6 @@ export class AnswerSubmissionService {
       }
     });
 
-    await this.streaksService.recordDailyActivity(userId);
     try {
       await this.streaksService.recordDailyActivity(userId);
     } catch (error) {
