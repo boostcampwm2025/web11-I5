@@ -4,20 +4,24 @@ import {
   ApiOperation,
   ApiResponse,
   ApiOkResponse,
-  ApiCookieAuth,
   ApiUnauthorizedResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { GraphService } from './graph.service';
 import { GraphResponseDto } from './dtos/graph-response.dto';
+import { AuthService } from '../auth/auth.service';
 
 @ApiTags('graph')
 @Controller('graph')
 export class GraphController {
-  constructor(private readonly graphService: GraphService) {}
+  constructor(
+    private readonly graphService: GraphService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Get()
-  @ApiCookieAuth('userId')
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: '현재 사용자의 그래프 데이터 조회',
     description:
@@ -40,11 +44,15 @@ export class GraphController {
     },
   })
   async getGraph(@Req() req: Request): Promise<GraphResponseDto> {
-    const userId = Number(req.cookies?.userId);
-    if (!userId) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
+    try {
+      const userId = await this.authService.getUserIdFromRequest(
+        req.headers.authorization,
+      );
+      return await this.graphService.getGraphByUserId(userId);
+    } catch (error) {
+      throw new UnauthorizedException(
+        error instanceof Error ? error.message : '로그인이 필요합니다.',
+      );
     }
-
-    return await this.graphService.getGraphByUserId(userId);
   }
 }
