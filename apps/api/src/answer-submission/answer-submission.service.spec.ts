@@ -5,7 +5,10 @@ import { Repository } from 'typeorm';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { AnswerSubmissionService } from './answer-submission.service';
 import { AnswerSubmission } from './entities/answer-submission.entity';
-import { AudioAsset } from '../audio-stream/entities/audio-asset.entity';
+import {
+  AudioAsset,
+  AudioUploadStatus,
+} from '../audio-stream/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttService } from '../stt/stt.service';
 import { EvaluationStatus } from '../answer-evaluation/answer-evaluation.constants';
@@ -14,6 +17,7 @@ import {
   ProcessStatus,
   InputType,
 } from './answer-submission.constants';
+import { AudioUploadCompletedEvent } from '../audio-stream/events/audio-upload-completed.event';
 
 const mockAnswerSubmissionRepository = {
   find: jest.fn(),
@@ -82,7 +86,7 @@ describe('AnswerSubmissionService', () => {
   });
 
   describe('submitAnswer', () => {
-    it('성공: 유효한 audioAssetId와 questionId로 답변 제출을 생성하고 STT를 요청해야 한다', async () => {
+    it('성공: 업로드 완료 상태면 즉시 STT를 요청해야 한다', async () => {
       const userId = 1;
       const submitAnswerDto = {
         audioAssetId: 10,
@@ -93,6 +97,7 @@ describe('AnswerSubmissionService', () => {
         id: 10,
         objectKey: 'audio/test.pcm',
         durationMs: 5000,
+        uploadStatus: AudioUploadStatus.COMPLETED,
       } as AudioAsset;
 
       const mockQuestion = {
@@ -142,11 +147,84 @@ describe('AnswerSubmissionService', () => {
         sttStatus: ProcessStatus.PENDING,
         evaluationStatus: EvaluationStatus.PENDING,
       });
-      expect(answerSubmissionRepository.save).toHaveBeenCalledWith(
-        mockCreatedSubmission,
-      );
+      // STT 요청 전 IN_PROGRESS로 변경되므로 save가 2번 호출됨
+      expect(answerSubmissionRepository.save).toHaveBeenCalledTimes(2);
       expect(sttService.requestStt).toHaveBeenCalledWith(mockAudioAsset);
       expect(result).toEqual(mockCreatedSubmission);
+    });
+
+    it('성공: 업로드 PENDING 상태면 STT를 요청하지 않고 제출만 저장해야 한다', async () => {
+      const userId = 1;
+      const submitAnswerDto = {
+        audioAssetId: 10,
+        questionId: 20,
+      };
+
+      const mockAudioAsset = {
+        id: 10,
+        objectKey: null,
+        durationMs: 5000,
+        uploadStatus: AudioUploadStatus.PENDING,
+      } as AudioAsset;
+
+      const mockQuestion = {
+        id: 20,
+        title: 'Test Question',
+      } as Question;
+
+      const mockCreatedSubmission = {
+        id: 1,
+        userId,
+        questionId: 20,
+        audioAssetId: 10,
+        quizMode: QuizMode.DAILY,
+        inputType: InputType.VOICE,
+        rawAnswer: '',
+        takenTime: 5000,
+        sttStatus: ProcessStatus.PENDING,
+        evaluationStatus: EvaluationStatus.PENDING,
+      } as AnswerSubmission;
+
+      mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
+      mockQuestionRepository.findOne.mockResolvedValue(mockQuestion);
+      mockAnswerSubmissionRepository.create.mockReturnValue(
+        mockCreatedSubmission,
+      );
+      mockAnswerSubmissionRepository.save.mockResolvedValue(
+        mockCreatedSubmission,
+      );
+
+      const result = await service.submitAnswer(userId, submitAnswerDto);
+
+      expect(answerSubmissionRepository.save).toHaveBeenCalledTimes(1);
+      expect(sttService.requestStt).not.toHaveBeenCalled();
+      expect(result.sttStatus).toBe(ProcessStatus.PENDING);
+    });
+
+    it('실패: 업로드 FAILED 상태면 BadRequestException을 발생시켜야 한다', async () => {
+      const userId = 1;
+      const submitAnswerDto = {
+        audioAssetId: 10,
+        questionId: 20,
+      };
+
+      const mockAudioAsset = {
+        id: 10,
+        objectKey: null,
+        durationMs: 5000,
+        uploadStatus: AudioUploadStatus.FAILED,
+      } as AudioAsset;
+
+      mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
+
+      await expect(
+        service.submitAnswer(userId, submitAnswerDto),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.submitAnswer(userId, submitAnswerDto),
+      ).rejects.toThrow(
+        'Audio asset 10 upload failed. Please re-record your answer.',
+      );
     });
 
     it('실패: audioAssetId가 존재하지 않으면 NotFoundException을 발생시켜야 한다', async () => {
@@ -166,31 +244,6 @@ describe('AnswerSubmissionService', () => {
       ).rejects.toThrow('Audio asset with ID 999 not found');
     });
 
-    it('실패: audioAsset에 objectKey가 없으면 BadRequestException을 발생시켜야 한다', async () => {
-      const userId = 1;
-      const submitAnswerDto = {
-        audioAssetId: 10,
-        questionId: 20,
-      };
-
-      const mockAudioAsset = {
-        id: 10,
-        objectKey: null,
-        durationMs: 5000,
-      } as AudioAsset;
-
-      mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
-
-      await expect(
-        service.submitAnswer(userId, submitAnswerDto),
-      ).rejects.toThrow(BadRequestException);
-      await expect(
-        service.submitAnswer(userId, submitAnswerDto),
-      ).rejects.toThrow(
-        'Audio asset 10 not uploaded to object storage, missing objectKey',
-      );
-    });
-
     it('실패: questionId가 존재하지 않으면 NotFoundException을 발생시켜야 한다', async () => {
       const userId = 1;
       const submitAnswerDto = {
@@ -202,6 +255,7 @@ describe('AnswerSubmissionService', () => {
         id: 10,
         objectKey: 'audio/test.pcm',
         durationMs: 5000,
+        uploadStatus: AudioUploadStatus.COMPLETED,
       } as AudioAsset;
 
       mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
@@ -213,6 +267,139 @@ describe('AnswerSubmissionService', () => {
       await expect(
         service.submitAnswer(userId, submitAnswerDto),
       ).rejects.toThrow('Question with ID 999 not found');
+    });
+  });
+
+  describe('handleAudioUploadCompleted (이벤트 핸들러)', () => {
+    it('제출이 있고 sttStatus가 PENDING이면 STT를 요청해야 한다', async () => {
+      const audioAssetId = 10;
+      const event = new AudioUploadCompletedEvent(audioAssetId);
+
+      const mockSubmission = {
+        id: 1,
+        audioAssetId,
+        sttStatus: ProcessStatus.PENDING,
+      } as AnswerSubmission;
+
+      const mockAudioAsset = {
+        id: audioAssetId,
+        objectKey: 'audio/test.wav',
+        uploadStatus: AudioUploadStatus.COMPLETED,
+      } as AudioAsset;
+
+      mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+      mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
+      mockAnswerSubmissionRepository.save.mockResolvedValue({
+        ...mockSubmission,
+        sttStatus: ProcessStatus.IN_PROGRESS,
+      });
+      mockSttService.requestStt.mockResolvedValue(undefined);
+
+      await service.handleAudioUploadCompleted(event);
+
+      expect(answerSubmissionRepository.findOne).toHaveBeenCalledWith({
+        where: { audioAssetId },
+      });
+      expect(mockAnswerSubmissionRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sttStatus: ProcessStatus.IN_PROGRESS,
+        }),
+      );
+      expect(sttService.requestStt).toHaveBeenCalledWith(mockAudioAsset);
+    });
+
+    it('제출이 없으면 STT를 요청하지 않아야 한다', async () => {
+      const audioAssetId = 10;
+      const event = new AudioUploadCompletedEvent(audioAssetId);
+
+      mockAnswerSubmissionRepository.findOne.mockResolvedValue(null);
+
+      await service.handleAudioUploadCompleted(event);
+
+      expect(sttService.requestStt).not.toHaveBeenCalled();
+    });
+
+    it('sttStatus가 PENDING이 아니면 STT를 요청하지 않아야 한다 (멱등성 가드)', async () => {
+      const audioAssetId = 10;
+      const event = new AudioUploadCompletedEvent(audioAssetId);
+
+      const mockSubmission = {
+        id: 1,
+        audioAssetId,
+        sttStatus: ProcessStatus.IN_PROGRESS,
+      } as AnswerSubmission;
+
+      mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+
+      await service.handleAudioUploadCompleted(event);
+
+      expect(sttService.requestStt).not.toHaveBeenCalled();
+    });
+
+    it('sttStatus가 DONE이면 STT를 요청하지 않아야 한다 (멱등성 가드)', async () => {
+      const audioAssetId = 10;
+      const event = new AudioUploadCompletedEvent(audioAssetId);
+
+      const mockSubmission = {
+        id: 1,
+        audioAssetId,
+        sttStatus: ProcessStatus.DONE,
+      } as AnswerSubmission;
+
+      mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+
+      await service.handleAudioUploadCompleted(event);
+
+      expect(sttService.requestStt).not.toHaveBeenCalled();
+    });
+
+    it('STT 요청 실패 시 sttStatus를 FAILED로 업데이트해야 한다', async () => {
+      const audioAssetId = 10;
+      const event = new AudioUploadCompletedEvent(audioAssetId);
+
+      const mockSubmission = {
+        id: 1,
+        audioAssetId,
+        sttStatus: ProcessStatus.PENDING,
+      } as AnswerSubmission;
+
+      const mockAudioAsset = {
+        id: audioAssetId,
+        objectKey: 'audio/test.wav',
+        uploadStatus: AudioUploadStatus.COMPLETED,
+      } as AudioAsset;
+
+      mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+      mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
+      mockAnswerSubmissionRepository.save.mockResolvedValue(mockSubmission);
+      mockSttService.requestStt.mockRejectedValue(new Error('STT API error'));
+
+      await service.handleAudioUploadCompleted(event);
+
+      // FAILED로 업데이트되어야 함
+      expect(mockAnswerSubmissionRepository.save).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          sttStatus: ProcessStatus.FAILED,
+        }),
+      );
+    });
+
+    it('AudioAsset을 찾을 수 없으면 STT를 요청하지 않아야 한다', async () => {
+      const audioAssetId = 10;
+      const event = new AudioUploadCompletedEvent(audioAssetId);
+
+      const mockSubmission = {
+        id: 1,
+        audioAssetId,
+        sttStatus: ProcessStatus.PENDING,
+      } as AnswerSubmission;
+
+      mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+      mockAudioAssetRepository.findOne.mockResolvedValue(null);
+
+      await service.handleAudioUploadCompleted(event);
+
+      expect(sttService.requestStt).not.toHaveBeenCalled();
     });
   });
 
