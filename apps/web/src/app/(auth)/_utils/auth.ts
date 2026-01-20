@@ -88,4 +88,32 @@ async function logout() {
   }
 }
 
-export { getCurrentUser, getTestUsers, login, logout };
+//회원가입(임시)
+async function signup(nickname: string, email: string, password: string) {
+  try {
+    //TODO: 비밀번호 해싱
+    const response = await fetch(`${API_BASE_URL}/api/users/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nickname,
+        email,
+        password, // TODO: 해싱된 비밀번호 변환 필요
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "회원가입에 실패했습니다.");
+    }
+
+    redirect("/login");
+  } catch (error) {
+    console.error("Signup Error:", error);
+    throw error;
+  }
+}
+
+export { getCurrentUser, getTestUsers, login, logout, signup };
