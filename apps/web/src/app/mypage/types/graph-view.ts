@@ -7,6 +7,7 @@ export interface GraphNode {
   id: number;
   type: NodeType;
   label: string;
+  questionId: number | null;
 }
 
 export interface GraphEdge {

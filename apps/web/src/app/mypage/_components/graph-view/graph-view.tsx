@@ -4,9 +4,17 @@ import * as React from "react";
 import drawGraphView from "../../_lib/graph-view/draw-graph-view";
 import { GraphData } from "../../types/graph-view";
 import NodeMap from "./node-map";
-import useGraphInteraction from "./useGraphInteraction";
-
-function GraphView({ mockData }: { mockData: GraphData }) {
+import useGraphInteraction from "./use-graph-interaction";
+interface GraphViewProps {
+  mockData: GraphData;
+  textRenderScale?: number;
+  clickEventDisabled?: boolean;
+}
+function GraphView({
+  mockData,
+  textRenderScale,
+  clickEventDisabled,
+}: GraphViewProps) {
   // canvasRef: Canvas DOM 참조
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   // ctx: Canvas 2D 렌더링 컨텍스트, width/height: 캔버스 크기
@@ -28,16 +36,19 @@ function GraphView({ mockData }: { mockData: GraphData }) {
   const {
     offset,
     scale,
+    hoveredNodeId,
     activeInteraction,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-  } = useGraphInteraction(canvasRef, {
+  } = useGraphInteraction(canvasRef, clickEventDisabled, {
     getNodeValues: () => nodeMapRef.current?.getNodeValues() ?? [].values(),
     setNodeFixedCoords: (nodeId, x, y) =>
       nodeMapRef.current?.setNodeFixedCoords(nodeId, x, y),
     clearNodeFixedCoords: (nodeId) =>
       nodeMapRef.current?.clearNodeFixedCoords(nodeId),
+    getNodeQuestionId: (nodeId) =>
+      nodeMapRef?.current?.nodeMap.get(nodeId)?.questionId ?? null,
   });
 
   // 물리 엔진 기반 그래프 애니메이션 루프
@@ -64,6 +75,8 @@ function GraphView({ mockData }: { mockData: GraphData }) {
         mockData.edges,
         offset.current,
         scale.current,
+        hoveredNodeId.current,
+        textRenderScale,
       );
 
       // 3. 애니메이션 지속 조건 확인
@@ -80,7 +93,17 @@ function GraphView({ mockData }: { mockData: GraphData }) {
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [ctx, width, height, mockData.edges, offset, scale, activeInteraction]);
+  }, [
+    ctx,
+    width,
+    height,
+    mockData.edges,
+    offset,
+    scale,
+    activeInteraction,
+    hoveredNodeId,
+    textRenderScale,
+  ]);
 
   return (
     // Canvas 엘리먼트에 마우스 이벤트 핸들러 바인딩
@@ -89,7 +112,7 @@ function GraphView({ mockData }: { mockData: GraphData }) {
     // onMouseUp: 드래그 종료
     // onMouseLeave: 캔버스 밖으로 나갈 때 드래그 종료 (마우스 업과 동일한 처리)
     <canvas
-      className="w-full h-full rounded-md border border-gray-300"
+      className="w-full h-full rounded-md border border-gray-300 "
       ref={canvasRef}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
