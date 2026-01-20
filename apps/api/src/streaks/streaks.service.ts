@@ -29,7 +29,7 @@ export class StreaksService {
 
   async getConsecutiveDayCount(
     userId: number,
-  ): Promise<{ sequencyDailyCount: number }> {
+  ): Promise<{ consecutiveDayCount: number }> {
     const today = new Date();
     today.setHours(0, 0, 0, 0); //시간으로 인해 이틀 뒤로 날짜가 밀리는것을 방지하기 위한 정규화
 
@@ -39,7 +39,7 @@ export class StreaksService {
     });
 
     if (!userStreaks.length) {
-      return { sequencyDailyCount: 0 };
+      return { consecutiveDayCount: 0 };
     }
 
     let count = 0;
@@ -61,7 +61,7 @@ export class StreaksService {
     if (streakDates.has(today.getTime())) {
       count++;
     }
-    return { sequencyDailyCount: count };
+    return { consecutiveDayCount: count };
   }
 
   async recordDailyActivity(userId: number): Promise<{ success: boolean }> {

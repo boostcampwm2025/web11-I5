@@ -7,20 +7,20 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiOperation,
   ApiQuery,
   ApiResponse,
   ApiTags,
-  ApiBearerAuth,
 } from '@nestjs/swagger';
+import { UserId } from '../auth/decorators/user-id.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   GetConsecutiveDayCountResponseDto,
   GetYearlyActivityCountResponseDto,
 } from './dtos/streaks-count.dto';
 import { RecordDailyActivityResponseDto } from './dtos/streaks-record.dto';
 import { StreaksService } from './streaks.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { UserId } from '../auth/decorators/user-id.decorator';
 
 @ApiTags('streaks')
 @Controller('streaks')
@@ -57,7 +57,7 @@ export class StreaksController {
     return this.streaksService.getYearlyActivityCount(userId, year);
   }
 
-  @Get('/sequence')
+  @Get('/consecutive')
   @ApiOperation({ summary: '연속 학습일 수 조회' })
   @ApiResponse({
     status: 200,
