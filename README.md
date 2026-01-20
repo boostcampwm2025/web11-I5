@@ -15,7 +15,7 @@ AI 피드백과 지식 구조화·시각화를 통해 개념의 흐름과 연결
 
 더 자세한 내용은 [서비스 기획서](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%84%9C%EB%B9%84%EC%8A%A4-%EA%B8%B0%ED%9A%8D%EC%84%9C)를 참고해주세요!
 
-## 시작하기
+## 🚀 시작하기
 
 > [!NOTE]
 > Node 18+, pnpm v10.24.0 버전을 사용해야합니다.
@@ -58,7 +58,7 @@ AI 피드백과 지식 구조화·시각화를 통해 개념의 흐름과 연결
    pnpm dev-api
    ```
 
-## 스크립트 명령어
+## 📜 스크립트 명령어
 
 | 명령어             | 설명                            |
 | ------------------ | ------------------------------- |
@@ -72,7 +72,7 @@ AI 피드백과 지식 구조화·시각화를 통해 개념의 흐름과 연결
 | `pnpm storybook`   | Storybook 실행                  |
 | `pnpm infra`       | Docker Compose로 인프라 실행    |
 
-## 아키텍처
+## 🏗️ 아키텍처
 
 ### 인프라 아키텍처
 
@@ -123,7 +123,7 @@ AI 피드백과 지식 구조화·시각화를 통해 개념의 흐름과 연결
   <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions" />
 </div>
 
-## 만든 사람들
+## 👥 만든 사람들
 
 | [<img src="https://github.com/AYEOOON.png" width="100px">](https://github.com/AYEOOON) | [<img src="https://github.com/kimjihyo.png" width="100px">](https://github.com/kimjihyo) | [<img src="https://github.com/dltnwjd308.png" width="100px">](https://github.com/dltnwjd308) | [<img src="https://github.com/rwaeng.png" width="100px">](https://github.com/rwaeng) | [<img src="https://github.com/swgivenchy.png" width="100px">](https://github.com/swgivenchy) |
 | :------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------: |
