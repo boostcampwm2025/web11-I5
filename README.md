@@ -10,6 +10,8 @@ AI 피드백과 지식 구조화·시각화를 통해 개념의 흐름과 연결
 3. 지식 구조화 및 시각화: 문제, 키워드, 개념 간의 관계 그래프를 생성하여 이를 시각적으로 확인할 수 있습니다.
 4. 지속 학습을 위한 게이미피케이션: 스트릭, 점수 등 학습 지속성을 높이는 요소를 적용해 학습 루틴을 유지하도록 돕습니다.
 
+더 자세한 내용은 [서비스 기획서](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%84%9C%EB%B9%84%EC%8A%A4-%EA%B8%B0%ED%9A%8D%EC%84%9C)를 참고해주세요!
+
 ## 🛠️ 기술 스택
 
 ### Common
@@ -49,55 +51,46 @@ AI 피드백과 지식 구조화·시각화를 통해 개념의 흐름과 연결
 
 ## 시작하기
 
-### 1. 레포지토리 클론
+> [!NOTE]
+> Node 18+, pnpm v10.24.0 버전을 사용해야합니다.
 
-```bash
-git clone https://github.com/boostcampwm2025/web11-MMH.git
-cd web11-MMH
-```
+1. 레포지토리 클론
 
-### 2. 의존성 설치
+   ```bash
+   git clone https://github.com/boostcampwm2025/web11-MMH.git
+   cd web11-MMH
+   ```
 
-pnpm이 설치되어 있지 않다면 먼저 설치합니다.
+2. 프로젝트 의존성 설치
 
-```bash
-npm install -g pnpm
-```
+   ```bash
+   pnpm install
+   ```
 
-이후 프로젝트 의존성을 설치합니다.
+3. [환경변수 가이드라인](https://github.com/boostcampwm2025/web11-MMH/wiki/%ED%99%98%EA%B2%BD%EB%B3%80%EC%88%98-%EC%B6%94%EA%B0%80%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95)을 참고해서 각 프로젝트에 `.env` 파일을 생성해주세요.
 
-```bash
-pnpm install
-```
+4. Docker Compose를 사용하여 데이터베이스 등 인프라를 실행합니다.
 
-### 3. 환경 변수 설정
+   ```bash
+   pnpm infra
+   ```
 
-[환경변수 가이드라인](https://github.com/boostcampwm2025/web11-MMH/wiki/%ED%99%98%EA%B2%BD%EB%B3%80%EC%88%98-%EC%B6%94%EA%B0%80%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95)을 참고해서 각 프로젝트에 `.env` 파일을 생성해주세요.
+5. 개발 서버 실행
 
-### 4. 인프라 실행
+   ```bash
+   # 전체 실행 (web + api)
+   pnpm dev
+   ```
 
-Docker Compose를 사용하여 데이터베이스 등 인프라를 실행합니다.
+   개별 실행이 필요한 경우:
 
-```bash
-pnpm infra
-```
+   ```bash
+   # 프론트엔드만 실행
+   pnpm dev-web
 
-### 5. 개발 서버 실행
-
-```bash
-# 전체 실행 (web + api)
-pnpm dev
-```
-
-개별 실행이 필요한 경우:
-
-```bash
-# 프론트엔드만 실행
-pnpm dev-web
-
-# 백엔드만 실행
-pnpm dev-api
-```
+   # 백엔드만 실행
+   pnpm dev-api
+   ```
 
 ## 스크립트 명령어
 
