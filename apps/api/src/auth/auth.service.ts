@@ -1,0 +1,61 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { User } from '../user/entities/user.entity';
+import { UserRole } from '../user/entities/user-role.enum';
+
+export interface JwtPayload {
+  sub: number; // 사용자 ID
+  role: UserRole;
+}
+
+@Injectable()
+export class AuthService {
+  constructor(private readonly jwtService: JwtService) {}
+
+  /**
+   * Access Token 발급
+   * @param user 사용자 엔티티
+   * @returns Access Token 문자열
+   */
+  async generateAccessToken(user: User): Promise<string> {
+    const payload: JwtPayload = {
+      sub: user.id,
+      role: user.role,
+    };
+
+    // Refresh Token이 없는 현재 구조에서는 Access Token에 exp(만료)제거
+    // (필요해지면 Refresh Token 도입 후 expiresIn을 다시 설정)
+    return this.jwtService.signAsync(payload);
+  }
+
+  /**
+   * Access Token 검증 및 페이로드 추출
+   * @param token Access Token 문자열
+   * @returns JWT 페이로드
+   * @throws UnauthorizedException 토큰이 유효하지 않은 경우
+   */
+  async verifyAccessToken(token: string): Promise<JwtPayload> {
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
+      return payload;
+    } catch {
+      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
+    }
+  }
+
+  /**
+   * Request에서 Bearer 토큰을 추출하고 검증하여 사용자 ID 반환
+   * @param authHeader Authorization 헤더 값
+   * @returns 사용자 ID
+   * @throws UnauthorizedException 토큰이 없거나 유효하지 않은 경우
+   */
+  async getUserIdFromRequest(authHeader: string | undefined): Promise<number> {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new UnauthorizedException('로그인이 필요합니다.');
+    }
+
+    const token = authHeader.substring(7); // 'Bearer ' 제거
+    const payload = await this.verifyAccessToken(token);
+    return payload.sub;
+  }
+}
