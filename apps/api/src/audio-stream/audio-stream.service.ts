@@ -268,13 +268,20 @@ export class AudioStreamService {
       });
 
       // 업로드 완료 이벤트 발행
-      this.eventEmitter.emit(
-        'audio.upload.completed',
-        new AudioUploadCompletedEvent(assetId),
-      );
-      this.logger.log(
-        `Emitted audio.upload.completed event for assetId: ${assetId}`,
-      );
+      try {
+        this.eventEmitter.emit(
+          'audio.upload.completed',
+          new AudioUploadCompletedEvent(assetId),
+        );
+        this.logger.log(
+          `Emitted audio.upload.completed event for assetId: ${assetId}`,
+        );
+      } catch (emitError) {
+        this.logger.error(
+          `Failed to emit audio.upload.completed event for assetId: ${assetId}`,
+          emitError,
+        );
+      }
 
       // 로컬 파일 삭제
       try {
@@ -293,9 +300,16 @@ export class AudioStreamService {
       );
 
       // 업로드 실패 시 DB 상태 업데이트
-      await this.audioAssetRepository.update(assetId, {
-        uploadStatus: AudioUploadStatus.FAILED,
-      });
+      try {
+        await this.audioAssetRepository.update(assetId, {
+          uploadStatus: AudioUploadStatus.FAILED,
+        });
+      } catch (updateError) {
+        this.logger.error(
+          `Failed to update upload status to FAILED for assetId: ${assetId}`,
+          updateError,
+        );
+      }
     }
   }
 
