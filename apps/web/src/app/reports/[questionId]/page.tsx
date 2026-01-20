@@ -39,7 +39,11 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
             .map((h) => h.submissionId)}
         />
 
-        <ReportTabs selectedAttempt={selectedAttempt} evaluation={evaluation} />
+        <ReportTabs
+          selectedAttempt={selectedAttempt}
+          evaluation={evaluation}
+          question={question}
+        />
       </div>
 
       <div className="sticky top-8 self-start">

@@ -1,4 +1,6 @@
 export type AnalysisStatus = "COMPLETED" | "PENDING" | "FAILED";
+export type STTStatus = "PENDING" | "DONE" | "FAILED";
+export type EvaluationStatus = AnalysisStatus;
 
 export interface FeedbackResult {
   feedbackMessage: string;
@@ -22,6 +24,8 @@ export interface BaseReportDetail {
   duration: string;
   answerContent: string;
   status: AnalysisStatus;
+  sttStatus: STTStatus;
+  evaluationStatus: EvaluationStatus;
 }
 
 export interface PendingReportDetail extends BaseReportDetail {
@@ -34,7 +38,6 @@ export interface FailedReportDetail extends BaseReportDetail {
   status: "FAILED";
   totalScore: null;
   feedback?: never;
-  reason?: string;
 }
 
 export interface SuccessReportDetail extends BaseReportDetail {

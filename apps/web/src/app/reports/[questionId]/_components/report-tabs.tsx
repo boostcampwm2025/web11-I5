@@ -7,6 +7,12 @@ import {
 import { BookText, CircleCheckBig } from "lucide-react";
 import FeedbackSection from "./feedback/feedback-section";
 import { AnalysisStatus, ReportDetail } from "../_types/report-detail";
+import { Question } from "@/app/daily/questions/_types/types";
+
+type ReportQuestion = Question & {
+  categoryDisplay: string;
+  subCategory: string;
+};
 
 interface HistoryItem {
   submissionId: number;
@@ -19,9 +25,14 @@ interface HistoryItem {
 interface ReportTabsProps {
   selectedAttempt: HistoryItem;
   evaluation: ReportDetail;
+  question: ReportQuestion;
 }
 
-function ReportTabs({ selectedAttempt, evaluation }: ReportTabsProps) {
+function ReportTabs({
+  selectedAttempt,
+  evaluation,
+  question,
+}: ReportTabsProps) {
   const keywords =
     evaluation.status === "COMPLETED"
       ? evaluation.feedback.extractedKeywords
@@ -43,6 +54,7 @@ function ReportTabs({ selectedAttempt, evaluation }: ReportTabsProps) {
           attempt={selectedAttempt.displayIndex}
           status={selectedAttempt.status}
           data={evaluation}
+          question={question}
         />
       </TabsContent>
 
