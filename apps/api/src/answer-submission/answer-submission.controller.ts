@@ -3,10 +3,10 @@ import {
   Post,
   Get,
   Body,
-  Req,
   Query,
   ParseIntPipe,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -20,19 +20,20 @@ import {
   ApiUnauthorizedResponse,
   ApiParam,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
 import { AnswerSubmissionService } from './answer-submission.service';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
-import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserId } from '../auth/decorators/user-id.decorator';
 
 @ApiTags('answer-submissions')
 @Controller('answer-submissions')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT-auth')
 export class AnswerSubmissionController {
   constructor(
     private readonly answerSubmissionService: AnswerSubmissionService,
-    private readonly authService: AuthService,
   ) {}
 
   @Post()
@@ -41,7 +42,6 @@ export class AnswerSubmissionController {
     description:
       '오디오 에셋 ID와 질문 ID를 받아 답변을 제출합니다. 답변 제출 레코드를 생성하고 STT 처리를 요청합니다.',
   })
-  @ApiBearerAuth('JWT-auth')
   @ApiResponse({
     status: 201,
     description: '답변이 성공적으로 제출됨',
@@ -58,12 +58,9 @@ export class AnswerSubmissionController {
     description: '로그인이 필요합니다',
   })
   async submitAnswer(
-    @Req() req: Request,
+    @UserId() userId: number,
     @Body() submitAnswerDto: SubmitAnswerDto,
   ): Promise<AnswerSubmission> {
-    const userId = await this.authService.getUserIdFromRequest(
-      req.headers.authorization,
-    );
     return await this.answerSubmissionService.submitAnswer(
       userId,
       submitAnswerDto,
@@ -75,7 +72,6 @@ export class AnswerSubmissionController {
     summary: '문제별 제출 기록 조회',
     description: '특정 문제에 대한 사용자의 제출 기록을 최신순으로 조회합니다.',
   })
-  @ApiBearerAuth('JWT-auth')
   @ApiQuery({
     name: 'questionId',
     type: 'number',
@@ -91,21 +87,13 @@ export class AnswerSubmissionController {
     description: '로그인 필요',
   })
   async getDailySubmissionListByQuestionId(
-    @Req() req: Request,
+    @UserId() userId: number,
     @Query('questionId', ParseIntPipe) questionId: number,
   ) {
-    // 인증 로직: 인증 에러는 그대로 전파됨 (UnauthorizedException)
-    const userId = await this.authService.getUserIdFromRequest(
-      req.headers.authorization,
+    return await this.answerSubmissionService.getHistoryListByQuestionId(
+      userId,
+      questionId,
     );
-
-    // 비즈니스 로직: 비즈니스 에러는 서비스에서 처리
-    const result =
-      await this.answerSubmissionService.getHistoryListByQuestionId(
-        userId,
-        questionId,
-      );
-    return result;
   }
 
   @Get(':id')
@@ -114,7 +102,6 @@ export class AnswerSubmissionController {
     description:
       '제출 ID(submissionId)를 통해 사용자가 작성한 답안 내용을 조회합니다.',
   })
-  @ApiBearerAuth('JWT-auth')
   @ApiParam({
     name: 'id',
     description: '조회할 제출 ID',
@@ -133,15 +120,9 @@ export class AnswerSubmissionController {
     description: '로그인이 필요합니다',
   })
   async getSubmissionById(
-    @Req() req: Request,
+    @UserId() userId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    // 인증 로직: 인증 에러는 그대로 전파됨 (UnauthorizedException)
-    const userId = await this.authService.getUserIdFromRequest(
-      req.headers.authorization,
-    );
-
-    // 비즈니스 로직: 비즈니스 에러는 서비스에서 처리
     return await this.answerSubmissionService.getSubmissionById(id, userId);
   }
 }
