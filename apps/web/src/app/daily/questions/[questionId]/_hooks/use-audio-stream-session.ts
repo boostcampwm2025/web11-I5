@@ -65,6 +65,10 @@ function useAudioStreamSession(options: UseAudioStreamSessionOptions = {}) {
         setElapsedSeconds((prev) => {
           const next = prev + 1;
           if (next >= maxDurationSeconds) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
             onMaxDurationReached?.();
           }
           return next;

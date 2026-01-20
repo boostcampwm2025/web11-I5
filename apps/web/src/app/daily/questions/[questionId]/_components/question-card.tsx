@@ -29,7 +29,11 @@ export default function QuestionCard({
       </button>
 
       <p className="text-gray-500 text-xs mb-3">
-        {parentCategoryName} | {categoryName}
+        {(parentCategoryName || categoryName) && (
+          <p className="text-gray-500 text-xs mb-3">
+            {[parentCategoryName, categoryName].filter(Boolean).join(" | ")}
+          </p>
+        )}
       </p>
 
       {isVisible ? (
