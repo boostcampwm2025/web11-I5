@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Logger } from '@nestjs/common';
+import { Controller, Post, Body, Logger, Get, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AudioStreamService } from './audio-stream.service';
 import {
@@ -82,5 +82,27 @@ export class AudioStreamController {
       this.logger.error(`Failed to finalize session ${data.sessionId}`, error);
       throw error;
     }
+  }
+
+  /**
+   * GET /audio-stream/upload-status/:assetId
+   * 오디오 파일 업로드 상태를 조회한다.
+   */
+  @Get('upload-status/:assetId')
+  @ApiOperation({ summary: '오디오 파일 업로드 상태 조회' })
+  @ApiResponse({
+    status: 200,
+    description: '업로드 상태 조회 성공',
+  })
+  async getUploadStatus(
+    @Param('assetId') assetId: string,
+  ): Promise<{ uploadStatus: string }> {
+    const asset = await this.audioStreamService.findAudioAsset(Number(assetId));
+
+    if (!asset) {
+      return { uploadStatus: 'not_found' };
+    }
+
+    return { uploadStatus: asset.uploadStatus };
   }
 }

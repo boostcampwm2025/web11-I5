@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnswerEvaluationModule } from './answer-evaluation/answer-evaluation.module';
 import { AppController } from './app.controller';
@@ -21,6 +22,7 @@ import { GraphModule } from './graph/graph.module';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
+    EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot(typeOrmModuleOptions),
     UserModule,
     AnswerEvaluationModule,

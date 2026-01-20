@@ -10,6 +10,6 @@ import { ObjectStorageModule } from '../object-storage/object-storage.module';
   imports: [TypeOrmModule.forFeature([AudioAsset]), ObjectStorageModule],
   controllers: [AudioStreamController],
   providers: [AudioStreamGateway, AudioStreamService],
-  exports: [AudioStreamService],
+  exports: [AudioStreamService, TypeOrmModule],
 })
 export class AudioStreamModule {}
