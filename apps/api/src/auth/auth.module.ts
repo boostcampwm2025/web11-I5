@@ -8,9 +8,10 @@ import { AuthService } from './auth.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        const secret =
-          configService.get<string>('JWT_SECRET') ||
-          'default-secret-key-change-in-production';
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('JWT_SECRET 환경 변수가 설정되지 않았습니다.');
+        }
         return {
           secret,
           signOptions: {
