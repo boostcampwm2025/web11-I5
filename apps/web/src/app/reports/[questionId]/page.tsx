@@ -31,13 +31,7 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
   return (
     <main className="max-w-4xl mx-auto px-8 py-15 flex gap-8">
       <div className="flex flex-col gap-14 flex-1">
-        <ReportHeader
-          category={question.category}
-          subcategory={question.subCategory}
-          title={question.title}
-          description={question.content}
-          highestScore={highestScore}
-        />
+        <ReportHeader question={question} highestScore={highestScore} />
 
         <ReportRefresh
           pendingSubmissionIds={history
