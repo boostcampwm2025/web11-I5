@@ -6,7 +6,6 @@ import {
   Req,
   Query,
   ParseIntPipe,
-  UnauthorizedException,
   Param,
 } from '@nestjs/common';
 import {
@@ -62,19 +61,13 @@ export class AnswerSubmissionController {
     @Req() req: Request,
     @Body() submitAnswerDto: SubmitAnswerDto,
   ): Promise<AnswerSubmission> {
-    try {
-      const userId = await this.authService.getUserIdFromRequest(
-        req.headers.authorization,
-      );
-      return await this.answerSubmissionService.submitAnswer(
-        userId,
-        submitAnswerDto,
-      );
-    } catch (error) {
-      throw new UnauthorizedException(
-        error instanceof Error ? error.message : '로그인이 필요합니다.',
-      );
-    }
+    const userId = await this.authService.getUserIdFromRequest(
+      req.headers.authorization,
+    );
+    return await this.answerSubmissionService.submitAnswer(
+      userId,
+      submitAnswerDto,
+    );
   }
 
   @Get()
@@ -101,21 +94,18 @@ export class AnswerSubmissionController {
     @Req() req: Request,
     @Query('questionId', ParseIntPipe) questionId: number,
   ) {
-    try {
-      const userId = await this.authService.getUserIdFromRequest(
-        req.headers.authorization,
+    // 인증 로직: 인증 에러는 그대로 전파됨 (UnauthorizedException)
+    const userId = await this.authService.getUserIdFromRequest(
+      req.headers.authorization,
+    );
+
+    // 비즈니스 로직: 비즈니스 에러는 서비스에서 처리
+    const result =
+      await this.answerSubmissionService.getHistoryListByQuestionId(
+        userId,
+        questionId,
       );
-      const result =
-        await this.answerSubmissionService.getHistoryListByQuestionId(
-          userId,
-          questionId,
-        );
-      return result;
-    } catch (error) {
-      throw new UnauthorizedException(
-        error instanceof Error ? error.message : '로그인이 필요합니다.',
-      );
-    }
+    return result;
   }
 
   @Get(':id')
@@ -146,15 +136,12 @@ export class AnswerSubmissionController {
     @Req() req: Request,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    try {
-      const userId = await this.authService.getUserIdFromRequest(
-        req.headers.authorization,
-      );
-      return await this.answerSubmissionService.getSubmissionById(id, userId);
-    } catch (error) {
-      throw new UnauthorizedException(
-        error instanceof Error ? error.message : '로그인이 필요합니다.',
-      );
-    }
+    // 인증 로직: 인증 에러는 그대로 전파됨 (UnauthorizedException)
+    const userId = await this.authService.getUserIdFromRequest(
+      req.headers.authorization,
+    );
+
+    // 비즈니스 로직: 비즈니스 에러는 서비스에서 처리
+    return await this.answerSubmissionService.getSubmissionById(id, userId);
   }
 }
