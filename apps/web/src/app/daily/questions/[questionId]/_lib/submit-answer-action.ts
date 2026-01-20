@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { apiPost } from "@/lib/api-client";
 
 export interface SubmitAnswerState {
   success: boolean;
@@ -24,34 +25,13 @@ export async function submitAnswerAction(
     };
   }
 
-  const apiUrl = process.env.API_URL;
-
-  let submissionId: number | null = null;
-
   try {
-    const response = await fetch(`${apiUrl}/answer-submissions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        audioAssetId: Number(audioAssetId),
-        questionId: Number(questionId),
-      }),
+    const data = await apiPost<{ id: number }>("/api/answer-submissions", {
+      audioAssetId: Number(audioAssetId),
+      questionId: Number(questionId),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Failed to submit answer:", errorText);
-      return {
-        success: false,
-        message: "",
-        error: "답변 제출에 실패했습니다.",
-      };
-    }
-
-    const data = await response.json();
-    submissionId = data.id;
+    redirect(`/reports/${questionId}?attempt=${data.id}`);
   } catch (error) {
     console.error("Error submitting answer:", error);
     return {
@@ -60,6 +40,4 @@ export async function submitAnswerAction(
       error: "답변 제출 중 오류가 발생했습니다.",
     };
   }
-
-  redirect(`/reports/${questionId}?attempt=${submissionId}`);
 }

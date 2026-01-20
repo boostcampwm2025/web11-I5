@@ -3,16 +3,15 @@ import {
   Post,
   Get,
   Body,
-  Req,
   Query,
   ParseIntPipe,
-  UnauthorizedException,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
-  ApiCookieAuth,
+  ApiBearerAuth,
   ApiResponse,
   ApiBadRequestResponse,
   ApiNotFoundResponse,
@@ -21,14 +20,17 @@ import {
   ApiUnauthorizedResponse,
   ApiParam,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
 import { AnswerSubmissionService } from './answer-submission.service';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserId } from '../auth/decorators/user-id.decorator';
 
 @ApiTags('answer-submissions')
 @Controller('answer-submissions')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT-auth')
 export class AnswerSubmissionController {
   constructor(
     private readonly answerSubmissionService: AnswerSubmissionService,
@@ -40,7 +42,6 @@ export class AnswerSubmissionController {
     description:
       '오디오 에셋 ID와 질문 ID를 받아 답변을 제출합니다. 답변 제출 레코드를 생성하고 STT 처리를 요청합니다.',
   })
-  @ApiCookieAuth('userId')
   @ApiResponse({
     status: 201,
     description: '답변이 성공적으로 제출됨',
@@ -53,11 +54,17 @@ export class AnswerSubmissionController {
   @ApiNotFoundResponse({
     description: '오디오 에셋 또는 질문을 찾을 수 없음',
   })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다',
+  })
   async submitAnswer(
-    @Req() req: Request,
+    @UserId() userId: number,
     @Body() submitAnswerDto: SubmitAnswerDto,
   ): Promise<AnswerSubmission> {
-    return await this.answerSubmissionService.submitAnswer(1, submitAnswerDto);
+    return await this.answerSubmissionService.submitAnswer(
+      userId,
+      submitAnswerDto,
+    );
   }
 
   @Get()
@@ -80,22 +87,13 @@ export class AnswerSubmissionController {
     description: '로그인 필요',
   })
   async getDailySubmissionListByQuestionId(
+    @UserId() userId: number,
     @Query('questionId', ParseIntPipe) questionId: number,
   ) {
-    // TODO: userId 실제 값 가지고 오도록 수정 필요
-    const userId = 1;
-
-    if (!userId || isNaN(userId)) {
-      throw new UnauthorizedException('로그인이 필요한 서비스입니다.');
-    }
-
-    const result =
-      await this.answerSubmissionService.getHistoryListByQuestionId(
-        userId,
-        questionId,
-      );
-
-    return result;
+    return await this.answerSubmissionService.getHistoryListByQuestionId(
+      userId,
+      questionId,
+    );
   }
 
   @Get(':id')
@@ -118,8 +116,13 @@ export class AnswerSubmissionController {
     status: 404,
     description: '해당 ID의 제출 내역을 찾을 수 없습니다.',
   })
-  async getSubmissionById(@Param('id', ParseIntPipe) id: number) {
-    const userId = 1; // TODO: 실제 유저 아이디 필요
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다',
+  })
+  async getSubmissionById(
+    @UserId() userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     return await this.answerSubmissionService.getSubmissionById(id, userId);
   }
 }
