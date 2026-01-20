@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -7,20 +7,18 @@ import {
   ApiUnauthorizedResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
 import { GraphService } from './graph.service';
 import { GraphResponseDto } from './dtos/graph-response.dto';
-import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserId } from '../auth/decorators/user-id.decorator';
 
 @ApiTags('graph')
 @Controller('graph')
 export class GraphController {
-  constructor(
-    private readonly graphService: GraphService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly graphService: GraphService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: '현재 사용자의 그래프 데이터 조회',
@@ -43,11 +41,7 @@ export class GraphController {
       edges: [],
     },
   })
-  async getGraph(@Req() req: Request): Promise<GraphResponseDto> {
-    const userId = await this.authService.getUserIdFromRequest(
-      req.headers.authorization,
-    );
-
+  async getGraph(@UserId() userId: number): Promise<GraphResponseDto> {
     return await this.graphService.getGraphByUserId(userId);
   }
 }

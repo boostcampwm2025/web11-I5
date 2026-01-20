@@ -3,10 +3,10 @@ import {
   Get,
   Post,
   Body,
-  Req,
   Res,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,12 +15,14 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { UserService } from './user.service';
 import type { User } from './entities/user.entity';
 import { LoginResponseDto } from './dtos/login.response.dto';
 import { LoginRequestDto } from './dtos/login.request.dto';
 import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserId } from '../auth/decorators/user-id.decorator';
 
 @ApiTags('users')
 @Controller('api/users')
@@ -82,6 +84,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '로그아웃' })
   @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 200,
     description: '로그아웃 성공',
@@ -99,6 +102,7 @@ export class UserController {
   @Get('me')
   @ApiOperation({ summary: '현재 사용자 정보 조회' })
   @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 200,
     description: '현재 사용자 정보',
@@ -108,11 +112,7 @@ export class UserController {
     status: 401,
     description: '로그인이 필요합니다',
   })
-  async getCurrentUser(@Req() req: Request): Promise<User> {
-    const userId = await this.authService.getUserIdFromRequest(
-      req.headers.authorization,
-    );
-
+  async getCurrentUser(@UserId() userId: number): Promise<User> {
     return this.userService.getCurrentUser(userId);
   }
 }

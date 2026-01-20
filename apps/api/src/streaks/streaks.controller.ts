@@ -4,7 +4,7 @@ import {
   ParseIntPipe,
   Post,
   Query,
-  Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -13,26 +13,24 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
 import {
   GetConsecutiveDayCountResponseDto,
   GetYearlyActivityCountResponseDto,
 } from './dtos/streaks-count.dto';
 import { RecordDailyActivityResponseDto } from './dtos/streaks-record.dto';
 import { StreaksService } from './streaks.service';
-import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserId } from '../auth/decorators/user-id.decorator';
 
 @ApiTags('streaks')
 @Controller('streaks')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT-auth')
 export class StreaksController {
-  constructor(
-    private readonly streaksService: StreaksService,
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly streaksService: StreaksService) {}
 
   @Get()
   @ApiOperation({ summary: '연간 학습일 수 조회' })
-  @ApiBearerAuth('JWT-auth')
   @ApiQuery({
     name: 'year',
     required: false,
@@ -50,13 +48,9 @@ export class StreaksController {
     description: '로그인이 필요합니다',
   })
   async getYearlyActivityCount(
-    @Req() req: Request,
+    @UserId() userId: number,
     @Query('year', new ParseIntPipe({ optional: true })) year?: number,
   ): Promise<GetYearlyActivityCountResponseDto> {
-    const userId = await this.authService.getUserIdFromRequest(
-      req.headers.authorization,
-    );
-
     if (!year) {
       year = new Date().getFullYear();
     }
@@ -65,7 +59,6 @@ export class StreaksController {
 
   @Get('/sequence')
   @ApiOperation({ summary: '연속 학습일 수 조회' })
-  @ApiBearerAuth('JWT-auth')
   @ApiResponse({
     status: 200,
     description: '연속 학습일 수',
@@ -76,18 +69,13 @@ export class StreaksController {
     description: '로그인이 필요합니다',
   })
   async getConsecutiveDayCount(
-    @Req() req: Request,
+    @UserId() userId: number,
   ): Promise<GetConsecutiveDayCountResponseDto> {
-    const userId = await this.authService.getUserIdFromRequest(
-      req.headers.authorization,
-    );
-
     return this.streaksService.getConsecutiveDayCount(userId);
   }
 
   @Post()
   @ApiOperation({ summary: '일일 학습 활동 기록' })
-  @ApiBearerAuth('JWT-auth')
   @ApiResponse({
     status: 200,
     description: '학습 활동 기록 성공',
@@ -98,11 +86,8 @@ export class StreaksController {
     description: '로그인이 필요합니다',
   })
   async recordDailyActivity(
-    @Req() req: Request,
+    @UserId() userId: number,
   ): Promise<RecordDailyActivityResponseDto> {
-    const userId = await this.authService.getUserIdFromRequest(
-      req.headers.authorization,
-    );
     return this.streaksService.recordDailyActivity(userId);
   }
 }
