@@ -49,6 +49,11 @@ function RecordingSection({ questionId }: RecordingSectionProps) {
   ) => {
     event.preventDefault();
 
+    if (!assetId) {
+      console.error("오디오 데이터가 존재하지 않습니다.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("audioAssetId", assetId.toString());
     formData.append("questionId", questionId.toString());
