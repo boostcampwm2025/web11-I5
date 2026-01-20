@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Streaks } from './entities/streaks.entity';
@@ -184,38 +185,36 @@ describe('StreaksService', () => {
   });
 
   describe('recordDailyActivity', () => {
-    it('submittedAt이 2026.01.08일 때 스트릭 데이터가 조회되지 않으면 데이터를 추가하고 true를 리턴한다', async () => {
-      const submittedAt = new Date('2026-01-08');
+    it('스트릭 데이터가 조회되지 않으면 데이터를 추가하고 true를 리턴한다', async () => {
       mockStreaksRepository.findOneBy.mockResolvedValue(null);
       mockStreaksRepository.insert.mockResolvedValue({} as any);
 
-      const result = await service.recordDailyActivity(1, submittedAt);
+      const result = await service.recordDailyActivity(1);
 
       expect(mockStreaksRepository.findOneBy).toHaveBeenCalledWith({
         userId: 1,
-        activityDate: submittedAt,
+        activityDate: expect.any(Date),
       });
       expect(mockStreaksRepository.insert).toHaveBeenCalledWith({
         userId: 1,
-        activityDate: submittedAt,
+        activityDate: expect.any(Date),
       });
       expect(result).toEqual({ success: true });
     });
 
-    it('submittedAt이 2026.01.08일 때 스트릭 데이터가 조회된다면 데이터를 조작하지 않고 true를 리턴한다', async () => {
-      const submittedAt = new Date('2026-01-08');
+    it('스트릭 데이터가 이미 조회된다면 데이터를 조작하지 않고 true를 리턴한다', async () => {
       const existingStreak = {
         id: 1,
         userId: 1,
-        activityDate: submittedAt,
+        activityDate: new Date(),
       };
       mockStreaksRepository.findOneBy.mockResolvedValue(existingStreak);
 
-      const result = await service.recordDailyActivity(1, submittedAt);
+      const result = await service.recordDailyActivity(1);
 
       expect(mockStreaksRepository.findOneBy).toHaveBeenCalledWith({
         userId: 1,
-        activityDate: submittedAt,
+        activityDate: expect.any(Date),
       });
       expect(mockStreaksRepository.insert).not.toHaveBeenCalled();
       expect(result).toEqual({ success: true });

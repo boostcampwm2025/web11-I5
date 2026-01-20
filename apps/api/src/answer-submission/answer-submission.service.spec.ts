@@ -11,6 +11,7 @@ import {
 } from '../audio-stream/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttService } from '../stt/stt.service';
+import { StreaksService } from '../streaks/streaks.service';
 import { EvaluationStatus } from '../answer-evaluation/answer-evaluation.constants';
 import {
   QuizMode,
@@ -36,6 +37,10 @@ const mockQuestionRepository = {
 
 const mockSttService = {
   requestStt: jest.fn(),
+};
+
+const mockStreaksService = {
+  recordDailyActivity: jest.fn(),
 };
 
 describe('AnswerSubmissionService', () => {
@@ -64,6 +69,10 @@ describe('AnswerSubmissionService', () => {
         {
           provide: SttService,
           useValue: mockSttService,
+        },
+        {
+          provide: StreaksService,
+          useValue: mockStreaksService,
         },
       ],
     }).compile();
@@ -127,6 +136,9 @@ describe('AnswerSubmissionService', () => {
         mockCreatedSubmission,
       );
       mockSttService.requestStt.mockResolvedValue(undefined);
+      mockStreaksService.recordDailyActivity.mockResolvedValue({
+        success: true,
+      });
 
       const result = await service.submitAnswer(userId, submitAnswerDto);
 
@@ -150,6 +162,9 @@ describe('AnswerSubmissionService', () => {
       // STT 요청 전 IN_PROGRESS로 변경되므로 save가 2번 호출됨
       expect(answerSubmissionRepository.save).toHaveBeenCalledTimes(2);
       expect(sttService.requestStt).toHaveBeenCalledWith(mockAudioAsset);
+      expect(mockStreaksService.recordDailyActivity).toHaveBeenCalledWith(
+        userId,
+      );
       expect(result).toEqual(mockCreatedSubmission);
     });
 

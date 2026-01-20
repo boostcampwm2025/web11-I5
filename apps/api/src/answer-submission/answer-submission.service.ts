@@ -1,10 +1,12 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
+  Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
+import { StreaksService } from 'src/streaks/streaks.service';
 import { Repository } from 'typeorm';
 import { OnEvent } from '@nestjs/event-emitter';
 import {
@@ -13,16 +15,15 @@ import {
 } from '../audio-stream/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttService } from '../stt/stt.service';
-import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import {
-  QuizMode,
   InputType,
   ProcessStatus,
+  QuizMode,
 } from './answer-submission.constants';
-import { AnswerSubmission } from './entities/answer-submission.entity';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
-import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
 import { AudioUploadCompletedEvent } from '../audio-stream/events/audio-upload-completed.event';
+import { SubmitAnswerDto } from './dtos/submit-answer.dto';
+import { AnswerSubmission } from './entities/answer-submission.entity';
 
 @Injectable()
 export class AnswerSubmissionService {
@@ -36,6 +37,7 @@ export class AnswerSubmissionService {
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
     private readonly sttService: SttService,
+    private readonly streaksService: StreaksService,
   ) {}
 
   async submitAnswer(
@@ -117,6 +119,15 @@ export class AnswerSubmissionService {
     } else {
       this.logger.log(
         `Audio asset ${audioAssetId} is still uploading. STT will be triggered after upload completes.`,
+      );
+    }
+
+    try {
+      await this.streaksService.recordDailyActivity(userId);
+    } catch (error) {
+      this.logger.error(
+        `Failed to record daily activity for userId: ${userId}`,
+        error,
       );
     }
 

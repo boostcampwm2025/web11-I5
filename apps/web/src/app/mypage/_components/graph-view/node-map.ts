@@ -8,7 +8,7 @@ import {
   GraphNode,
   NodeMapType,
   NodePosition,
-} from "../../types/graph-view";
+} from "../../_types/graph-view";
 
 class NodeMap {
   private _nodeMap: NodeMapType;
