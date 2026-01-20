@@ -78,13 +78,7 @@ AI 피드백과 지식 구조화·시각화를 통해 개념의 흐름과 연결
 
 ![](https://github.com/user-attachments/assets/f8377ca0-ae7a-4187-8396-09bdd4ce8522)
 
-### 음성 파일 업로드 시퀀스 아키텍처
-
-![](https://github.com/user-attachments/assets/623fbb38-bc4a-4461-902c-c7f26a66e2c1)
-
-### STT 변환 & LLM 채점 요청 아키텍처
-
-![](https://github.com/user-attachments/assets/6748127a-b889-4151-bbd3-6f1f41b1f14e)
+그 밖의 아키텍처 관련 내용은 [Wiki - 서비스 아키텍처](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%84%9C%EB%B9%84%EC%8A%A4-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98)를 참고해주세요!
 
 ## 🛠️ 기술 스택
 
@@ -121,6 +115,7 @@ AI 피드백과 지식 구조화·시각화를 통해 개념의 흐름과 연결
   <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="Nginx" />
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
   <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions" />
+  <img src="https://img.shields.io/badge/google%20gemini-8E75B2?style=for-the-badge&logo=google%20gemini&logoColor=white" alt="Google Gemini" />
 </div>
 
 ## 👥 만든 사람들
