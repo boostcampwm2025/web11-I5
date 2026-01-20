@@ -23,12 +23,9 @@ export class AuthService {
       role: user.role,
     };
 
-    // Access Token 만료 시간: 15분
-    const ACCESS_TOKEN_EXPIRES_IN = '15m';
-
-    return this.jwtService.signAsync(payload, {
-      expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-    });
+    // Refresh Token이 없는 현재 구조에서는 Access Token에 exp(만료)제거
+    // (필요해지면 Refresh Token 도입 후 expiresIn을 다시 설정)
+    return this.jwtService.signAsync(payload);
   }
 
   /**

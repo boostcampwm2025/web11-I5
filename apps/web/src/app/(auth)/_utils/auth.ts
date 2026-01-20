@@ -57,13 +57,14 @@ async function login(nickname: string, password?: string) {
       throw new Error("Access Token을 받지 못했습니다.");
     }
 
-    // Access Token을 HttpOnly 쿠키로 저장 (세션용)
+    // Access Token을 HttpOnly 쿠키로 저장
+    // (현재 Access Token 자체 만료를 제거했으므로 쿠키도 15분 제한을 두지 않음.)
     const cookieStore = await cookies();
     cookieStore.set("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 60 * 15, // 15분 (Access Token 만료 시간과 동일)
+      maxAge: 60 * 60 * 24 * 7, // 7일
     });
   } catch (error) {
     throw error;
