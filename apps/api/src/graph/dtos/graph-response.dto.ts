@@ -23,6 +23,13 @@ export class GraphNodeDto {
     example: 'React란 무엇인가요?',
   })
   label: string;
+
+  @ApiProperty({
+    description: '질문 ID (QUESTION 타입일 때만 존재, KEYWORD 타입은 null)',
+    example: 1,
+    nullable: true,
+  })
+  questionId: number | null;
 }
 
 /**
@@ -60,11 +67,13 @@ export class GraphResponseDto {
         id: 1,
         type: 'QUESTION',
         label: 'React란 무엇인가요?',
+        questionId: 1,
       },
       {
         id: 2,
         type: 'KEYWORD',
         label: 'React',
+        questionId: null,
       },
     ],
   })

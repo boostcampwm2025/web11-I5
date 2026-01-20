@@ -8,6 +8,7 @@ import { AnswerSubmission } from './entities/answer-submission.entity';
 import { AudioAsset } from '../audio-stream/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttService } from '../stt/stt.service';
+import { StreaksService } from '../streaks/streaks.service';
 import { EvaluationStatus } from '../answer-evaluation/answer-evaluation.constants';
 import {
   QuizMode,
@@ -32,6 +33,10 @@ const mockQuestionRepository = {
 
 const mockSttService = {
   requestStt: jest.fn(),
+};
+
+const mockStreaksService = {
+  recordDailyActivity: jest.fn(),
 };
 
 describe('AnswerSubmissionService', () => {
@@ -60,6 +65,10 @@ describe('AnswerSubmissionService', () => {
         {
           provide: SttService,
           useValue: mockSttService,
+        },
+        {
+          provide: StreaksService,
+          useValue: mockStreaksService,
         },
       ],
     }).compile();
@@ -122,6 +131,9 @@ describe('AnswerSubmissionService', () => {
         mockCreatedSubmission,
       );
       mockSttService.requestStt.mockResolvedValue(undefined);
+      mockStreaksService.recordDailyActivity.mockResolvedValue({
+        success: true,
+      });
 
       const result = await service.submitAnswer(userId, submitAnswerDto);
 
@@ -146,6 +158,9 @@ describe('AnswerSubmissionService', () => {
         mockCreatedSubmission,
       );
       expect(sttService.requestStt).toHaveBeenCalledWith(mockAudioAsset);
+      expect(mockStreaksService.recordDailyActivity).toHaveBeenCalledWith(
+        userId,
+      );
       expect(result).toEqual(mockCreatedSubmission);
     });
 

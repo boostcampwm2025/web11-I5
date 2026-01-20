@@ -1,25 +1,26 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
+  Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
+import { StreaksService } from 'src/streaks/streaks.service';
 import { Repository } from 'typeorm';
 import { AudioAsset } from '../audio-stream/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttService } from '../stt/stt.service';
-import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { UpdateImportanceDto } from './dtos/update-importance-rating.dto';
 
 import {
-  QuizMode,
   InputType,
   ProcessStatus,
+  QuizMode,
 } from './answer-submission.constants';
-import { AnswerSubmission } from './entities/answer-submission.entity';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
-import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
+import { SubmitAnswerDto } from './dtos/submit-answer.dto';
+import { AnswerSubmission } from './entities/answer-submission.entity';
 
 interface AvgImportanceResult {
   avg: string | null;
@@ -37,6 +38,7 @@ export class AnswerSubmissionService {
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
     private readonly sttService: SttService,
+    private readonly streaksService: StreaksService,
   ) {}
 
   async submitAnswer(
@@ -108,6 +110,15 @@ export class AnswerSubmissionService {
         );
       }
     });
+
+    try {
+      await this.streaksService.recordDailyActivity(userId);
+    } catch (error) {
+      this.logger.error(
+        `Failed to record daily activity for userId: ${userId}`,
+        error,
+      );
+    }
 
     return savedSubmission;
   }

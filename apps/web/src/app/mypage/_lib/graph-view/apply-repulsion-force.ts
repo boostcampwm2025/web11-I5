@@ -1,5 +1,5 @@
 import { PHISICS_CONSTANT } from "../../_constants/graph-view-constant";
-import { NodeMapType } from "../../types/graph-view";
+import { NodeMapType } from "../../_types/graph-view";
 
 // 미는 힘 => F = strength / distance^2
 function applyRepulsionForce(nodes: NodeMapType) {
