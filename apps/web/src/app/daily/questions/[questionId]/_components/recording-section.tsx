@@ -50,9 +50,7 @@ function RecordingSection({ questionId }: RecordingSectionProps) {
     formData.append("audioAssetId", assetId.toString());
     formData.append("questionId", questionId.toString());
 
-    await React.startTransition(() => {
-      formAction(formData);
-    });
+    formAction(formData);
   };
 
   const handleMaxTimeReached = React.useCallback(() => {
