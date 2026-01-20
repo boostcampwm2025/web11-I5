@@ -30,7 +30,7 @@ export async function apiClient(
 
   const apiOrigins = new URL(API_BASE_URL).origin;
   const targetOrigin = new URL(url).origin;
-  if (accessToken && targetOrigin !== apiOrigins) {
+  if (accessToken && targetOrigin === apiOrigins) {
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
