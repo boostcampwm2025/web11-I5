@@ -27,8 +27,6 @@ import { AnswerSubmission } from './entities/answer-submission.entity';
 
 @Injectable()
 export class AnswerSubmissionService {
-  private readonly logger = new Logger(AnswerSubmissionService.name);
-
   constructor(
     @InjectRepository(AnswerSubmission)
     private readonly answerSubmissionRepository: Repository<AnswerSubmission>,
@@ -38,6 +36,7 @@ export class AnswerSubmissionService {
     private readonly questionRepository: Repository<Question>,
     private readonly sttService: SttService,
     private readonly streaksService: StreaksService,
+    private readonly logger: Logger,
   ) {}
 
   async submitAnswer(

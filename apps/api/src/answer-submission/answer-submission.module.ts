@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Logger, Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StreaksModule } from 'src/streaks/streaks.module';
 import { AudioAsset } from '../audio-stream/entities/audio-asset.entity';
@@ -15,7 +15,13 @@ import { AnswerSubmission } from './entities/answer-submission.entity';
     StreaksModule,
   ],
   controllers: [AnswerSubmissionController],
-  providers: [AnswerSubmissionService],
+  providers: [
+    AnswerSubmissionService,
+    {
+      provide: Logger,
+      useFactory: () => new Logger(AnswerSubmissionService.name),
+    },
+  ],
   exports: [AnswerSubmissionService, TypeOrmModule],
 })
 export class AnswerSubmissionModule {}

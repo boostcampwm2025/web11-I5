@@ -1,183 +1,283 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { AudioUploadStatus } from './entities/audio-asset.entity';
-import { AudioUploadCompletedEvent } from './events/audio-upload-completed.event';
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 
-/**
- * AudioStreamService 테스트
- *
- * 실제 파일 시스템 작업(startSession, saveChunk, finalizeSession)은
- * 실제 fs 모듈에 의존하므로, 여기서는 비즈니스 로직과 관련된 부분만 테스트합니다.
- *
- * 주요 테스트 대상:
- * 1. 업로드 완료 시 이벤트 발행
- * 2. 업로드 실패 시 상태 업데이트
- * 3. findAudioAsset 동작
- */
+jest.mock('fs', () => {
+  // ✅ 원본 fs는 유지(= fs.native 유지)하면서 createWriteStream만 mock
+  const actual = jest.requireActual<typeof import('fs')>('fs');
+  return {
+    ...actual,
+    createWriteStream: jest.fn(),
+  };
+});
 
-const mockAudioAssetRepository = {
-  create: jest.fn(),
-  save: jest.fn(),
-  update: jest.fn(),
-  findOneBy: jest.fn(),
-};
+jest.mock('crypto', () => ({
+  randomUUID: jest.fn(),
+}));
 
-const mockObjectStorageService = {
-  uploadFile: jest.fn(),
-};
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
-const mockEventEmitter = {
-  emit: jest.fn(),
-};
+import { AudioStreamService } from './audio-stream.service';
+import { AudioAsset, AudioUploadStatus } from './entities/audio-asset.entity';
+import { ObjectStorageService } from '../object-storage/object-storage.service';
+import { AudioSessionStatus } from './audio-stream.constants';
 
-describe('AudioStreamService - Unit Tests', () => {
-  beforeEach(() => {
+import { randomUUID } from 'crypto';
+import * as fs from 'fs';
+import { createWriteStream } from 'fs';
+
+describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () => {
+  let moduleRef: TestingModule;
+  let service: AudioStreamService;
+
+  const repoMock = {
+    create: jest.fn(),
+    save: jest.fn(),
+    update: jest.fn(),
+    findOneBy: jest.fn(),
+  };
+
+  const objectStorageMock = {
+    uploadFile: jest.fn(),
+  };
+
+  const eventEmitterMock = { emit: jest.fn() };
+
+  const writeStreamMock = {
+    write: jest.fn((_: any, cb: (err?: Error | null) => void) => cb(null)),
+    end: jest.fn((cb: (err?: Error | null) => void) => cb(null)),
+  } as any;
+
+  const FIXED_SESSION_ID = 'session-uuid-1';
+  const USER_ID = 7;
+
+  let mkdirSpy: jest.SpyInstance;
+  let statSpy: jest.SpyInstance;
+  let readFileSpy: jest.SpyInstance;
+  let writeFileSpy: jest.SpyInstance;
+  let unlinkSpy: jest.SpyInstance;
+
+  beforeEach(async () => {
     jest.clearAllMocks();
+
+    (randomUUID as unknown as jest.Mock).mockReturnValue(FIXED_SESSION_ID);
+
+    // ✅ createWriteStream은 spyOn 대신 jest.mock('fs')로 만든 mock 함수에 직접 주입
+    (createWriteStream as unknown as jest.Mock).mockReturnValue(
+      writeStreamMock,
+    );
+
+    // ✅ fs.promises는 원본을 유지하므로 spyOn 가능
+    mkdirSpy = jest
+      .spyOn(fs.promises, 'mkdir')
+      .mockResolvedValue(undefined as any);
+
+    statSpy = jest
+      .spyOn(fs.promises, 'stat')
+      .mockResolvedValueOnce({ size: 1000 } as any) // pcmDataSize
+      .mockResolvedValueOnce({ size: 1044 } as any); // final byteSize (44 + 1000)
+
+    readFileSpy = jest
+      .spyOn(fs.promises, 'readFile')
+      .mockResolvedValue(Buffer.from('pcmdata') as any);
+
+    writeFileSpy = jest
+      .spyOn(fs.promises, 'writeFile')
+      .mockResolvedValue(undefined as any);
+
+    unlinkSpy = jest
+      .spyOn(fs.promises, 'unlink')
+      .mockResolvedValue(undefined as any);
+
+    repoMock.create.mockImplementation((dto: any) => dto);
+    repoMock.save.mockResolvedValue({ id: 123 });
+
+    moduleRef = await Test.createTestingModule({
+      providers: [
+        AudioStreamService,
+        { provide: getRepositoryToken(AudioAsset), useValue: repoMock },
+        { provide: ObjectStorageService, useValue: objectStorageMock },
+        { provide: EventEmitter2, useValue: eventEmitterMock },
+      ],
+    }).compile();
+
+    service = moduleRef.get(AudioStreamService);
   });
 
-  describe('AudioAsset Repository Operations', () => {
-    it('AudioAsset 생성 시 uploadStatus가 PENDING이어야 한다', () => {
-      const mockAsset = {
-        id: 100,
-        userId: 1,
-        uploadStatus: AudioUploadStatus.PENDING,
-        storageUrl: '/tmp/audio.wav',
-        objectKey: null,
-      };
+  afterEach(async () => {
+    mkdirSpy.mockRestore();
+    statSpy.mockRestore();
+    readFileSpy.mockRestore();
+    writeFileSpy.mockRestore();
+    unlinkSpy.mockRestore();
 
-      mockAudioAssetRepository.create.mockReturnValue(mockAsset);
-
-      const created = mockAudioAssetRepository.create({
-        userId: 1,
-        uploadStatus: AudioUploadStatus.PENDING,
-        storageUrl: '/tmp/audio.wav',
-        objectKey: null,
-      });
-
-      expect(created.uploadStatus).toBe(AudioUploadStatus.PENDING);
-    });
-
-    it('업로드 성공 시 uploadStatus를 COMPLETED로 업데이트해야 한다', async () => {
-      mockAudioAssetRepository.update.mockResolvedValue({ affected: 1 });
-
-      await mockAudioAssetRepository.update(100, {
-        uploadStatus: AudioUploadStatus.COMPLETED,
-        storageUrl: 'https://storage.example.com/audio.wav',
-        objectKey: 'audio-sessions/uuid/audio.wav',
-      });
-
-      expect(mockAudioAssetRepository.update).toHaveBeenCalledWith(
-        100,
-        expect.objectContaining({
-          uploadStatus: AudioUploadStatus.COMPLETED,
-        }),
-      );
-    });
-
-    it('업로드 실패 시 uploadStatus를 FAILED로 업데이트해야 한다', async () => {
-      mockAudioAssetRepository.update.mockResolvedValue({ affected: 1 });
-
-      await mockAudioAssetRepository.update(100, {
-        uploadStatus: AudioUploadStatus.FAILED,
-      });
-
-      expect(mockAudioAssetRepository.update).toHaveBeenCalledWith(100, {
-        uploadStatus: AudioUploadStatus.FAILED,
-      });
-    });
+    await moduleRef.close();
   });
 
-  describe('AudioUploadCompletedEvent', () => {
-    it('업로드 완료 이벤트가 올바른 audioAssetId를 포함해야 한다', () => {
-      const audioAssetId = 100;
-      const event = new AudioUploadCompletedEvent(audioAssetId);
+  describe('오디오 스트리밍 시작', () => {
+    it('오디오 스트리밍 시작 시 세션이 생긴다', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
 
-      expect(event.audioAssetId).toBe(audioAssetId);
+      expect(sessionId).toBe(FIXED_SESSION_ID);
+      expect(mkdirSpy).toHaveBeenCalledTimes(1);
+      expect(createWriteStream).toHaveBeenCalledTimes(1);
+
+      const sessions = (service as any).sessions as Map<string, any>;
+      expect(sessions.has(sessionId)).toBe(true);
     });
 
-    it('업로드 완료 시 이벤트가 발행되어야 한다', () => {
-      const audioAssetId = 100;
-      const event = new AudioUploadCompletedEvent(audioAssetId);
+    it('오디오 스트리밍 시작 시 새로 생긴 세션의 상태는 OPEN이다.', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
 
-      mockEventEmitter.emit('audio.upload.completed', event);
+      const sessions = (service as any).sessions as Map<string, any>;
+      const session = sessions.get(sessionId);
 
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
-        'audio.upload.completed',
-        expect.objectContaining({ audioAssetId: 100 }),
-      );
-    });
-
-    it('업로드 실패 시 이벤트가 발행되지 않아야 한다', () => {
-      // 업로드 실패 시뮬레이션: emit이 호출되지 않음
-      // (실제 서비스에서는 catch 블록에서 emit을 호출하지 않음)
-
-      expect(mockEventEmitter.emit).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('AudioUploadStatus Enum', () => {
-    it('PENDING, COMPLETED, FAILED 상태가 정의되어야 한다', () => {
-      expect(AudioUploadStatus.PENDING).toBe('pending');
-      expect(AudioUploadStatus.COMPLETED).toBe('completed');
-      expect(AudioUploadStatus.FAILED).toBe('failed');
+      expect(session.status).toBe(AudioSessionStatus.OPEN);
+      expect(session.lastSeq).toBe(0);
+      expect(session.codec).toBe('pcm');
+      expect(session.sampleRate).toBe(16000);
+      expect(session.channels).toBe(1);
     });
   });
 
-  describe('findAudioAsset', () => {
-    it('ID로 AudioAsset을 찾을 수 있어야 한다', async () => {
-      const mockAsset = {
-        id: 100,
-        userId: 1,
-        uploadStatus: AudioUploadStatus.COMPLETED,
-        storageUrl: 'https://storage.example.com/audio.wav',
-        objectKey: 'audio-sessions/uuid/audio.wav',
-      };
+  describe('오디오 청크 저장', () => {
+    it('열린 스트리밍 세션에 오디오 청크 저장을 할 수 있다.', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
 
-      mockAudioAssetRepository.findOneBy.mockResolvedValue(mockAsset);
+      const buf = Buffer.from([1, 2, 3]);
+      await service.saveChunk(sessionId, 1, buf);
 
-      const result = await mockAudioAssetRepository.findOneBy({ id: 100 });
-
-      expect(mockAudioAssetRepository.findOneBy).toHaveBeenCalledWith({
-        id: 100,
-      });
-      expect(result).toEqual(mockAsset);
-      expect(result?.uploadStatus).toBe(AudioUploadStatus.COMPLETED);
-    });
-
-    it('존재하지 않는 ID는 null을 반환해야 한다', async () => {
-      mockAudioAssetRepository.findOneBy.mockResolvedValue(null);
-
-      const result = await mockAudioAssetRepository.findOneBy({ id: 999 });
-
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('ObjectStorageService Integration', () => {
-    it('업로드 성공 시 storageUrl을 반환해야 한다', async () => {
-      const expectedUrl =
-        'https://storage.example.com/audio-sessions/uuid/audio.wav';
-      mockObjectStorageService.uploadFile.mockResolvedValue(expectedUrl);
-
-      const result = await mockObjectStorageService.uploadFile(
-        '/tmp/audio.wav',
-        'audio-sessions/uuid/audio.wav',
+      expect(writeStreamMock.write).toHaveBeenCalledTimes(1);
+      expect(writeStreamMock.write).toHaveBeenCalledWith(
+        buf,
+        expect.any(Function),
       );
 
-      expect(result).toBe(expectedUrl);
+      const sessions = (service as any).sessions as Map<string, any>;
+      expect(sessions.get(sessionId).lastSeq).toBe(1);
     });
 
-    it('업로드 실패 시 에러를 던져야 한다', async () => {
-      mockObjectStorageService.uploadFile.mockRejectedValue(
-        new Error('Upload failed: Network error'),
-      );
+    it('닫힌 스트리밍 세션에 오디오 청크 저장할 시 에러가 발생한다.', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
+
+      const sessions = (service as any).sessions as Map<string, any>;
+      sessions.get(sessionId).status = AudioSessionStatus.FINALIZED;
 
       await expect(
-        mockObjectStorageService.uploadFile(
-          '/tmp/audio.wav',
-          'audio-sessions/uuid/audio.wav',
-        ),
-      ).rejects.toThrow('Upload failed: Network error');
+        service.saveChunk(sessionId, 1, Buffer.from([9])),
+      ).rejects.toThrow(/Session is not open/);
+
+      expect(writeStreamMock.write).not.toHaveBeenCalled();
+    });
+
+    it('오디오 청크가 올바른 순서에 맞게 저장된다.', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
+
+      await service.saveChunk(sessionId, 1, Buffer.from([1]));
+      await service.saveChunk(sessionId, 2, Buffer.from([2]));
+      await service.saveChunk(sessionId, 3, Buffer.from([3]));
+
+      expect(writeStreamMock.write).toHaveBeenCalledTimes(3);
+
+      const sessions = (service as any).sessions as Map<string, any>;
+      expect(sessions.get(sessionId).lastSeq).toBe(3);
+    });
+
+    it('오디오 청크를 잘못된 순서로 저장하려고 할 시 (현재 구현 기준) 무시된다.', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
+
+      await service.saveChunk(sessionId, 2, Buffer.from([2])); // OK
+      await service.saveChunk(sessionId, 2, Buffer.from([9])); // duplicate -> ignore
+      await service.saveChunk(sessionId, 1, Buffer.from([1])); // out-of-order -> ignore
+
+      expect(writeStreamMock.write).toHaveBeenCalledTimes(1);
+
+      const sessions = (service as any).sessions as Map<string, any>;
+      expect(sessions.get(sessionId).lastSeq).toBe(2);
+    });
+  });
+
+  describe('오디오 스트리밍 종료', () => {
+    it('오디오 스트리밍 세션 종료 시 세션이 제거된다.', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
+
+      jest
+        .spyOn(service as any, 'uploadToStorageAsync')
+        .mockResolvedValue(undefined);
+
+      await service.finalizeSession(sessionId, USER_ID);
+
+      const sessions = (service as any).sessions as Map<string, any>;
+      expect(sessions.has(sessionId)).toBe(false);
+    });
+
+    it('OPEN 상태가 아닌 스트리밍 세션을 종료하려고 하면 에러가 발생한다.', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
+
+      const sessions = (service as any).sessions as Map<string, any>;
+      sessions.get(sessionId).status = AudioSessionStatus.FINALIZED;
+
+      await expect(service.finalizeSession(sessionId, USER_ID)).rejects.toThrow(
+        /Session is not open/,
+      );
+    });
+
+    it('오디오 스트리밍 세션 종료 시 오디오 에셋이 생성된다.', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
+
+      jest
+        .spyOn(service as any, 'uploadToStorageAsync')
+        .mockResolvedValue(undefined);
+
+      const result = await service.finalizeSession(sessionId, USER_ID);
+
+      expect(writeStreamMock.end).toHaveBeenCalledTimes(1);
+
+      expect(statSpy).toHaveBeenCalledTimes(2);
+      expect(readFileSpy).toHaveBeenCalledTimes(1);
+      expect(writeFileSpy).toHaveBeenCalledTimes(1);
+
+      expect(repoMock.create).toHaveBeenCalledTimes(1);
+      expect(repoMock.save).toHaveBeenCalledTimes(1);
+
+      const dto = repoMock.create.mock.calls[0][0];
+      expect(dto.userId).toBe(USER_ID);
+      expect(dto.uploadStatus).toBe(AudioUploadStatus.PENDING);
+      expect(dto.byteSize).toBe('1044');
+      expect(dto.codec).toBe('pcm');
+      expect(dto.sampleRate).toBe(16000);
+      expect(dto.channels).toBe(1);
+
+      expect(result.assetId).toBe(123);
+      expect(result.fileName).toBe(`${FIXED_SESSION_ID}.wav`);
+      expect(result.filePath).toContain(
+        `/tmp/audio_sessions/${FIXED_SESSION_ID}/`,
+      );
+    });
+
+    it('오디오 스트리밍 세션 종료 시 Object Storage 업로드가 시작된다.', async () => {
+      const sessionId = await service.startSession('pcm', 16000, 1);
+
+      const uploadSpy = jest
+        .spyOn(service as any, 'uploadToStorageAsync')
+        .mockResolvedValue(undefined);
+
+      await service.finalizeSession(sessionId, USER_ID);
+
+      expect(uploadSpy).toHaveBeenCalledTimes(1);
+
+      const [assetId, localFilePath, calledSessionId, fileName] =
+        uploadSpy.mock.calls[0];
+
+      expect(assetId).toBe(123);
+      expect(calledSessionId).toBe(FIXED_SESSION_ID);
+      expect(fileName).toBe(`${FIXED_SESSION_ID}.wav`);
+      expect(localFilePath).toContain(
+        `/tmp/audio_sessions/${FIXED_SESSION_ID}/`,
+      );
     });
   });
 });

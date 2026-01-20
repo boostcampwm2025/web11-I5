@@ -2,7 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { AnswerSubmissionService } from './answer-submission.service';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 import {
@@ -51,6 +51,12 @@ describe('AnswerSubmissionService', () => {
   let sttService: SttService;
 
   beforeEach(async () => {
+    const loggerMock = {
+      log: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AnswerSubmissionService,
@@ -74,6 +80,7 @@ describe('AnswerSubmissionService', () => {
           provide: StreaksService,
           useValue: mockStreaksService,
         },
+        { provide: Logger, useValue: loggerMock },
       ],
     }).compile();
 
