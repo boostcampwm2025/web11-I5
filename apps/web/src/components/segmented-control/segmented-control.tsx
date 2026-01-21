@@ -49,10 +49,11 @@ interface SegmentedControlOption {
 
 interface SegmentedControlProps
   extends
-    Omit<React.HTMLAttributes<HTMLDivElement>, "onChange">,
+    Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue">,
     VariantProps<typeof segmentedControlVariants> {
   options: SegmentedControlOption[];
-  value: string;
+  value?: string;
+  defaultValue?: string;
   onChange?: (value: string) => void;
 }
 
@@ -60,15 +61,22 @@ function SegmentedControl({
   className,
   size,
   options,
-  value,
+  value: controlledValue,
+  defaultValue,
   onChange,
   ...props
 }: SegmentedControlProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const [uncontrolledValue, setUncontrolledValue] = React.useState(
+    defaultValue ?? options[0]?.value ?? "",
+  );
   const [indicatorStyle, setIndicatorStyle] = React.useState<{
     width: number;
     left: number;
   } | null>(null);
+
+  const isControlled = controlledValue !== undefined;
+  const value = isControlled ? controlledValue : uncontrolledValue;
 
   const selectedIndex = options.findIndex((opt) => opt.value === value);
 
@@ -116,7 +124,13 @@ function SegmentedControl({
             data-segment-item
             aria-selected={isSelected}
             disabled={option.disabled}
-            onClick={() => !option.disabled && onChange?.(option.value)}
+            onClick={() => {
+              if (option.disabled) return;
+              if (!isControlled) {
+                setUncontrolledValue(option.value);
+              }
+              onChange?.(option.value);
+            }}
             className={cn(
               segmentedControlItemVariants({
                 size,

@@ -8,7 +8,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
 import { StreaksService } from 'src/streaks/streaks.service';
 import { Repository } from 'typeorm';
-import { AudioAsset } from '../audio-stream/entities/audio-asset.entity';
+import { OnEvent } from '@nestjs/event-emitter';
+import {
+  AudioAsset,
+  AudioUploadStatus,
+} from '../audio-stream/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttService } from '../stt/stt.service';
 import { UpdateImportanceDto } from './dtos/update-importance-rating.dto';
@@ -19,6 +23,7 @@ import {
   QuizMode,
 } from './answer-submission.constants';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
+import { AudioUploadCompletedEvent } from '../audio-stream/events/audio-upload-completed.event';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 
@@ -28,8 +33,6 @@ interface AvgImportanceResult {
 
 @Injectable()
 export class AnswerSubmissionService {
-  private readonly logger = new Logger(AnswerSubmissionService.name);
-
   constructor(
     @InjectRepository(AnswerSubmission)
     private readonly answerSubmissionRepository: Repository<AnswerSubmission>,
@@ -39,6 +42,7 @@ export class AnswerSubmissionService {
     private readonly questionRepository: Repository<Question>,
     private readonly sttService: SttService,
     private readonly streaksService: StreaksService,
+    private readonly logger: Logger,
   ) {}
 
   async submitAnswer(
@@ -58,9 +62,10 @@ export class AnswerSubmissionService {
       );
     }
 
-    if (!audioAsset.objectKey) {
+    // 업로드 실패 상태만 거부 (PENDING은 허용)
+    if (audioAsset.uploadStatus === AudioUploadStatus.FAILED) {
       throw new BadRequestException(
-        `Audio asset ${audioAssetId} not uploaded to object storage, missing objectKey`,
+        `Audio asset ${audioAssetId} upload failed. Please re-record your answer.`,
       );
     }
 
@@ -89,27 +94,38 @@ export class AnswerSubmissionService {
     const savedSubmission =
       await this.answerSubmissionRepository.save(answerSubmission);
 
-    // Request STT asynchronously
-    this.sttService.requestStt(audioAsset).catch(async (error) => {
-      this.logger.error(
-        `Failed to request STT for audioAssetId: ${audioAsset.id}`,
-        error,
-      );
+    // 업로드 완료 상태일 때만 즉시 STT 요청
+    // PENDING 상태면 업로드 완료 이벤트에서 STT 요청됨
+    if (audioAsset.uploadStatus === AudioUploadStatus.COMPLETED) {
+      // sttStatus를 IN_PROGRESS로 변경하여 중복 요청 방지
+      savedSubmission.sttStatus = ProcessStatus.IN_PROGRESS;
+      await this.answerSubmissionRepository.save(savedSubmission);
 
-      // Update submission status to FAILED when STT request fails
-      try {
-        savedSubmission.sttStatus = ProcessStatus.FAILED;
-        await this.answerSubmissionRepository.save(savedSubmission);
-        this.logger.warn(
-          `Updated submission ${savedSubmission.id} sttStatus to FAILED due to STT request failure`,
-        );
-      } catch (updateError) {
+      this.sttService.requestStt(audioAsset).catch(async (error) => {
         this.logger.error(
-          `Failed to update submission ${savedSubmission.id} status after STT request failure`,
-          updateError,
+          `Failed to request STT for audioAssetId: ${audioAsset.id}`,
+          error,
         );
-      }
-    });
+
+        // Update submission status to FAILED when STT request fails
+        try {
+          savedSubmission.sttStatus = ProcessStatus.FAILED;
+          await this.answerSubmissionRepository.save(savedSubmission);
+          this.logger.warn(
+            `Updated submission ${savedSubmission.id} sttStatus to FAILED due to STT request failure`,
+          );
+        } catch (updateError) {
+          this.logger.error(
+            `Failed to update submission ${savedSubmission.id} status after STT request failure`,
+            updateError,
+          );
+        }
+      });
+    } else {
+      this.logger.log(
+        `Audio asset ${audioAssetId} is still uploading. STT will be triggered after upload completes.`,
+      );
+    }
 
     try {
       await this.streaksService.recordDailyActivity(userId);
@@ -246,5 +262,82 @@ export class AnswerSubmissionService {
     await this.questionRepository.update(questionId, {
       avgImportance: newAverage,
     });
+  }
+
+  /**
+   * 오디오 업로드 완료 이벤트 핸들러
+   * 업로드 완료 시 해당 audioAssetId로 제출된 답변이 있고 STT가 아직 PENDING이면 STT 요청
+   */
+  @OnEvent('audio.upload.completed')
+  async handleAudioUploadCompleted(
+    event: AudioUploadCompletedEvent,
+  ): Promise<void> {
+    const { audioAssetId } = event;
+
+    this.logger.log(
+      `Received audio.upload.completed event for assetId: ${audioAssetId}`,
+    );
+
+    // 해당 audioAssetId로 제출된 답변 조회
+    const submission = await this.answerSubmissionRepository.findOne({
+      where: { audioAssetId },
+    });
+
+    if (!submission) {
+      this.logger.log(
+        `No submission found for audioAssetId: ${audioAssetId}. Skipping STT.`,
+      );
+      return;
+    }
+
+    const updateResult = await this.answerSubmissionRepository.update(
+      { audioAssetId, sttStatus: ProcessStatus.PENDING },
+      { sttStatus: ProcessStatus.IN_PROGRESS },
+    );
+
+    if (updateResult.affected === 0) {
+      this.logger.log(
+        `Submission ${submission.id} sttStatus is ${submission.sttStatus}, not PENDING. Skipping STT.`,
+      );
+      return;
+    }
+
+    // AudioAsset 조회
+    const audioAsset = await this.audioAssetRepository.findOne({
+      where: { id: audioAssetId },
+    });
+
+    if (!audioAsset) {
+      this.logger.error(`AudioAsset not found for id: ${audioAssetId}`);
+      await this.answerSubmissionRepository.update(
+        { audioAssetId },
+        { sttStatus: ProcessStatus.PENDING },
+      );
+      return;
+    }
+
+    // STT 요청
+    try {
+      await this.sttService.requestStt(audioAsset);
+      this.logger.log(
+        `STT requested for audioAssetId: ${audioAssetId} after upload completed`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to request STT for audioAssetId: ${audioAssetId}`,
+        error,
+      );
+
+      // STT 요청 실패 시 상태 업데이트
+      try {
+        submission.sttStatus = ProcessStatus.FAILED;
+        await this.answerSubmissionRepository.save(submission);
+      } catch (updateError) {
+        this.logger.error(
+          `Failed to update submission status after STT failure for audioAssetId: ${audioAssetId}`,
+          updateError,
+        );
+      }
+    }
   }
 }
