@@ -3,7 +3,6 @@
 import * as React from "react";
 import { Button } from "@/components/button/button";
 import { StarRating } from "@/components/star/star-rating";
-import { cn } from "@/lib/cn";
 import {
   updateImportanceAction,
   type ActionState,
@@ -24,7 +23,7 @@ function ImportanceRating({
 
   const [state, formAction, isPending] = React.useActionState<
     ActionState | null,
-    { questionId: number; score: number }
+    FormData
   >(updateImportanceAction, null);
 
   React.useEffect(() => {
@@ -40,13 +39,15 @@ function ImportanceRating({
 
   if (!open) return null;
 
-  const handleSubmit = () => {
-    formAction({ questionId, score });
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
-      <div className="w-75 max-w-sm bg-white p-6 rounded-2xl border border-zinc-100 shadow-2xl flex flex-col gap-6 animate-in zoom-in-95 duration-200">
+      <form
+        action={formAction}
+        className="w-75 max-w-sm bg-white p-6 rounded-2xl border border-zinc-100 shadow-2xl flex flex-col gap-6 animate-in zoom-in-95 duration-200"
+      >
+        <input type="hidden" name="questionId" value={questionId} />
+        <input type="hidden" name="score" value={score} />
+
         <div className="text-center space-y-1">
           <h2 className="text-lg font-bold text-zinc-900">
             이 문제가 얼마나 중요했나요?
@@ -61,19 +62,16 @@ function ImportanceRating({
         </div>
 
         <Button
-          onClick={handleSubmit}
+          type="submit"
           disabled={isPending || score === 0}
           size="lg"
-          className={cn(
-            "w-full rounded-xl text-base font-semibold transition-all duration-200",
-            score > 0
-              ? "bg-zinc-900 text-white hover:bg-zinc-800 shadow-md"
-              : "bg-zinc-100 text-zinc-400 hover:bg-zinc-100 cursor-not-allowed",
-          )}
+          className={
+            "w-full text-base font-semibold transition-all duration-200"
+          }
         >
           {isPending ? "분석 중..." : "평가 제출하기"}
         </Button>
-      </div>
+      </form>
     </div>
   );
 }
