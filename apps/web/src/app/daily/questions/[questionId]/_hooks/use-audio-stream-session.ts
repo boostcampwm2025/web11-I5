@@ -175,13 +175,17 @@ function useAudioStreamSession(options: UseAudioStreamSessionOptions = {}) {
       return;
     }
 
+    // 마지막으로 전송한 seq 번호 저장 (seqRef는 다음 seq이므로 -1)
+    const lastSeq = seqRef.current > 0 ? seqRef.current - 1 : undefined;
+
     try {
       setIsRecording(false);
       setIsLoading(true);
 
-      // 세션 종료
+      // 세션 종료 (서버에서 lastSeq까지 수신 대기)
       const res = await finalizeAudioSession({
         sessionId,
+        lastSeq,
       });
 
       setAssetId(res.assetId);

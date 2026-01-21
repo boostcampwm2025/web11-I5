@@ -104,14 +104,19 @@ export class AudioStreamService {
   ): Promise<void> {
     const session = this.sessions.get(sessionId);
 
+    // 세션이 없거나 이미 닫힌 경우 무시 (finalize 후 뒤늦게 도착한 청크)
     if (!session) {
-      throw new Error(`Session not found: ${sessionId}`);
+      this.logger.debug(
+        `Ignoring chunk for non-existent session: ${sessionId} (likely already finalized)`,
+      );
+      return;
     }
 
     if (session.status !== AudioSessionStatus.OPEN) {
-      throw new Error(
-        `Session is not open: ${sessionId} (status: ${session.status})`,
+      this.logger.debug(
+        `Ignoring chunk for closed session: ${sessionId} (status: ${session.status})`,
       );
+      return;
     }
 
     // MVP: 간단한 seq 검증 (역순/중복 거부)
@@ -145,10 +150,12 @@ export class AudioStreamService {
   /**
    * 오디오 스트리밍 종료
    * writeStream을 닫고 AudioAsset을 DB에 저장한 후 최종 파일 정보를 반환한다.
+   * @param lastSeq 클라이언트가 전송한 마지막 seq (이 seq까지 수신 대기)
    */
   async finalizeSession(
     sessionId: string,
-    userId: number, // MVP: 인증/인가는 Gateway에서 처리되었다고 가정
+    userId: number,
+    lastSeq?: number,
   ): Promise<{ filePath: string; fileName: string; assetId: number }> {
     const session = this.sessions.get(sessionId);
 
@@ -160,6 +167,23 @@ export class AudioStreamService {
       throw new Error(
         `Session is not open: ${sessionId} (status: ${session.status})`,
       );
+    }
+
+    // lastSeq가 제공되면 해당 seq까지 수신 대기 (최대 1분)
+    if (lastSeq !== undefined && lastSeq > session.lastSeq) {
+      const maxWaitMs = 60000;
+      const pollIntervalMs = 50;
+      const startTime = Date.now();
+
+      while (session.lastSeq < lastSeq) {
+        if (Date.now() - startTime > maxWaitMs) {
+          this.logger.warn(
+            `Timeout waiting for lastSeq: expected=${lastSeq}, received=${session.lastSeq}, session=${sessionId}`,
+          );
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+      }
     }
 
     // writeStream 닫기
