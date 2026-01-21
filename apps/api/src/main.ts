@@ -31,7 +31,17 @@ async function bootstrap() {
       .setTitle('MMH API')
       .setDescription('MMH API 문서')
       .setVersion('1.0')
-      .addCookieAuth('userId')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Access Token을 입력하세요',
+          in: 'header',
+        },
+        'JWT-auth', // 컨트롤러에서 사용
+      )
       .addTag('users', '사용자 관련 API')
       .addTag('streaks', '스트릭 관련 API')
       .addTag('audio-stream', '오디오 스트리밍 관련 API')

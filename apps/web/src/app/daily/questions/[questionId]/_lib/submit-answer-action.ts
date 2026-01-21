@@ -1,5 +1,8 @@
 "use server";
 
+import { redirect } from "next/navigation";
+import { apiPost } from "@/lib/api-client";
+
 export interface SubmitAnswerState {
   success: boolean;
   message: string;
@@ -22,18 +25,10 @@ export async function submitAnswerAction(
     };
   }
 
-  const apiUrl = process.env.API_URL;
-
   try {
-    const response = await fetch(`${apiUrl}/answer-submissions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        audioAssetId: Number(audioAssetId),
-        questionId: Number(questionId),
-      }),
+    const data = await apiPost<{ id: number }>("/api/answer-submissions", {
+      audioAssetId: Number(audioAssetId),
+      questionId: Number(questionId),
     });
 
     if (!response.ok) {

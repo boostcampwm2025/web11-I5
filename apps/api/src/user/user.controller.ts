@@ -3,31 +3,34 @@ import {
   Get,
   Post,
   Body,
-  Req,
   Res,
   HttpCode,
   HttpStatus,
-  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBody,
-  ApiCookieAuth,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { UserService } from './user.service';
 import type { User } from './entities/user.entity';
 import { LoginResponseDto } from './dtos/login.response.dto';
 import { LoginRequestDto } from './dtos/login.request.dto';
-
-const COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7; // 7일
+import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserId } from '../auth/decorators/user-id.decorator';
 
 @ApiTags('users')
 @Controller('api/users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Get('test-users')
   @ApiOperation({ summary: '테스트 사용자 목록 조회' })
@@ -62,13 +65,12 @@ export class UserController {
       loginRequestDto.password,
     );
 
-    // HTTP 응답 처리 (쿠키 설정)
-    res.cookie('userId', user.id.toString(), {
-      httpOnly: false, // 프론트엔드에서도 접근 가능하도록
-      maxAge: COOKIE_MAX_AGE_MS,
-    });
+    // Access Token 발급
+    const accessToken = await this.authService.generateAccessToken(user);
 
+    // Access Token을 응답 본문에 포함 (BFF에서 쿠키로 저장)
     const response: LoginResponseDto = {
+      accessToken,
       user: {
         id: user.id,
         nickname: user.nickname,
@@ -81,7 +83,8 @@ export class UserController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '로그아웃' })
-  @ApiCookieAuth('userId')
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 200,
     description: '로그아웃 성공',
@@ -93,13 +96,13 @@ export class UserController {
     },
   })
   logout(@Res() res: Response): void {
-    res.clearCookie('userId');
     res.json({ message: '로그아웃 성공' });
   }
 
   @Get('me')
   @ApiOperation({ summary: '현재 사용자 정보 조회' })
-  @ApiCookieAuth('userId')
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
   @ApiResponse({
     status: 200,
     description: '현재 사용자 정보',
@@ -109,11 +112,7 @@ export class UserController {
     status: 401,
     description: '로그인이 필요합니다',
   })
-  async getCurrentUser(@Req() req: Request): Promise<User> {
-    const userId = Number(req.cookies?.userId);
-    if (!userId) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
-    }
+  async getCurrentUser(@UserId() userId: number): Promise<User> {
     return this.userService.getCurrentUser(userId);
   }
 }
