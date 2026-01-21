@@ -134,7 +134,8 @@ describe('AnswerEvaluationService', () => {
       };
       answerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
       answerEvaluationRepository.findOne.mockResolvedValue(null);
-      answerEvaluationRepository.create.mockReturnValue({ id: 100 });
+      answerEvaluationRepository.create.mockReturnValue({});
+      (mockEntityManager.save as jest.Mock).mockResolvedValue({ id: 100 });
 
       const result = await service.evaluate(1);
 
