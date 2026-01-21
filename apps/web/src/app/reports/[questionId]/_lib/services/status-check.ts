@@ -20,7 +20,10 @@ async function checkReportProcessingStatus(
     };
   }
 
-  if (submission.sttStatus === "PENDING") {
+  if (
+    submission.sttStatus === "PENDING" ||
+    submission.sttStatus === "IN_PROGRESS"
+  ) {
     return {
       status: "PROCESSING",
       step: "STT",
