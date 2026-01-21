@@ -36,23 +36,6 @@ function RecordingSection({ questionId }: RecordingSectionProps) {
     FormData
   >(submitAnswerAction, null);
 
-  const handleSubmitClick = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    event.preventDefault();
-
-    if (!assetId) {
-      console.error("오디오 데이터가 존재하지 않습니다.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("audioAssetId", assetId.toString());
-    formData.append("questionId", questionId.toString());
-
-    formAction(formData);
-  };
-
   const handleMaxTimeReached = React.useCallback(() => {
     stopRecording();
   }, [stopRecording]);
@@ -109,8 +92,7 @@ function RecordingSection({ questionId }: RecordingSectionProps) {
                     <RotateCcw className="w-4 h-4" /> 다시 시도
                   </Button>
                   <Button
-                    type="button"
-                    onClick={handleSubmitClick}
+                    type="submit"
                     disabled={isPending}
                     className="pl-6 pr-6"
                   >
