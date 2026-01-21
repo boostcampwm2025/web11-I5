@@ -51,7 +51,9 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
           </p>
         </div>
       ) : (
-        <GraphView graphData={graphData} changeNodeMap={changeNodeMap} />
+        <div className="border border-slate-200 rounded-md">
+          <GraphView graphData={graphData} changeNodeMap={changeNodeMap} />
+        </div>
       )}
       {openModalStatus && (
         <div
