@@ -80,7 +80,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             <Lock />
           </InputGroupAddon>
           <InputGroupInput
-            id="email"
+            id="password"
             type="password"
             name="password"
             placeholder="***********"
