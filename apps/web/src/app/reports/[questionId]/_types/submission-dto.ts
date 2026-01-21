@@ -1,6 +1,6 @@
 import { AnalysisStatus } from "./report-detail";
 
-export type STTStatus = "PENDING" | "DONE" | "FAILED";
+export type STTStatus = "PENDING" | "IN_PROGRESS" | "DONE" | "FAILED";
 export type InputType = "TEXT" | "VOICE";
 
 export interface SubmissionDTO {

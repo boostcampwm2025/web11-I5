@@ -2,17 +2,28 @@ import { AnalysisStatus, ReportDetail } from "../../_types/report-detail";
 import ScoreGauge from "./score-gauge";
 import AiFeedback from "./ai-feedback";
 import MetricsList from "./metrics-list";
-import { Button } from "@/components/button/button";
-import { AlertCircle, MoveRight } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { Question } from "@/app/daily/questions/_types/types";
+import RetryButton from "../retry-button";
+import ReEvaluateButton from "../re-evaluate-button";
 
 interface FeedbackSectionProps {
   attempt: number;
   status: AnalysisStatus;
   data: ReportDetail;
+  question: Question;
 }
 
-function FeedbackSection({ attempt, status, data }: FeedbackSectionProps) {
+function FeedbackSection({
+  attempt,
+  status,
+  data,
+  question,
+}: FeedbackSectionProps) {
   if (status === "PENDING") {
+    const isSttPending =
+      data.sttStatus === "IN_PROGRESS" || data.sttStatus === "PENDING";
+
     return (
       <section className="bg-white rounded-xl border border-[#E2E8F0] p-9 transition-all duration-300">
         <div className="flex flex-col items-center justify-center py-12 gap-6">
@@ -20,10 +31,14 @@ function FeedbackSection({ attempt, status, data }: FeedbackSectionProps) {
 
           <div className="text-center">
             <h2 className="font-bold text-slate-900 mb-3">
-              답변을 분석하고 있습니다
+              {isSttPending
+                ? "음성을 텍스트로 변환하고 있습니다"
+                : "답변을 분석하고 있습니다"}
             </h2>
             <p className="text-sm text-slate-500 leading-relaxed">
-              AI 면접관이 5가지 핵심 지표를 기반으로 채점 중 입니다.
+              {isSttPending
+                ? "음성 인식 중입니다."
+                : "AI 면접관이 5가지 핵심 지표를 기반으로 채점 중 입니다."}
             </p>
             <p className="text-sm text-slate-500">
               잠시만 기다려주세요. (약 5~10초 소요)
@@ -35,6 +50,8 @@ function FeedbackSection({ attempt, status, data }: FeedbackSectionProps) {
   }
 
   if (status === "FAILED") {
+    const isSttFailed = data.sttStatus === "FAILED";
+
     return (
       <section className="bg-white rounded-xl border border-[#E2E8F0] p-9 transition-all duration-300">
         <div className="flex flex-col items-center justify-center py-12 gap-6">
@@ -44,20 +61,26 @@ function FeedbackSection({ attempt, status, data }: FeedbackSectionProps) {
 
           <div className="text-center">
             <h2 className="font-bold text-slate-900 mb-3">
-              분석에 실패했습니다
+              {isSttFailed ? "음성 인식에 실패했습니다" : "채점에 실패했습니다"}
             </h2>
             <p className="text-sm text-slate-500">
-              오디오 파일 형식이 손상되어 분석할 수 없습니다.
+              {isSttFailed
+                ? "오디오 파일 형식이 손상되어 분석할 수 없습니다."
+                : "채점 처리 중 오류가 발생했습니다. 다시 시도해주세요."}
             </p>
           </div>
 
-          <Button
-            variant="default"
-            className="mt-2 px-5 py-4 font-semibold bg-[#4FD1C5] hover:bg-[#3DBFB3] text-white"
-          >
-            <MoveRight />
-            다시 시도하기
-          </Button>
+          {isSttFailed ? (
+            <RetryButton
+              question={question}
+              className="flex cursor-pointer items-center gap-2.5 bg-teal-400 hover:bg-teal-500 text-white font-bold px-4 py-2.5 rounded-xl transition-colors text-sm"
+            />
+          ) : (
+            <ReEvaluateButton
+              submissionId={data.submissionId}
+              className="flex cursor-pointer items-center gap-2.5 bg-teal-400 hover:bg-teal-500 text-white font-bold px-4 py-2.5 rounded-xl transition-colors text-sm"
+            />
+          )}
         </div>
       </section>
     );
