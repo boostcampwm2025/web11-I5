@@ -42,7 +42,12 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
           <InputGroupAddon>
             <User />
           </InputGroupAddon>
-          <InputGroupInput name="nickname" placeholder="홍길동" required />
+          <InputGroupInput
+            id="nickname"
+            name="nickname"
+            placeholder="홍길동"
+            required
+          />
         </InputGroup>
       </div>
 
@@ -101,7 +106,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
       </div>
 
       <div className="flex items-center gap-2 py-2 mb-4">
-        <Checkbox />
+        <Checkbox id="terms" name="terms" required />
         <label htmlFor="terms" className="text-xs text-muted-foreground">
           <span className="text-teal-600 font-semibold">서비스 이용약관</span>{" "}
           및{" "}

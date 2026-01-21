@@ -41,7 +41,11 @@ function LoginForm({ loginAction }: LoginFormProps) {
           <InputGroupAddon>
             <Mail />
           </InputGroupAddon>
-          <InputGroupInput name="email" placeholder="name@example.com" />
+          <InputGroupInput
+            id="email"
+            name="email"
+            placeholder="name@example.com"
+          />
         </InputGroup>
       </div>
 
@@ -55,6 +59,7 @@ function LoginForm({ loginAction }: LoginFormProps) {
             <Lock />
           </InputGroupAddon>
           <InputGroupInput
+            id="password"
             type="password"
             name="password"
             placeholder="***********"
