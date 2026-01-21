@@ -12,20 +12,26 @@ interface QuestionRow {
   title: string;
 }
 
+interface SubmissionData {
+  quiz_mode: QuizMode;
+  input_type: InputType;
+  raw_answer: string;
+  taken_time: number;
+  score: number;
+  stt_status: ProcessStatus;
+  evaluation_status: EvaluationStatus;
+  user_id: number;
+  question_id: number;
+  audio_asset_id: string;
+}
+
 export class AnswerSubmissionSeed extends BaseSeed {
   name = 'AnswerSubmissionSeed';
   environment: 'development' | 'production' | 'both' = 'development';
 
   async run(queryRunner: QueryRunner): Promise<void> {
-    // 1. 이미 데이터가 있으면 스킵
-    const result = (await queryRunner.query(
-      `SELECT COUNT(*) as count FROM answer_submissions`,
-    )) as Array<{ count: string }>;
-
-    if (parseInt(result[0].count) > 0) {
-      console.log('AnswerSubmissions already exist, skipping...');
-      return;
-    }
+    // 1. 이미 데이터가 있으면 날리기 (QuestionSeed에서 이미 삭제했겠지만 안전을 위해)
+    await queryRunner.query(`DELETE FROM answer_submissions`);
 
     // 2. Question ID 조회
     const questions = (await queryRunner.query(`
@@ -35,127 +41,59 @@ export class AnswerSubmissionSeed extends BaseSeed {
     const getQuestionId = (title: string): number | undefined =>
       questions.find((q) => q.title === title)?.id;
 
-    const httpId = getQuestionId('HTTP와 HTTPS의 차이점');
-    const restApiId = getQuestionId('REST API란 무엇인가');
-    const reactId = getQuestionId('React의 Virtual DOM');
+    const osId = getQuestionId('작업 실행 단위의 이해');
+    const browserId = getQuestionId('웹 페이지 로딩의 여정');
 
-    if (!httpId || !restApiId || !reactId) {
+    if (!osId && !browserId) {
       console.log(
         'Required questions not found, skipping AnswerSubmissionSeed...',
       );
       return;
     }
 
-    // 3. 시딩 데이터 정의 (배열로 관리하여 가독성 확보)
-    // 주의: audio_asset_id는 UNIQUE이므로 TEXT 타입 답변에는 NULL을 넣습니다.
-    const submissions = [
-      // [CASE 1] 우수 답변 (User 1) - HTTP/HTTPS
-      {
+    const submissions: SubmissionData[] = [];
+
+    if (osId) {
+      submissions.push({
         quiz_mode: QuizMode.DAILY,
         input_type: InputType.TEXT,
         raw_answer:
-          'HTTP는 데이터를 평문으로 전송하여 보안에 취약하지만, HTTPS는 SSL/TLS 프로토콜을 통해 데이터를 암호화하여 전송하므로 보안성이 뛰어납니다. 또한 HTTPS는 SEO 측면에서도 유리합니다.',
+          '프로세스는 운영체제로부터 할당받는 작업의 단위이고, 스레드는 프로세스 내에서 실행되는 흐름의 단위입니다. 멀티 프로세스는 독립적이라 안정적이지만 자원 소모가 크고, 멀티 스레드는 자원을 공유해 효율적이나 동기화 이슈가 있습니다.',
         taken_time: 45,
-        score: 95,
+        score: 85,
         stt_status: ProcessStatus.DONE,
         evaluation_status: EvaluationStatus.COMPLETED,
         user_id: 1,
-        question_id: httpId,
+        question_id: osId,
         audio_asset_id: 'NULL',
-      },
-      // [CASE 2] 보통 답변 (User 2) - HTTP/HTTPS
-      {
+      });
+    }
+
+    if (browserId) {
+      submissions.push({
         quiz_mode: QuizMode.DAILY,
         input_type: InputType.TEXT,
         raw_answer:
-          'HTTP는 그냥 보내는 거고 HTTPS는 자물쇠가 달린 보안 버전입니다.',
-        taken_time: 20,
-        score: 60,
+          '사용자가 URL을 입력하면 DNS 조회를 통해 IP를 얻고 서버와 핸드셰이크를 합니다. HTML을 받아 DOM 트리를 만들고 CSS로 CSSOM을 만든 뒤 렌더 트리를 결합하여 화면에 레이아웃과 페인트를 수행합니다.',
+        taken_time: 60,
+        score: 90,
         stt_status: ProcessStatus.DONE,
         evaluation_status: EvaluationStatus.COMPLETED,
         user_id: 1,
-        question_id: httpId,
+        question_id: browserId,
         audio_asset_id: 'NULL',
-      },
-      // [CASE 3] 매우 상세한 우수 답변 (User 1) - REST API
-      {
-        quiz_mode: QuizMode.DAILY,
-        input_type: InputType.TEXT,
-        raw_answer:
-          'REST API는 자원(Resource)을 URI로 표현하고, 자원에 대한 행위(Verb)를 HTTP Method(GET, POST, PUT, DELETE)로 정의하며, 데이터 포맷으로는 주로 JSON을 사용하는 아키텍처 스타일입니다. Stateless한 특징을 가집니다.',
-        taken_time: 120,
-        score: 98,
-        stt_status: ProcessStatus.DONE,
-        evaluation_status: EvaluationStatus.COMPLETED,
-        user_id: 1,
-        question_id: restApiId,
-        audio_asset_id: 'NULL',
-      },
-      // [CASE 4] 틀린 답변/낮은 점수 (User 3) - REST API
-      {
-        quiz_mode: QuizMode.DAILY,
-        input_type: InputType.TEXT,
-        raw_answer: 'REST API는 그냥 쉴 때 사용하는 API 프로그램입니다.',
-        taken_time: 10,
-        score: 10,
-        stt_status: ProcessStatus.DONE,
-        evaluation_status: EvaluationStatus.COMPLETED,
-        user_id: 1,
-        question_id: restApiId,
-        audio_asset_id: 'NULL',
-      },
-      // [CASE 5] 채점 대기 중 (User 1) - Virtual DOM
-      {
-        quiz_mode: QuizMode.DAILY,
-        input_type: InputType.TEXT,
-        raw_answer:
-          'Virtual DOM은 실제 DOM의 가벼운 사본입니다. 상태가 변경되면 새로운 Virtual DOM을 생성하고 이전 것과 비교(Diffing)하여 변경된 부분만 실제 DOM에 반영(Reconciliation)함으로써 성능을 최적화합니다.',
-        taken_time: 85,
-        score: 0, // 아직 채점 전
-        stt_status: ProcessStatus.DONE,
-        evaluation_status: EvaluationStatus.PENDING, // 채점 대기
-        user_id: 1,
-        question_id: reactId,
-        audio_asset_id: 'NULL',
-      },
-      // [CASE 6] 채점 서버 에러/실패 (User 2) - Virtual DOM
-      {
-        quiz_mode: QuizMode.DAILY,
-        input_type: InputType.TEXT,
-        raw_answer:
-          'React에서 화면을 그릴 때 사용하는 가상의 돔 엘리먼트입니다.',
-        taken_time: 30,
-        score: 0,
-        stt_status: ProcessStatus.DONE,
-        evaluation_status: EvaluationStatus.FAILED, // 시스템 에러 시뮬레이션
-        user_id: 1,
-        question_id: reactId,
-        audio_asset_id: 'NULL',
-      },
-      // [CASE 7] STT 변환 실패 (오디오 입력 가정) - HTTP/HTTPS
-      // * 오디오 에셋 ID는 없으므로 NULL 처리하되, 상태값으로 에러 상황 연출
-      {
-        quiz_mode: QuizMode.DAILY,
-        input_type: InputType.VOICE, // 오디오 타입
-        raw_answer: '', // 변환 실패로 내용 없음
-        taken_time: 15,
-        score: 0,
-        stt_status: ProcessStatus.FAILED, // STT 실패
-        evaluation_status: EvaluationStatus.PENDING,
-        user_id: 1,
-        question_id: httpId,
-        audio_asset_id: 'NULL',
-      },
-    ];
+      });
+    }
+
+    if (submissions.length === 0) return;
 
     // 4. SQL 생성 및 실행
-    // map을 돌면서 값을 string으로 변환합니다.
     const valuesQuery = submissions
       .map(
         (sub) => `(
         '${sub.quiz_mode}',
         '${sub.input_type}',
-        '${sub.raw_answer.replace(/'/g, "''")}', -- SQL Injection 방지용 이스케이프
+        '${sub.raw_answer.replace(/'/g, "''")}',
         ${sub.taken_time},
         ${sub.score},
         '${sub.stt_status}',
