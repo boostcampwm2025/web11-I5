@@ -79,7 +79,7 @@ export class AnswerEvaluation {
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamptz',
-    default: () => "CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Seoul'",
+    default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;
 
