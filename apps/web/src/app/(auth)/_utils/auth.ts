@@ -8,6 +8,7 @@ const API_BASE_URL = process.env.API_URL || "http://localhost:8000";
 
 export interface User {
   id: number;
+  email: string | null;
   nickname: string | null;
   password: string | null;
   totalPoint: number | null;

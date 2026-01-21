@@ -7,6 +7,8 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,12 +19,19 @@ import {
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { UserService } from './user.service';
-import type { User } from './entities/user.entity';
-import { LoginResponseDto } from './dtos/login.response.dto';
-import { LoginRequestDto } from './dtos/login.request.dto';
+import { LoginResponseDto } from './dtos/response/login.response.dto';
+import { LoginRequestDto } from './dtos/request/login.request.dto';
 import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserId } from '../auth/decorators/user-id.decorator';
+import { CreateUserRequestDto } from './dtos/request/create-user.request.dto';
+import { UserPublicResponseDto } from './dtos/response/user.public.response.dto';
+
+const USER_CONTROLLER_VALIDATION_PIPE = new ValidationPipe({
+  transform: true,
+  whitelist: true,
+  forbidNonWhitelisted: true,
+});
 
 @ApiTags('users')
 @Controller('api/users')
@@ -32,15 +41,35 @@ export class UserController {
     private readonly authService: AuthService,
   ) {}
 
-  @Get('test-users')
-  @ApiOperation({ summary: '테스트 사용자 목록 조회' })
+  @Post('/signup')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: '회원가입' })
+  @ApiBody({ type: CreateUserRequestDto })
   @ApiResponse({
-    status: 200,
-    description: '테스트 사용자 목록',
-    type: [Object],
+    status: 201,
+    description: '회원가입 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', example: 1 },
+        email: { type: 'string', example: 'test@example.com' },
+        nickname: { type: 'string', example: 'user123' },
+      },
+    },
   })
-  async getTestUsers(): Promise<User[]> {
-    return this.userService.findAllTestUsers();
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 요청(유효성 검증 실패)',
+  })
+  @UsePipes(USER_CONTROLLER_VALIDATION_PIPE)
+  async createUser(@Body() dto: CreateUserRequestDto): Promise<{
+    id: number;
+    email: string;
+    nickname: string;
+  }> {
+    const user = await this.userService.createUser(dto);
+    // 회원가입 시 email은 DTO로 필수 입력이므로 null이 될 수 없음
+    return { id: user.id, email: user.email, nickname: user.nickname };
   }
 
   @Post('login')
@@ -53,15 +82,20 @@ export class UserController {
     type: LoginResponseDto,
   })
   @ApiResponse({
+    status: 400,
+    description: '잘못된 요청(유효성 검증 실패)',
+  })
+  @ApiResponse({
     status: 401,
     description: '인증 실패',
   })
+  @UsePipes(USER_CONTROLLER_VALIDATION_PIPE)
   async login(
     @Body() loginRequestDto: LoginRequestDto,
     @Res() res: Response,
   ): Promise<void> {
     const user = await this.userService.login(
-      loginRequestDto.nickname,
+      loginRequestDto.email,
       loginRequestDto.password,
     );
 
@@ -106,13 +140,23 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: '현재 사용자 정보',
-    type: Object,
+    type: UserPublicResponseDto,
   })
   @ApiResponse({
     status: 401,
     description: '로그인이 필요합니다',
   })
-  async getCurrentUser(@UserId() userId: number): Promise<User> {
-    return this.userService.getCurrentUser(userId);
+  async getCurrentUser(
+    @UserId() userId: number,
+  ): Promise<UserPublicResponseDto> {
+    const user = await this.userService.getCurrentUser(userId);
+    return {
+      id: user.id,
+      email: user.email,
+      nickname: user.nickname,
+      totalPoint: user.totalPoint ?? 0,
+      totalScore: user.totalScore ?? 0,
+      createdAt: user.createdAt.toISOString(),
+    };
   }
 }
