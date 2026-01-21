@@ -5,6 +5,8 @@ import {
   TabsTrigger,
 } from "@/components/tabs/tabs";
 import { BookText, Brush, CircleCheckBig } from "lucide-react";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "../(auth)/_utils/auth";
 import UserStatsCard from "./_components/user-stats-card/user-stats-card";
 import { mockGraphData } from "./_constants/graph-mock";
 import GraphContent from "./_contents/graph-content";
@@ -15,6 +17,10 @@ import { fetchStreaks } from "./_lib/fetch/fetch-streaks";
 import { fetchUserInfo } from "./_lib/fetch/fetch-user-info";
 
 async function MyPage() {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
   const [userData, _graphData, streakData] = await Promise.all([
     fetchUserInfo(),
     fetchGraph(),
