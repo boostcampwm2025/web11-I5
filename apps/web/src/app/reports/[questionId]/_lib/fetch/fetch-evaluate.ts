@@ -1,13 +1,13 @@
 "use server";
 
+import { apiPost } from "@/lib/api-client";
+
 async function reEvaluate(submissionId: number): Promise<boolean> {
   try {
-    const response = await fetch(`${process.env.API_URL}/answer-evaluation`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionId }),
+    await apiPost("/answer-evaluation", {
+      submissionId,
     });
-    return response.ok;
+    return true;
   } catch (error) {
     console.error("재채점 요청 실패: ", error);
     return false;
