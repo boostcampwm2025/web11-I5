@@ -6,12 +6,12 @@ import { GraphData } from "../../_types/graph-view";
 import NodeMap from "./node-map";
 import useGraphInteraction from "./use-graph-interaction";
 interface GraphViewProps {
-  mockData: GraphData;
+  graphData: GraphData;
   textRenderScale?: number;
   clickEventDisabled?: boolean;
 }
 function GraphView({
-  mockData,
+  graphData,
   textRenderScale,
   clickEventDisabled,
 }: GraphViewProps) {
@@ -26,8 +26,8 @@ function GraphView({
   // NodeMap 초기화 (캔버스 크기나 노드 데이터가 변경될 때만 재생성)
   React.useEffect(() => {
     if (width === 0 || height === 0) return;
-    nodeMapRef.current = new NodeMap(mockData.nodes, width, height);
-  }, [width, height, mockData.nodes]);
+    nodeMapRef.current = new NodeMap(graphData.nodes, width, height);
+  }, [width, height, graphData.nodes]);
 
   // 캔버스 인터랙션 훅에서 반환된 값들
   // offset: 캔버스 이동 오프셋, scale: 줌 레벨
@@ -65,14 +65,14 @@ function GraphView({
       if (!nodeMapRef.current) return;
 
       // 1. 물리 엔진 단계: 힘 적용 및 위치 업데이트
-      nodeMapRef.current.applyPhysics(mockData.edges, centerX, centerY);
+      nodeMapRef.current.applyPhysics(graphData.edges, centerX, centerY);
 
       // 2. 렌더링 단계: 캔버스 지우고 그래프 그리기
       ctx.clearRect(0, 0, width, height);
       drawGraphView(
         ctx,
         nodeMapRef.current.nodeMap,
-        mockData.edges,
+        graphData.edges,
         offset.current,
         scale.current,
         hoveredNodeId.current,
@@ -97,7 +97,7 @@ function GraphView({
     ctx,
     width,
     height,
-    mockData.edges,
+    graphData.edges,
     offset,
     scale,
     activeInteraction,
