@@ -1,4 +1,6 @@
-![](https://github.com/user-attachments/assets/f4ee6cd3-3622-4f7c-b729-f842cb3a971d)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f4ee6cd3-3622-4f7c-b729-f842cb3a971d" width="600">
+</p>
 
 # 말만해
 
