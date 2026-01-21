@@ -1,7 +1,9 @@
+import Footer from "@/components/footer/footer";
+import Header from "@/components/header/header";
+import { cn } from "@/lib/cn";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { cn } from "@/lib/cn";
 
 const pretendard = localFont({
   src: "../assets/fonts/PretendardVariable.woff2",
@@ -19,8 +21,15 @@ interface RootLayoutProps {
 function RootLayout({ children }: Readonly<RootLayoutProps>) {
   return (
     <html lang="ko">
-      <body className={cn(pretendard.className, "antialiased bg-slate-50")}>
+      <body
+        className={cn(
+          pretendard.className,
+          "antialiased bg-slate-50 w-screen flex flex-col items-center",
+        )}
+      >
+        <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );
