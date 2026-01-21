@@ -24,7 +24,7 @@ export class QuestionService {
   async findOneById(questionId: number) {
     return this.questionRepository.findOne({
       where: { id: questionId },
-      relations: ['category'],
+      relations: ['category', 'category.parent'],
     });
   }
 

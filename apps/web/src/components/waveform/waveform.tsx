@@ -20,7 +20,7 @@ function Waveform({
   historyRef,
   barWidthPx = 4,
   barGapPx = 2,
-  barColor = "#18181b",
+  barColor = "#4ee4e4",
   numberOfPaddingBars = 8,
   className,
   onChangeSize,

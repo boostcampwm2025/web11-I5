@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const { codec, sampleRate, channels } = body;
 
     // NestJS API 호출 (Bearer 토큰 자동 포함)
-    const response = await apiClient("/api/audio-stream/start", {
+    const response = await apiClient("/audio-stream/start", {
       method: "POST",
       body: JSON.stringify({
         codec,
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error in /api/audio-stream/start:", error);
+    console.error("Error in audio-stream/start:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

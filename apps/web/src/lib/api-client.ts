@@ -1,8 +1,19 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { ApiError } from "./api-error";
 
 const API_BASE_URL = process.env.API_URL || "http://localhost:8000";
+
+async function handleErrorResponse(response: Response): Promise<never> {
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    // JSON 파싱 실패 시 body는 undefined
+  }
+  throw new ApiError(response.status, response.statusText, body);
+}
 
 /**
  * BFF 공통 API 클라이언트
@@ -43,6 +54,7 @@ export async function apiClient(
   }
 
   return fetch(url, {
+    cache: "no-store",
     ...options,
     headers,
     credentials: "include",
@@ -56,7 +68,7 @@ export async function apiGet<T>(endpoint: string): Promise<T> {
   const response = await apiClient(endpoint, { method: "GET" });
 
   if (!response.ok) {
-    throw new Error(`API 요청 실패: ${response.statusText}`);
+    await handleErrorResponse(response);
   }
 
   return response.json();
@@ -72,7 +84,7 @@ export async function apiPost<T>(endpoint: string, body?: unknown): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`API 요청 실패: ${response.statusText}`);
+    await handleErrorResponse(response);
   }
 
   return response.json();
@@ -88,7 +100,7 @@ export async function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`API 요청 실패: ${response.statusText}`);
+    await handleErrorResponse(response);
   }
 
   return response.json();
@@ -101,7 +113,7 @@ export async function apiDelete<T>(endpoint: string): Promise<T> {
   const response = await apiClient(endpoint, { method: "DELETE" });
 
   if (!response.ok) {
-    throw new Error(`API 요청 실패: ${response.statusText}`);
+    await handleErrorResponse(response);
   }
 
   return response.json();

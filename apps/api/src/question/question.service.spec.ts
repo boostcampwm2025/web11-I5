@@ -79,7 +79,7 @@ describe('QuestionService', () => {
 
       expect(mockQuestionRepository.findOne).toHaveBeenCalledWith({
         where: { id: 1 },
-        relations: ['category'],
+        relations: ['category', 'category.parent'],
       });
       expect(result).toEqual(mockQuestion);
     });
