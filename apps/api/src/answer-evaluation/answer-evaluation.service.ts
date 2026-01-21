@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -32,8 +31,6 @@ interface AiEvaluationRawResponse {
   logic_reason: string;
   depth_level: DepthEval;
   depth_reason: string;
-  is_complete_sentence: boolean;
-  has_application: boolean;
   mentoring_feedback: string;
   extracted_keywords: string[];
 }
@@ -69,7 +66,7 @@ export class AnswerEvaluationService {
       throw new NotFoundException('저장된 답안을 찾을 수 없습니다.');
     }
     if (!submission.rawAnswer || submission.rawAnswer.trim().length === 0) {
-      throw new BadRequestException('내용이 없는 답안은 채점할 수 없습니다.');
+      return await this.handleEmptyAnswer(submission);
     }
     if (submission.evaluationStatus === EvaluationStatus.COMPLETED) {
       throw new ConflictException('이미 채점이 완료된 답안입니다.');
@@ -108,6 +105,59 @@ export class AnswerEvaluationService {
     void this.aiEvaluate(evaluation.id, submission);
 
     return { evaluationId: evaluation.id };
+  }
+
+  /**
+   * 답변 내용이 없는 경우의 처리
+   */
+  private async handleEmptyAnswer(
+    submission: AnswerSubmission,
+  ): Promise<{ evaluationId: number }> {
+    const isVoice = submission.inputType === 'VOICE';
+    const feedbackMessage = isVoice
+      ? '음성 인식 결과가 없거나 답변이 비어 있습니다. 마이크 설정을 확인하고 다시 시도해 주세요.'
+      : '답변 내용이 입력되지 않았습니다. 내용을 작성하신 후 제출해 주세요.';
+
+    // 기존 evaluation이 있는지 확인
+    let evaluation = await this.answerEvaluationRepository.findOne({
+      where: { submissionId: submission.id },
+    });
+
+    if (!evaluation) {
+      evaluation = this.answerEvaluationRepository.create({
+        submissionId: submission.id,
+      });
+    }
+
+    let savedEvaluationId: number;
+
+    await this.dataSource.transaction(async (manager) => {
+      // Evaluation 정보 업데이트 (최하위 점수 부여)
+      const savedEvaluation = await manager.save(AnswerEvaluation, {
+        ...evaluation,
+        feedbackMessage,
+        detailAnalysis: {
+          accuracy: '답변 내용이 없어 정확도를 측정할 수 없습니다.',
+          logic: '답변 내용이 없어 논리 구성을 확인할 수 없습니다.',
+          depth: '답변 내용이 없어 지식의 깊이를 측정할 수 없습니다.',
+        },
+        scoreDetails: { accuracy: 0, logic: 0, depth: 0 },
+        accuracyEval: AccuracyEval.WRONG,
+        logicEval: LogicEval.NONE,
+        depthEval: DepthEval.NONE,
+        extractedKeywords: [],
+      });
+
+      savedEvaluationId = savedEvaluation.id;
+
+      // Submission 상태 업데이트
+      await manager.update(AnswerSubmission, submission.id, {
+        evaluationStatus: EvaluationStatus.COMPLETED,
+        score: 0,
+      });
+    });
+
+    return { evaluationId: savedEvaluationId! };
   }
 
   /**
@@ -182,8 +232,6 @@ export class AnswerEvaluationService {
           accuracyEval: result.accuracyLevel,
           logicEval: result.logicLevel,
           depthEval: result.depthLevel,
-          hasApplication: result.hasApplication,
-          isCompleteSentence: result.isCompleteSentence,
           extractedKeywords: result.extractedKeywords,
         });
 
@@ -224,8 +272,6 @@ export class AnswerEvaluationService {
       logicReason: rawResponse.logic_reason,
       depthLevel: rawResponse.depth_level,
       depthReason: rawResponse.depth_reason,
-      isCompleteSentence: rawResponse.is_complete_sentence,
-      hasApplication: rawResponse.has_application,
       mentoringFeedback: rawResponse.mentoring_feedback,
       extractedKeywords: rawResponse.extracted_keywords,
     };
@@ -236,36 +282,30 @@ export class AnswerEvaluationService {
     scoreDetails: Required<EvaluationResultDto>['scoreDetails'];
   } {
     const accuracyMap: Record<AccuracyEval, number> = {
-      [AccuracyEval.PERFECT]: 35,
-      [AccuracyEval.MINOR_ERROR]: 20,
+      [AccuracyEval.PERFECT]: 40,
+      [AccuracyEval.GOOD]: 30,
+      [AccuracyEval.MIXED]: 10,
       [AccuracyEval.WRONG]: 0,
     };
     const accuracyScore = accuracyMap[result.accuracyLevel] ?? 0;
 
     const logicMap: Record<LogicEval, number> = {
-      [LogicEval.CLEAR]: 30,
-      [LogicEval.WEAK]: 15,
+      [LogicEval.FLAWLESS]: 30,
+      [LogicEval.COHERENT]: 20,
+      [LogicEval.WEAK]: 10,
       [LogicEval.NONE]: 0,
     };
     const logicScore = logicMap[result.logicLevel] ?? 0;
 
     const depthMap: Record<DepthEval, number> = {
-      [DepthEval.DEEP]: 25,
+      [DepthEval.EXPERT]: 30,
+      [DepthEval.ADVANCED]: 20,
       [DepthEval.BASIC]: 10,
       [DepthEval.NONE]: 0,
     };
     const depthScore = depthMap[result.depthLevel] ?? 0;
 
-    const completenessScore = result.isCompleteSentence ? 5 : 0;
-
-    const applicationScore = result.hasApplication ? 5 : 0;
-
-    const totalScore =
-      accuracyScore +
-      logicScore +
-      depthScore +
-      completenessScore +
-      applicationScore;
+    const totalScore = accuracyScore + logicScore + depthScore;
 
     return {
       totalScore,
@@ -273,8 +313,6 @@ export class AnswerEvaluationService {
         accuracy: accuracyScore,
         logic: logicScore,
         depth: depthScore,
-        completeness: completenessScore,
-        application: applicationScore,
       },
     };
   }

@@ -1,10 +1,17 @@
-import { Question } from "@/app/daily/questions/_types/types";
 import { EvaluationDTO } from "../../_types/evaluation-dto";
 import { ReportDetail, ReportHistoryItem } from "../../_types/report-detail";
 import { SubmissionDTO } from "../../_types/submission-dto";
 
 function formatDateTimeKST(isoString: string): string {
-  const d = new Date(isoString);
+  // ISO 형식이지만 타임존 정보(Z 또는 +HH:mm)가 없는 경우 UTC로 간주하도록 처리
+  const dateStr =
+    isoString.includes("T") &&
+    !isoString.endsWith("Z") &&
+    !/\+\d{2}:\d{2}$/.test(isoString)
+      ? `${isoString}Z`
+      : isoString;
+
+  const d = new Date(dateStr);
 
   const kstFormatter = new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
@@ -148,24 +155,4 @@ function mapToReportHistoryItem(
   };
 }
 
-function mapToCategoryDisplay(question: Question) {
-  const cat = question.category;
-
-  if (!cat) {
-    return { category: "미분류", subCategory: "" };
-  }
-
-  if (!cat.children || cat.children.length === 0) {
-    return {
-      category: cat.name,
-      subCategory: "",
-    };
-  }
-
-  return {
-    category: cat.name ?? "상위 카테고리",
-    subCategory: cat.children[0].name ?? "",
-  };
-}
-
-export { mapToReportDetail, mapToReportHistoryItem, mapToCategoryDisplay };
+export { mapToReportDetail, mapToReportHistoryItem };

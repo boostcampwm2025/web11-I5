@@ -11,8 +11,6 @@ export interface FeedbackResult {
     accuracy: number;
     logic: number;
     depth: number;
-    completeness: number;
-    application: number;
   };
   extractedKeywords: string[];
 }

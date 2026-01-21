@@ -36,8 +36,6 @@ export class AnswerEvaluation {
     accuracy: number;
     logic: number;
     depth: number;
-    completeness: number;
-    application: number;
   } | null;
 
   @Column({
@@ -54,11 +52,21 @@ export class AnswerEvaluation {
   @Column({ name: 'depth_eval', type: 'enum', enum: DepthEval, nullable: true })
   depthEval: DepthEval | null;
 
-  @Column({ name: 'has_application', type: 'boolean', default: false })
-  hasApplication: boolean;
+  @Column({
+    name: 'has_application',
+    type: 'boolean',
+    default: false,
+    nullable: true,
+  })
+  hasApplication: boolean | null;
 
-  @Column({ name: 'is_complete_sentence', type: 'boolean', default: false })
-  isCompleteSentence: boolean;
+  @Column({
+    name: 'is_complete_sentence',
+    type: 'boolean',
+    default: false,
+    nullable: true,
+  })
+  isCompleteSentence: boolean | null;
 
   @Column({
     name: 'extracted_keywords',
@@ -68,7 +76,11 @@ export class AnswerEvaluation {
   })
   extractedKeywords: string[];
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   createdAt: Date;
 
   @OneToOne(() => AnswerSubmission)

@@ -14,11 +14,7 @@ import { AnswerEvaluation } from './entities/answer-evaluation.entity';
 import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
 import { Question } from '../question/entities/question.entity';
 import { QuestionSolution } from '../question-solution/entities/question-solution.entity';
-import {
-  ConflictException,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 const mockRepoFactory = () => ({
   findOne: jest.fn(),
@@ -129,13 +125,29 @@ describe('AnswerEvaluationService', () => {
       await expect(service.evaluate(1)).rejects.toThrow(NotFoundException);
     });
 
-    it('답안 내용이 없으면 BadRequestException을 던져야 한다', async () => {
-      answerSubmissionRepository.findOne.mockResolvedValue({
+    it('답안 내용이 없으면 handleEmptyAnswer를 호출하고 결과를 반환해야 한다 (에러를 던지지 않음)', async () => {
+      const mockSubmission = {
         id: 1,
-        rawAnswer: '',
+        rawAnswer: '  ',
+        inputType: 'TEXT',
         evaluationStatus: EvaluationStatus.PENDING,
-      });
-      await expect(service.evaluate(1)).rejects.toThrow(BadRequestException);
+      };
+      answerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
+      answerEvaluationRepository.findOne.mockResolvedValue(null);
+      answerEvaluationRepository.create.mockReturnValue({});
+      (mockEntityManager.save as jest.Mock).mockResolvedValue({ id: 100 });
+
+      const result = await service.evaluate(1);
+
+      expect(result).toEqual({ evaluationId: 100 });
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(mockEntityManager.save).toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(mockEntityManager.update).toHaveBeenCalledWith(
+        AnswerSubmission,
+        1,
+        expect.objectContaining({ score: 0 }),
+      );
     });
 
     it('이미 완료된 답안이면 ConflictException을 던져야 한다', async () => {
@@ -192,13 +204,12 @@ describe('AnswerEvaluationService', () => {
       const mockLlmResult = {
         accuracy_level: AccuracyEval.PERFECT,
         accuracy_reason: 'Good',
-        logic_level: LogicEval.CLEAR,
+        logic_level: LogicEval.FLAWLESS,
         logic_reason: 'Logic',
-        depth_level: DepthEval.DEEP,
+        depth_level: DepthEval.EXPERT,
         depth_reason: 'Deep',
-        is_complete_sentence: true,
-        has_application: true,
         mentoring_feedback: 'Excellent',
+        extracted_keywords: ['React', 'Hook'],
       };
 
       questionRepository.findOne.mockResolvedValue(mockQuestion);
@@ -217,13 +228,14 @@ describe('AnswerEvaluationService', () => {
         expect.objectContaining({
           feedbackMessage: 'Excellent',
           scoreDetails: {
-            accuracy: 35,
+            accuracy: 40,
             logic: 30,
-            depth: 25,
-            completeness: 5,
-            application: 5,
+            depth: 30,
           },
           accuracyEval: AccuracyEval.PERFECT,
+          logicEval: LogicEval.FLAWLESS,
+          depthEval: DepthEval.EXPERT,
+          extractedKeywords: ['React', 'Hook'],
         }),
       );
 

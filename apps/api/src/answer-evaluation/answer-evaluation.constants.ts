@@ -1,19 +1,22 @@
 export const AccuracyEval = {
   PERFECT: 'PERFECT',
-  MINOR_ERROR: 'MINOR_ERROR',
+  GOOD: 'GOOD',
+  MIXED: 'MIXED',
   WRONG: 'WRONG',
 } as const;
 export type AccuracyEval = (typeof AccuracyEval)[keyof typeof AccuracyEval];
 
 export const LogicEval = {
-  CLEAR: 'CLEAR',
+  FLAWLESS: 'FLAWLESS',
+  COHERENT: 'COHERENT',
   WEAK: 'WEAK',
   NONE: 'NONE',
 } as const;
 export type LogicEval = (typeof LogicEval)[keyof typeof LogicEval];
 
 export const DepthEval = {
-  DEEP: 'DEEP',
+  EXPERT: 'EXPERT',
+  ADVANCED: 'ADVANCED',
   BASIC: 'BASIC',
   NONE: 'NONE',
 } as const;
