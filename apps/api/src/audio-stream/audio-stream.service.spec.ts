@@ -143,6 +143,10 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
     await moduleRef.close();
   });
 
+  afterEach(() => {
+    jest.clearAllTimers();
+  });
+
   describe('오디오 스트리밍 시작', () => {
     it('오디오 스트리밍 시작 시 세션이 생긴다', async () => {
       const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
@@ -228,7 +232,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
   });
 
   describe('오디오 스트리밍 종료', () => {
-    it('오디오 스트리밍 세션 종료 시 세션이 제거된다.', async () => {
+    it('오디오 스트리밍 세션 종료 시 세션 상태가 FINALIZED로 변경된다.', async () => {
       const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       jest
@@ -238,7 +242,8 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
       await service.finalizeSession(sessionId, USER_ID);
 
       const sessions = (service as any).sessions as Map<string, any>;
-      expect(sessions.has(sessionId)).toBe(false);
+      // 세션은 5초 후에 삭제되므로, 즉시 삭제되지 않고 상태만 변경됨
+      expect(sessions.get(sessionId).status).toBe(AudioSessionStatus.FINALIZED);
     });
 
     it('OPEN 상태가 아닌 스트리밍 세션을 종료하려고 하면 에러가 발생한다.', async () => {

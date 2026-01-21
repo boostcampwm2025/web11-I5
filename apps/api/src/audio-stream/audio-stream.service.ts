@@ -104,18 +104,8 @@ export class AudioStreamService {
   ): Promise<void> {
     const session = this.sessions.get(sessionId);
 
-    // 세션이 없거나 이미 닫힌 경우 무시 (finalize 후 뒤늦게 도착한 청크)
-    if (!session) {
-      this.logger.debug(
-        `Ignoring chunk for non-existent session: ${sessionId} (likely already finalized)`,
-      );
-      return;
-    }
-
-    if (session.status !== AudioSessionStatus.OPEN) {
-      this.logger.debug(
-        `Ignoring chunk for closed session: ${sessionId} (status: ${session.status})`,
-      );
+    // 세션이 없거나 이미 닫힌 경우 조용히 무시 (finalize 후 뒤늦게 도착한 청크)
+    if (!session || session.status !== AudioSessionStatus.OPEN) {
       return;
     }
 
@@ -171,6 +161,9 @@ export class AudioStreamService {
 
     // lastSeq가 제공되면 해당 seq까지 수신 대기 (최대 1분)
     if (lastSeq !== undefined && lastSeq > session.lastSeq) {
+      this.logger.log(
+        `Waiting for lastSeq: expected=${lastSeq}, current=${session.lastSeq}, session=${sessionId}`,
+      );
       const maxWaitMs = 60000;
       const pollIntervalMs = 50;
       const startTime = Date.now();
@@ -184,6 +177,10 @@ export class AudioStreamService {
         }
         await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
       }
+
+      this.logger.log(
+        `Done waiting for lastSeq: expected=${lastSeq}, received=${session.lastSeq}, session=${sessionId}`,
+      );
     }
 
     // writeStream 닫기
@@ -322,7 +319,15 @@ export class AudioStreamService {
       `Session finalized: ${sessionId}, file: ${session.filePath}, asset_id: ${savedAsset.id}`,
     );
 
-    this.sessions.delete(sessionId);
+    // 세션 상태를 FINALIZED로 변경 (청크 무시)
+    session.status = AudioSessionStatus.FINALIZED;
+
+    // 세션 삭제를 지연 (뒤늦게 도착하는 청크 처리를 위해)
+    const cleanupTimer = setTimeout(() => {
+      this.sessions.delete(sessionId);
+      this.logger.debug(`Session deleted from memory: ${sessionId}`);
+    }, 5000);
+    cleanupTimer.unref(); // 프로세스 종료를 막지 않도록
 
     // Object Storage 업로드를 비동기로 실행 (await 하지 않음)
     void this.uploadToStorageAsync(

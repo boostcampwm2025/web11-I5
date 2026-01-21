@@ -8,13 +8,14 @@ import { apiClient } from "@/lib/api-client";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sessionId } = body;
+    const { sessionId, lastSeq } = body;
 
     // NestJS API 호출 (Bearer 토큰 자동 포함)
     const response = await apiClient("/audio-stream/finalize", {
       method: "POST",
       body: JSON.stringify({
         sessionId,
+        lastSeq,
       }),
     });
 
