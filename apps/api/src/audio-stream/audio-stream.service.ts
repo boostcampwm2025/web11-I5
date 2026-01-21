@@ -196,26 +196,66 @@ export class AudioStreamService {
     const tempPcmPath = `${session.filePath}.pcm`;
     await fs.rename(session.filePath, tempPcmPath);
 
-    await new Promise<void>((resolve, reject) => {
-      const writeStream = createWriteStream(session.filePath);
-      const readStream = createReadStream(tempPcmPath);
+    let streamingSucceeded = false;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const writeStream = createWriteStream(session.filePath);
+        const readStream = createReadStream(tempPcmPath);
 
-      writeStream.write(wavHeader, (err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+        writeStream.write(wavHeader, (err) => {
+          if (err) {
+            reject(err);
+            return;
+          }
 
-        readStream.pipe(writeStream);
+          readStream.pipe(writeStream);
 
-        writeStream.on('finish', resolve);
-        writeStream.on('error', reject);
-        readStream.on('error', reject);
+          writeStream.on('finish', resolve);
+          writeStream.on('error', reject);
+          readStream.on('error', reject);
+        });
       });
-    });
+      streamingSucceeded = true;
+    } catch (streamError) {
+      this.logger.error(
+        `Failed to create WAV file for session ${session.sessionId}`,
+        streamError,
+      );
 
-    // 임시 PCM 파일 삭제
-    await fs.unlink(tempPcmPath);
+      // 스트리밍 실패 시 원본 PCM 파일 복구 시도
+      try {
+        await fs.rename(tempPcmPath, session.filePath);
+        this.logger.log(
+          `Restored original PCM file for session ${session.sessionId}`,
+        );
+      } catch (restoreError) {
+        this.logger.error(
+          `Failed to restore PCM file for session ${session.sessionId}`,
+          restoreError,
+        );
+      }
+
+      throw streamError;
+    } finally {
+      // 스트리밍 성공 시에만 임시 파일 삭제 (실패 시 위에서 복구됨)
+      if (streamingSucceeded) {
+        try {
+          await fs.unlink(tempPcmPath);
+        } catch (unlinkError) {
+          // ENOENT는 무시 (이미 삭제된 경우)
+          const isEnoent =
+            unlinkError instanceof Error &&
+            'code' in unlinkError &&
+            (unlinkError as NodeJS.ErrnoException).code === 'ENOENT';
+          if (!isEnoent) {
+            this.logger.warn(
+              `Failed to delete temp PCM file: ${tempPcmPath}`,
+              unlinkError,
+            );
+          }
+        }
+      }
+    }
 
     // 최종 파일 크기 확인
     const byteSize = pcmDataSize + wavHeader.length;
