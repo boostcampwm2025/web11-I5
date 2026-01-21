@@ -63,7 +63,7 @@ function useGraphInteraction(
       const y = (screenY - rect.top - offset.current.y) / scale.current;
       return { x, y };
     },
-    [canvasRef, offset, scale],
+    [canvasRef],
   );
 
   // 캔버스 내의 좌표에서 해당하는 노드가 있는지 확인하고, 있으면 해당 node 리턴
