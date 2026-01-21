@@ -76,7 +76,11 @@ export class AnswerEvaluation {
   })
   extractedKeywords: string[];
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => "CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Seoul'",
+  })
   createdAt: Date;
 
   @OneToOne(() => AnswerSubmission)
