@@ -33,9 +33,21 @@ async function getTestUsers(): Promise<User[]> {
   }
 }
 
+export interface LoginState {
+  success: boolean;
+  error?: string;
+}
+
 // 로그인
-async function login(email: string, password?: string) {
-  const finalPassword = password ?? "test123";
+async function loginAction(
+  _prevState: LoginState | undefined,
+  formData: FormData,
+): Promise<LoginState | undefined> {
+  const email = formData.get("email") as string;
+  const password = (formData.get("password") as string) || "test123";
+
+  let error = "";
+  let success = true;
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/users/login`, {
@@ -43,18 +55,19 @@ async function login(email: string, password?: string) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password: finalPassword }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
-      throw new Error("로그인에 실패했습니다.");
+      return { success: false, error: "로그인에 실패했습니다." };
     }
 
     const data = await response.json();
     const { accessToken } = data;
 
     if (!accessToken) {
-      throw new Error("Access Token을 받지 못했습니다.");
+      success = false;
+      error = "Access Token을 받지 못했습니다.";
     }
 
     // Access Token을 HttpOnly 쿠키로 저장
@@ -66,13 +79,20 @@ async function login(email: string, password?: string) {
       sameSite: "strict",
       maxAge: 60 * 60 * 24 * 7, // 7일
     });
-  } catch (error) {
-    throw error;
+  } catch {
+    success = false;
+    error = "로그인 중 오류가 발생했습니다.";
+  }
+
+  if (success) {
+    redirect("/");
+  } else {
+    return { success, error };
   }
 }
 
 // 로그아웃
-async function logout() {
+async function logoutAction() {
   try {
     await apiClient("/api/users/logout", {
       method: "POST",
@@ -88,37 +108,58 @@ async function logout() {
   }
 }
 
-//회원가입(임시)
-async function signup(nickname: string, email: string, password: string) {
-  let signupSuccess = false;
+export interface SignupState {
+  success: boolean;
+  error?: string;
+}
+
+// 회원가입
+async function signupAction(
+  _prevState: SignupState | undefined,
+  formData: FormData,
+): Promise<SignupState | undefined> {
+  const nickname = formData.get("nickname") as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const passwordConfirm = formData.get("passwordConfirm") as string;
+
+  if (password !== passwordConfirm) {
+    return { success: false, error: "비밀번호가 일치하지 않습니다." };
+  }
+
+  let success = true;
+  let error = "";
 
   try {
-    //TODO: 비밀번호 해싱
     const response = await fetch(`${API_BASE_URL}/api/users/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        nickname,
-        email,
-        password, // TODO: 해싱된 비밀번호 변환 필요
-      }),
+      body: JSON.stringify({ nickname, email, password }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "회원가입에 실패했습니다.");
+      success = false;
+      error = errorData.message || "회원가입에 실패했습니다.";
     }
-    signupSuccess = true;
-  } catch (error) {
-    console.error("Signup Error:", error);
-    throw error;
+  } catch {
+    success = false;
+    error = "회원가입 중 오류가 발생했습니다.";
   }
 
-  if (signupSuccess) {
+  if (success) {
     redirect("/login");
+  } else {
+    return { success, error };
   }
 }
 
-export { getCurrentUser, getTestUsers, login, logout, signup };
+export {
+  getCurrentUser,
+  getTestUsers,
+  loginAction,
+  logoutAction,
+  signupAction,
+};

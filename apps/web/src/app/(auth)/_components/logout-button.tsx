@@ -1,14 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { logout } from "../_utils/auth";
+import { logoutAction } from "../_utils/auth";
 
 function LogoutButton() {
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await logoutAction();
       // logout Server Action에서 redirect를 처리하므로 여기서는 필요 없음
     } catch {
       // 에러 발생 시 홈으로 이동
