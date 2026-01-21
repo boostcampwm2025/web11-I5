@@ -113,8 +113,10 @@ export class AnswerEvaluationService {
   private async handleEmptyAnswer(
     submission: AnswerSubmission,
   ): Promise<{ evaluationId: number }> {
-    const feedbackMessage =
-      '답변 내용이 입력되지 않았습니다. 내용을 작성하신 후 제출해 주세요.';
+    const isVoice = submission.inputType === 'VOICE';
+    const feedbackMessage = isVoice
+      ? '음성 인식 결과가 없거나 답변이 비어 있습니다. 마이크 설정을 확인하고 다시 시도해 주세요.'
+      : '답변 내용이 입력되지 않았습니다. 내용을 작성하신 후 제출해 주세요.';
 
     // 기존 evaluation이 있는지 확인
     let evaluation = await this.answerEvaluationRepository.findOne({
@@ -127,9 +129,11 @@ export class AnswerEvaluationService {
       });
     }
 
+    let savedEvaluationId: number;
+
     await this.dataSource.transaction(async (manager) => {
       // Evaluation 정보 업데이트 (최하위 점수 부여)
-      await manager.save(AnswerEvaluation, {
+      const savedEvaluation = await manager.save(AnswerEvaluation, {
         ...evaluation,
         feedbackMessage,
         detailAnalysis: {
@@ -144,6 +148,8 @@ export class AnswerEvaluationService {
         extractedKeywords: [],
       });
 
+      savedEvaluationId = savedEvaluation.id;
+
       // Submission 상태 업데이트
       await manager.update(AnswerSubmission, submission.id, {
         evaluationStatus: EvaluationStatus.COMPLETED,
@@ -151,7 +157,7 @@ export class AnswerEvaluationService {
       });
     });
 
-    return { evaluationId: evaluation.id };
+    return { evaluationId: savedEvaluationId! };
   }
 
   /**
