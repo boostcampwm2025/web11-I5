@@ -2,8 +2,6 @@
 
 import * as React from "react";
 
-import { useRouter } from "next/navigation";
-
 import { Input } from "@/components/input/input";
 import { Button } from "@/components/button/button";
 
@@ -18,7 +16,6 @@ interface SignUpFormProps {
 }
 
 function SignUpForm({ signupAction }: SignUpFormProps) {
-  const router = useRouter();
   const [nickname, setNickname] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -43,11 +40,10 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
+    setIsLoading(true);
 
     try {
       await signupAction(nickname, email, password);
-      router.push("/");
-      router.refresh();
     } catch {
       alert("회원가입에 실패했습니다.");
     } finally {
