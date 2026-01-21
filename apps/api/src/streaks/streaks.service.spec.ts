@@ -104,7 +104,7 @@ describe('StreaksService', () => {
 
       const result = await service.getConsecutiveDayCount(1);
 
-      expect(result).toEqual({ sequencyDailyCount: 7 });
+      expect(result).toEqual({ consecutiveDayCount: 7 });
     });
 
     it('오늘이 2026.01.08일 때 01.01~01.08까지 스트릭을 갱신했다면 8을 리턴한다', async () => {
@@ -122,7 +122,7 @@ describe('StreaksService', () => {
 
       const result = await service.getConsecutiveDayCount(1);
 
-      expect(result).toEqual({ sequencyDailyCount: 8 });
+      expect(result).toEqual({ consecutiveDayCount: 8 });
     });
 
     it('오늘이 2026.01.08일 때 01.01~01.06까지 스트릭을 갱신했다면 0을 리턴한다', async () => {
@@ -138,7 +138,7 @@ describe('StreaksService', () => {
 
       const result = await service.getConsecutiveDayCount(1);
 
-      expect(result).toEqual({ sequencyDailyCount: 0 });
+      expect(result).toEqual({ consecutiveDayCount: 0 });
     });
 
     it('스트릭 데이터가 없다면 0을 리턴한다', async () => {
@@ -146,7 +146,7 @@ describe('StreaksService', () => {
 
       const result = await service.getConsecutiveDayCount(1);
 
-      expect(result).toEqual({ sequencyDailyCount: 0 });
+      expect(result).toEqual({ consecutiveDayCount: 0 });
     });
 
     it('오늘이 2026.01.08일 때 01.06이 없고 01.07~01.08만 있으면 2를 리턴한다', async () => {
@@ -158,7 +158,7 @@ describe('StreaksService', () => {
 
       const result = await service.getConsecutiveDayCount(1);
 
-      expect(result).toEqual({ sequencyDailyCount: 2 });
+      expect(result).toEqual({ consecutiveDayCount: 2 });
     });
 
     it('오늘이 2026.01.08일 때 오늘(01.08)만 있으면 1을 리턴한다', async () => {
@@ -169,7 +169,7 @@ describe('StreaksService', () => {
 
       const result = await service.getConsecutiveDayCount(1);
 
-      expect(result).toEqual({ sequencyDailyCount: 1 });
+      expect(result).toEqual({ consecutiveDayCount: 1 });
     });
 
     it('오늘이 2026.01.08일 때 어제(01.07)만 있으면 1을 리턴한다', async () => {
@@ -180,7 +180,7 @@ describe('StreaksService', () => {
 
       const result = await service.getConsecutiveDayCount(1);
 
-      expect(result).toEqual({ sequencyDailyCount: 1 });
+      expect(result).toEqual({ consecutiveDayCount: 1 });
     });
   });
 

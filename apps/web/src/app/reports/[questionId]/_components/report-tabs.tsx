@@ -7,6 +7,12 @@ import {
 import { BookText, CircleCheckBig } from "lucide-react";
 import FeedbackSection from "./feedback/feedback-section";
 import { AnalysisStatus, ReportDetail } from "../_types/report-detail";
+import { Question } from "@/app/daily/questions/_types/types";
+
+type ReportQuestion = Question & {
+  categoryDisplay: string;
+  subCategory: string;
+};
 
 interface HistoryItem {
   submissionId: number;
@@ -19,9 +25,14 @@ interface HistoryItem {
 interface ReportTabsProps {
   selectedAttempt: HistoryItem;
   evaluation: ReportDetail;
+  question: ReportQuestion;
 }
 
-function ReportTabs({ selectedAttempt, evaluation }: ReportTabsProps) {
+function ReportTabs({
+  selectedAttempt,
+  evaluation,
+  question,
+}: ReportTabsProps) {
   const keywords =
     evaluation.status === "COMPLETED"
       ? evaluation.feedback.extractedKeywords
@@ -43,6 +54,7 @@ function ReportTabs({ selectedAttempt, evaluation }: ReportTabsProps) {
           attempt={selectedAttempt.displayIndex}
           status={selectedAttempt.status}
           data={evaluation}
+          question={question}
         />
       </TabsContent>
 
@@ -55,7 +67,7 @@ function ReportTabs({ selectedAttempt, evaluation }: ReportTabsProps) {
                   나의 답변 원문
                 </h3>
               </div>
-              {selectedAttempt.status !== "FAILED" && (
+              {selectedAttempt.answerContent && (
                 <div className="flex items-center gap-2 px-3 py-1.5">
                   <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
                   <span className="text-xs text-slate-500">
@@ -66,11 +78,15 @@ function ReportTabs({ selectedAttempt, evaluation }: ReportTabsProps) {
             </div>
 
             <div className="bg-white py-6 border-y border-slate-200">
-              <p className="text-[0.9375rem] leading-relaxed text-slate-700 whitespace-pre-wrap">
-                {selectedAttempt.answerContent
-                  ? selectedAttempt.answerContent
-                  : "저장된 답변이 없습니다."}
-              </p>
+              {selectedAttempt.answerContent ? (
+                <p className="text-[0.9375rem] leading-relaxed text-slate-700 whitespace-pre-wrap">
+                  {selectedAttempt.answerContent}
+                </p>
+              ) : (
+                <p className="py-4 text-sm text-center text-slate-400">
+                  저장된 답변이 없습니다.
+                </p>
+              )}
             </div>
 
             {keywords.length > 0 && (

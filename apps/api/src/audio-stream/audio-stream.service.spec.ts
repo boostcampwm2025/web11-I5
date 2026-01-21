@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 
 jest.mock('fs', () => {
-  // ✅ 원본 fs는 유지(= fs.native 유지)하면서 createWriteStream만 mock
+  // ✅ 원본 fs는 유지(= fs.native 유지)하면서 createWriteStream, createReadStream만 mock
   const actual = jest.requireActual<typeof import('fs')>('fs');
   return {
     ...actual,
     createWriteStream: jest.fn(),
+    createReadStream: jest.fn(),
   };
 });
 
@@ -27,7 +29,8 @@ import { AudioSessionStatus } from './audio-stream.constants';
 
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
-import { createWriteStream } from 'fs';
+import { createWriteStream, createReadStream } from 'fs';
+import { EventEmitter } from 'events';
 
 describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () => {
   let moduleRef: TestingModule;
@@ -46,10 +49,14 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
   const eventEmitterMock = { emit: jest.fn() };
 
-  const writeStreamMock = {
-    write: jest.fn((_: any, cb: (err?: Error | null) => void) => cb(null)),
-    end: jest.fn((cb: (err?: Error | null) => void) => cb(null)),
-  } as any;
+  const createWriteStreamMock = () => {
+    const emitter = new EventEmitter();
+    return Object.assign(emitter, {
+      write: jest.fn((_: any, cb: (err?: Error | null) => void) => cb(null)),
+      end: jest.fn((cb: (err?: Error | null) => void) => cb(null)),
+    });
+  };
+  let writeStreamMock: ReturnType<typeof createWriteStreamMock>;
 
   const FIXED_SESSION_ID = 'session-uuid-1';
   const USER_ID = 7;
@@ -59,16 +66,31 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
   let readFileSpy: jest.SpyInstance;
   let writeFileSpy: jest.SpyInstance;
   let unlinkSpy: jest.SpyInstance;
+  let renameSpy: jest.SpyInstance;
 
   beforeEach(async () => {
     jest.clearAllMocks();
 
     (randomUUID as unknown as jest.Mock).mockReturnValue(FIXED_SESSION_ID);
 
+    // ✅ writeStreamMock 초기화
+    writeStreamMock = createWriteStreamMock();
+
     // ✅ createWriteStream은 spyOn 대신 jest.mock('fs')로 만든 mock 함수에 직접 주입
     (createWriteStream as unknown as jest.Mock).mockReturnValue(
       writeStreamMock,
     );
+
+    // ✅ createReadStream mock - pipe를 위한 EventEmitter 기반 mock
+    const readStreamMock = new EventEmitter() as EventEmitter & {
+      pipe: jest.Mock;
+    };
+    readStreamMock.pipe = jest.fn().mockImplementation((dest) => {
+      // pipe 호출 시 바로 finish 이벤트 발생
+      setImmediate(() => dest.emit('finish'));
+      return dest;
+    });
+    (createReadStream as unknown as jest.Mock).mockReturnValue(readStreamMock);
 
     // ✅ fs.promises는 원본을 유지하므로 spyOn 가능
     mkdirSpy = jest
@@ -90,6 +112,10 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
     unlinkSpy = jest
       .spyOn(fs.promises, 'unlink')
+      .mockResolvedValue(undefined as any);
+
+    renameSpy = jest
+      .spyOn(fs.promises, 'rename')
       .mockResolvedValue(undefined as any);
 
     repoMock.create.mockImplementation((dto: any) => dto);
@@ -236,9 +262,10 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
       expect(writeStreamMock.end).toHaveBeenCalledTimes(1);
 
-      expect(statSpy).toHaveBeenCalledTimes(2);
-      expect(readFileSpy).toHaveBeenCalledTimes(1);
-      expect(writeFileSpy).toHaveBeenCalledTimes(1);
+      // 스트림 기반 WAV 헤더 추가
+      expect(statSpy).toHaveBeenCalledTimes(1); // pcmDataSize 확인
+      expect(renameSpy).toHaveBeenCalledTimes(1); // PCM 파일 임시 이동
+      expect(unlinkSpy).toHaveBeenCalledTimes(1); // 임시 PCM 파일 삭제
 
       expect(repoMock.create).toHaveBeenCalledTimes(1);
       expect(repoMock.save).toHaveBeenCalledTimes(1);

@@ -10,7 +10,11 @@ async function getReportQuestion(questionId: string) {
 
   const { category, subCategory } = mapToCategoryDisplay(question);
 
-  return { ...question, category, subCategory: subCategory ?? "" };
+  return {
+    ...question,
+    categoryDisplay: category,
+    subCategory: subCategory ?? "",
+  };
 }
 
 export { getReportQuestion };

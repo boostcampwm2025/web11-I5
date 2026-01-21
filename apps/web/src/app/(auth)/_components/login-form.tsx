@@ -1,40 +1,91 @@
 "use client";
 
+import * as React from "react";
+
 import { useRouter } from "next/navigation";
-import type { User } from "../_utils/auth";
+import { Input } from "@/components/input/input";
+import { Button } from "@/components/button/button";
+
+import { Mail, Lock, ArrowRight } from "lucide-react";
 
 interface LoginFormProps {
-  testUsers: User[];
-  loginAction: (nickname: string, password?: string) => Promise<void>;
+  loginAction: (email: string, password?: string) => Promise<void>;
 }
 
-function LoginForm({ testUsers, loginAction }: LoginFormProps) {
+function LoginForm({ loginAction }: LoginFormProps) {
   const router = useRouter();
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleLogin = async (nickname: string) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // 폼 제출 시 새로고침 방지
+    setIsLoading(true);
+
     try {
-      await loginAction(nickname);
+      await loginAction(email, password);
       router.push("/");
-      router.refresh(); // 서버 컴포넌트 재렌더링을 위해
+      router.refresh();
     } catch {
       alert("로그인에 실패했습니다.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-y-2">
-      {testUsers.map((testUser) => (
-        <button
-          key={testUser.id}
-          onClick={() => handleLogin(testUser.nickname ?? "")}
-          className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-3 text-left transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-        >
-          <div className="font-medium text-black dark:text-zinc-50">
-            {testUser.nickname || `유저 #${testUser.id}`}
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* 이메일 입력 섹션 */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          이메일
+        </label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <Input
+            type="email"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="pl-10" // 아이콘 자리를 위해 왼쪽 패딩 추가
+            required
+          />
+        </div>
+      </div>
+
+      {/* 비밀번호 입력 섹션 */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          비밀번호
+        </label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <Input
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="pl-10"
+            required
+          />
+        </div>
+      </div>
+
+      {/* 로그인 버튼 */}
+      <Button
+        type="submit"
+        disabled={isLoading}
+        className="w-full h-7 mt-2 bg-[#2DD4BF] hover:bg-[#26bba8] text-white py-6 font-medium transition-colors"
+      >
+        {isLoading ? (
+          "로그인 중..."
+        ) : (
+          <div className="flex items-center justify-center gap-2">
+            로그인하기 <ArrowRight className="h-5 w-5" />
           </div>
-        </button>
-      ))}
-    </div>
+        )}
+      </Button>
+    </form>
   );
 }
 

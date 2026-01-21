@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser, login } from "../_utils/auth";
-import LoginForm from "../_components/login-form";
+import { getCurrentUser, signup } from "../_utils/auth";
 import Image from "next/image";
+import SignUpForm from "../_components/signup-form";
 import Link from "next/link";
 
-async function LoginPage() {
+async function SignUpPage() {
   const user = await getCurrentUser();
   const mmhLogo = "/mmh-logo.svg";
 
@@ -22,21 +22,21 @@ async function LoginPage() {
           </div>
           <div className="flex flex-col gap-2 justify-center items-center mb-6 ">
             <h1 className="text-2xl font-semibold text-black dark:text-zinc-50">
-              로그인
+              회원가입
             </h1>
             <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              서비스 이용을 위해 로그인이 필요합니다.
+              나만의 지식지도를 완성할 준비가 되셨나요?
             </p>
           </div>
 
-          <LoginForm loginAction={login} />
+          <SignUpForm signupAction={signup} />
           <div className="mt-8 text-center text-sm text-zinc-500">
-            말만해 서비스가 처음이신가요?{" "}
+            이미 계정이 있으신가요?{" "}
             <Link
-              href="/signup"
+              href="/login"
               className="text-[#2DD4BF] font-semibold hover:underline"
             >
-              회원가입하기
+              로그인하기
             </Link>
           </div>
         </div>
@@ -45,4 +45,4 @@ async function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default SignUpPage;
