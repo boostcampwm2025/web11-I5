@@ -101,7 +101,6 @@ export class AnswerEvaluationService {
       // 첫 채점: 새로 생성
       evaluation = this.answerEvaluationRepository.create({
         submissionId,
-        createdAt: new Date(),
       });
       evaluation = await this.answerEvaluationRepository.save(evaluation);
     }
