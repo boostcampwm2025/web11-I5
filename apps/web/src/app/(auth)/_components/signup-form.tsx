@@ -61,6 +61,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             <Mail />
           </InputGroupAddon>
           <InputGroupInput
+            id="email"
             type="email"
             name="email"
             placeholder="name@example.com"
@@ -79,6 +80,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             <Lock />
           </InputGroupAddon>
           <InputGroupInput
+            id="email"
             type="password"
             name="password"
             placeholder="***********"
@@ -97,6 +99,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             <Lock />
           </InputGroupAddon>
           <InputGroupInput
+            id="passwordConfirm"
             type="password"
             name="passwordConfirm"
             placeholder="비밀번호를 한 번 더 입력해주세요"
