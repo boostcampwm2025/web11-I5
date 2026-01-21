@@ -90,6 +90,8 @@ async function logout() {
 
 //회원가입(임시)
 async function signup(nickname: string, email: string, password: string) {
+  let signupSuccess = false;
+
   try {
     //TODO: 비밀번호 해싱
     const response = await fetch(`${API_BASE_URL}/api/users/signup`, {
@@ -108,11 +110,14 @@ async function signup(nickname: string, email: string, password: string) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || "회원가입에 실패했습니다.");
     }
-
-    redirect("/login");
+    signupSuccess = true;
   } catch (error) {
     console.error("Signup Error:", error);
     throw error;
+  }
+
+  if (signupSuccess) {
+    redirect("/login");
   }
 }
 
