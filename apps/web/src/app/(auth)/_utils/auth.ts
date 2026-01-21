@@ -34,7 +34,7 @@ async function getTestUsers(): Promise<User[]> {
 }
 
 // 로그인
-async function login(nickname: string, password?: string) {
+async function login(email: string, password?: string) {
   const finalPassword = password ?? "test123";
 
   try {
@@ -43,7 +43,7 @@ async function login(nickname: string, password?: string) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ nickname, password: finalPassword }),
+      body: JSON.stringify({ email, password: finalPassword }),
     });
 
     if (!response.ok) {
