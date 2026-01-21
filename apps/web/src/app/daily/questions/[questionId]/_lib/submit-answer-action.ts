@@ -25,7 +25,7 @@ export async function submitAnswerAction(
   }
 
   try {
-    const data = await apiPost<{ id: number }>("/api/answer-submissions", {
+    const data = await apiPost<{ id: number }>("/answer-submissions", {
       audioAssetId: Number(audioAssetId),
       questionId: Number(questionId),
     });

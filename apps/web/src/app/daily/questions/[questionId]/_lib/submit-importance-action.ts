@@ -1,5 +1,7 @@
 "use server";
 
+import { apiClient } from "@/lib/api-client";
+
 export interface ActionState {
   success: boolean;
   message: string;
@@ -8,18 +10,13 @@ export interface ActionState {
   };
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function updateImportanceAction(
   prevState: ActionState | null,
   data: { questionId: number; score: number },
 ): Promise<ActionState> {
   try {
-    const response = await fetch(`${API_URL}/answer-submissions/importance`, {
+    const response = await apiClient("/answer-submissions/importance", {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         questionId: data.questionId,
         selfImportanceRating: data.score,
