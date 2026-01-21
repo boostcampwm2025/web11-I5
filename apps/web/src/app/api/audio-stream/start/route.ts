@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { apiClient } from "@/lib/api-client";
 
 /**
  * POST /api/audio-stream/start
@@ -9,13 +10,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { codec, sampleRate, channels } = body;
 
-    // NestJS API 호출
-    const apiUrl = process.env.API_URL || "http://localhost:3000";
-    const response = await fetch(`${apiUrl}/audio-stream/start`, {
+    // NestJS API 호출 (Bearer 토큰 자동 포함)
+    const response = await apiClient("/audio-stream/start", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         codec,
         sampleRate,
@@ -35,7 +32,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error in /api/audio-stream/start:", error);
+    console.error("Error in audio-stream/start:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

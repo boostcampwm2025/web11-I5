@@ -1,21 +1,17 @@
+"use server";
+
 import { SubmissionDTO } from "../../_types/submission-dto";
+import { apiGet } from "@/lib/api-client";
 
 async function fetchSubmissionById(
   submissionId: number,
 ): Promise<SubmissionDTO | null> {
-  const res = await fetch(
-    `${process.env.API_URL}/answer-submissions/${submissionId}`,
-    { cache: "no-store" },
-  );
-
-  if (!res.ok) {
-    if (res.status === 404) {
-      return null as null;
-    }
-    throw new Error(`GET /answer-submissions/${submissionId} 패치 실패`);
+  try {
+    return await apiGet<SubmissionDTO>(`/answer-submissions/${submissionId}`);
+  } catch (error) {
+    console.error(error);
+    return null;
   }
-
-  return res.json();
 }
 
 export { fetchSubmissionById };

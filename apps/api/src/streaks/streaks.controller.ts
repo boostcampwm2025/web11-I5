@@ -2,32 +2,35 @@ import {
   Controller,
   Get,
   ParseIntPipe,
+  Post,
   Query,
-  Req,
-  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import {
-  ApiCookieAuth,
   ApiOperation,
   ApiQuery,
   ApiResponse,
   ApiTags,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
 import {
   GetConsecutiveDayCountResponseDto,
   GetYearlyActivityCountResponseDto,
 } from './dtos/streaks-count.dto';
+import { RecordDailyActivityResponseDto } from './dtos/streaks-record.dto';
 import { StreaksService } from './streaks.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserId } from '../auth/decorators/user-id.decorator';
 
 @ApiTags('streaks')
 @Controller('streaks')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT-auth')
 export class StreaksController {
   constructor(private readonly streaksService: StreaksService) {}
 
   @Get()
   @ApiOperation({ summary: '연간 학습일 수 조회' })
-  @ApiCookieAuth('userId')
   @ApiQuery({
     name: 'year',
     required: false,
@@ -45,13 +48,9 @@ export class StreaksController {
     description: '로그인이 필요합니다',
   })
   async getYearlyActivityCount(
-    @Req() req: Request,
+    @UserId() userId: number,
     @Query('year', new ParseIntPipe({ optional: true })) year?: number,
   ): Promise<GetYearlyActivityCountResponseDto> {
-    const userId = Number((req.cookies as { userId?: string })?.userId);
-    if (!userId) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
-    }
     if (!year) {
       year = new Date().getFullYear();
     }
@@ -60,7 +59,6 @@ export class StreaksController {
 
   @Get('/sequence')
   @ApiOperation({ summary: '연속 학습일 수 조회' })
-  @ApiCookieAuth('userId')
   @ApiResponse({
     status: 200,
     description: '연속 학습일 수',
@@ -71,12 +69,25 @@ export class StreaksController {
     description: '로그인이 필요합니다',
   })
   async getConsecutiveDayCount(
-    @Req() req: Request,
+    @UserId() userId: number,
   ): Promise<GetConsecutiveDayCountResponseDto> {
-    const userId = Number((req.cookies as { userId?: string })?.userId);
-    if (!userId) {
-      throw new UnauthorizedException('로그인이 필요합니다.');
-    }
     return this.streaksService.getConsecutiveDayCount(userId);
+  }
+
+  @Post()
+  @ApiOperation({ summary: '일일 학습 활동 기록' })
+  @ApiResponse({
+    status: 200,
+    description: '학습 활동 기록 성공',
+    type: RecordDailyActivityResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: '로그인이 필요합니다',
+  })
+  async recordDailyActivity(
+    @UserId() userId: number,
+  ): Promise<RecordDailyActivityResponseDto> {
+    return this.streaksService.recordDailyActivity(userId);
   }
 }

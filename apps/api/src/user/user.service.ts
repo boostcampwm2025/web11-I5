@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
+import { UserRole } from './entities/user-role.enum';
 import { UserRepository } from './user.repository';
 
 @Injectable()
@@ -23,6 +24,7 @@ export class UserService {
         password: this.TEST_USER_PASSWORD,
         totalPoint: 0,
         totalScore: 0,
+        role: UserRole.USER,
       });
     } else if (!existingUser.password) {
       // 기존 유저에 비밀번호가 없으면 업데이트
