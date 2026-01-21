@@ -181,6 +181,7 @@ function RecordingSection({
       <TabsContent value="text">
         <div className="bg-white border rounded-xl p-7">hi</div>
       </TabsContent>
+
       <ImportanceRating
         open={Boolean(state?.success)}
         questionId={questionId}
