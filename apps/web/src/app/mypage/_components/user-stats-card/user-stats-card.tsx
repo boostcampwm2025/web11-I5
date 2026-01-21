@@ -1,5 +1,5 @@
 "use client";
-import { Pencil, User } from "lucide-react";
+import { User } from "lucide-react";
 import * as React from "react";
 
 interface UserStatsCardProps {
@@ -75,22 +75,22 @@ function UserStatsCard({
                 <div className="text-slate-900 font-bold text-2xl">
                   {nicknameValue}
                 </div>
-                <button
+                {/* <button
                   onClick={onEditClick}
                   aria-label="닉네임 편집"
                   className="bg-white border border-slate-200 px-2 h-6 flex items-center justify-center rounded-sm"
                 >
                   <Pencil className="w-3 h-3" stroke="#94A3B8" />
-                </button>
+                </button> */}
               </section>
               <section>
-                <div className="flex gap-4  items-center">
+                <div className="flex gap-4 items-center">
                   <div className="text-slate-900 font-semibold text-base">
                     {email}
                   </div>
-                  <div className="bg-slate-100 rounded-sm p-1 text-slate-500 font-bold text-base">
+                  {/* <div className="bg-slate-100 rounded-sm p-1 text-slate-500 font-bold text-base">
                     {roleValue}
-                  </div>
+                  </div> */}
                 </div>
               </section>
             </>
@@ -103,10 +103,10 @@ function UserStatsCard({
             연속 학습일
           </span>
           <div className="flex gap-1">
-            <span className="font-bold text-teal-600 text-base">
+            <span className="font-bold text-teal-600">
               {consecutiveDayCount}
             </span>
-            <span className="font-medium text-sm text-slate-500">일째</span>
+            <span className="font-medium text-slate-500">일째</span>
           </div>
         </div>
         <hr className="w-px h-9 bg-slate-200" />
@@ -115,10 +115,8 @@ function UserStatsCard({
             해결한 문제
           </span>
           <div className="flex gap-1">
-            <span className="font-bold text-teal-600 text-base">
-              {totalPoint}
-            </span>
-            <span className="font-medium text-sm text-slate-500">개</span>
+            <span className="font-bold text-teal-600">{totalPoint}</span>
+            <span className="font-medium text-slate-500">개</span>
           </div>
         </div>
       </div>
