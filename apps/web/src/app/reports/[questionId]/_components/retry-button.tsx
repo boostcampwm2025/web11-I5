@@ -16,7 +16,11 @@ function RetryButton({ question, className, children }: RetryButtonProps) {
 
   return (
     <>
-      <button className={className} onClick={() => setIsModalOpen(true)}>
+      <button
+        className={className}
+        type="button"
+        onClick={() => setIsModalOpen(true)}
+      >
         {children ?? (
           <>
             <RotateCcw className="w-4 h-4" />

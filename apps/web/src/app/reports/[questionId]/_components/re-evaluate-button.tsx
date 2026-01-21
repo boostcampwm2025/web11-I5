@@ -20,7 +20,7 @@ function ReEvaluateButton({ submissionId, className }: ReEvaluateButtonProps) {
   };
 
   return (
-    <button className={className} onClick={handleReEvaluate}>
+    <button className={className} type="button" onClick={handleReEvaluate}>
       <RefreshCw className="w-4 h-4" />
       <span>채점 다시하기</span>
     </button>
