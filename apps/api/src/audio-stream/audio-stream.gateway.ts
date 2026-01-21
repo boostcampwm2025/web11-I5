@@ -40,11 +40,12 @@ export class AudioStreamGateway {
         data.bytes,
       );
     } catch (error) {
-      this.logger.error(
+      // 청크 저장 실패는 클라이언트에 전파하지 않고 로그만 남김
+      // (back pressure로 인한 지연 청크는 무시해도 됨)
+      this.logger.warn(
         `Failed to save chunk for client ${client.id}, session ${data.sessionId}`,
         error,
       );
-      throw error;
     }
   }
 }

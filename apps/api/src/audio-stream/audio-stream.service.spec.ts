@@ -186,15 +186,16 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
       expect(sessions.get(sessionId).lastSeq).toBe(1);
     });
 
-    it('닫힌 스트리밍 세션에 오디오 청크 저장할 시 에러가 발생한다.', async () => {
+    it('닫힌 스트리밍 세션에 오디오 청크 저장 시 무시된다.', async () => {
       const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       const sessions = (service as any).sessions as Map<string, any>;
       sessions.get(sessionId).status = AudioSessionStatus.FINALIZED;
 
+      // 에러 없이 정상 반환되어야 함 (무시됨)
       await expect(
         service.saveChunk(sessionId, 1, Buffer.from([9])),
-      ).rejects.toThrow(/Session is not open/);
+      ).resolves.toBeUndefined();
 
       expect(writeStreamMock.write).not.toHaveBeenCalled();
     });
