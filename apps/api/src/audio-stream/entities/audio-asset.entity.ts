@@ -5,6 +5,12 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 
+export enum AudioUploadStatus {
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+}
+
 @Entity('audio_assets')
 export class AudioAsset {
   @PrimaryGeneratedColumn()
@@ -18,6 +24,14 @@ export class AudioAsset {
 
   @Column({ name: 'object_key', type: 'text', nullable: true })
   objectKey: string | null;
+
+  @Column({
+    name: 'upload_status',
+    type: 'varchar',
+    length: 20,
+    default: AudioUploadStatus.PENDING,
+  })
+  uploadStatus: AudioUploadStatus;
 
   @Column({ name: 'duration_ms', type: 'int', nullable: true })
   durationMs: number | null;

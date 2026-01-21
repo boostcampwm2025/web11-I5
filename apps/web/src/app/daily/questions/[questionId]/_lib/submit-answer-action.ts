@@ -25,13 +25,13 @@ export async function submitAnswerAction(
     };
   }
 
+  let response: { id: number } | undefined;
+
   try {
-    const data = await apiPost<{ id: number }>("/api/answer-submissions", {
+    response = await apiPost<{ id: number }>("/answer-submissions", {
       audioAssetId: Number(audioAssetId),
       questionId: Number(questionId),
     });
-
-    redirect(`/reports/${questionId}?attempt=${data.id}`);
   } catch (error) {
     console.error("Error submitting answer:", error);
     return {
@@ -40,4 +40,14 @@ export async function submitAnswerAction(
       error: "답변 제출 중 오류가 발생했습니다.",
     };
   }
+
+  if (!response || typeof response.id === "undefined") {
+    return {
+      success: false,
+      message: "",
+      error: "응답에서 제출 ID를 받지 못했습니다.",
+    };
+  }
+
+  redirect(`/reports/${questionId}?attempt=${response.id}`);
 }

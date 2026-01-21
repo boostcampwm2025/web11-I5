@@ -7,9 +7,7 @@ async function fetchSubmissionById(
   submissionId: number,
 ): Promise<SubmissionDTO | null> {
   try {
-    return await apiGet<SubmissionDTO>(
-      `/api/answer-submissions/${submissionId}`,
-    );
+    return await apiGet<SubmissionDTO>(`/answer-submissions/${submissionId}`);
   } catch (error) {
     console.error(error);
     return null;

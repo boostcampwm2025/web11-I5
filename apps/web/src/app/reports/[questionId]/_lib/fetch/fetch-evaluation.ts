@@ -7,9 +7,7 @@ async function fetchEvaluation(
   submissionId: number,
 ): Promise<EvaluationDTO | null> {
   try {
-    return await apiGet<EvaluationDTO>(
-      `/api/answer-evaluation/${submissionId}`,
-    );
+    return await apiGet<EvaluationDTO>(`/answer-evaluation/${submissionId}`);
   } catch (error) {
     console.error(error);
     return null; // mapToReportDetail이 null을 처리함
