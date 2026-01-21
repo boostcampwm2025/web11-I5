@@ -80,6 +80,7 @@ export class ObjectStorageService {
           Key: objectKey,
           Body: fileStream,
           ContentType: 'audio/wav', // WAV 파일 기본값
+          ACL: 'public-read', // 공개 읽기 권한 설정
         },
       });
 
