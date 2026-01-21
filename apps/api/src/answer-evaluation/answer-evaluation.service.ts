@@ -32,8 +32,6 @@ interface AiEvaluationRawResponse {
   logic_reason: string;
   depth_level: DepthEval;
   depth_reason: string;
-  is_complete_sentence: boolean;
-  has_application: boolean;
   mentoring_feedback: string;
   extracted_keywords: string[];
 }
@@ -182,8 +180,6 @@ export class AnswerEvaluationService {
           accuracyEval: result.accuracyLevel,
           logicEval: result.logicLevel,
           depthEval: result.depthLevel,
-          hasApplication: result.hasApplication,
-          isCompleteSentence: result.isCompleteSentence,
           extractedKeywords: result.extractedKeywords,
         });
 
@@ -224,8 +220,6 @@ export class AnswerEvaluationService {
       logicReason: rawResponse.logic_reason,
       depthLevel: rawResponse.depth_level,
       depthReason: rawResponse.depth_reason,
-      isCompleteSentence: rawResponse.is_complete_sentence,
-      hasApplication: rawResponse.has_application,
       mentoringFeedback: rawResponse.mentoring_feedback,
       extractedKeywords: rawResponse.extracted_keywords,
     };
@@ -236,36 +230,30 @@ export class AnswerEvaluationService {
     scoreDetails: Required<EvaluationResultDto>['scoreDetails'];
   } {
     const accuracyMap: Record<AccuracyEval, number> = {
-      [AccuracyEval.PERFECT]: 35,
-      [AccuracyEval.MINOR_ERROR]: 20,
+      [AccuracyEval.PERFECT]: 40,
+      [AccuracyEval.GOOD]: 30,
+      [AccuracyEval.MIXED]: 10,
       [AccuracyEval.WRONG]: 0,
     };
     const accuracyScore = accuracyMap[result.accuracyLevel] ?? 0;
 
     const logicMap: Record<LogicEval, number> = {
-      [LogicEval.CLEAR]: 30,
-      [LogicEval.WEAK]: 15,
+      [LogicEval.FLAWLESS]: 30,
+      [LogicEval.COHERENT]: 20,
+      [LogicEval.WEAK]: 10,
       [LogicEval.NONE]: 0,
     };
     const logicScore = logicMap[result.logicLevel] ?? 0;
 
     const depthMap: Record<DepthEval, number> = {
-      [DepthEval.DEEP]: 25,
+      [DepthEval.EXPERT]: 30,
+      [DepthEval.ADVANCED]: 20,
       [DepthEval.BASIC]: 10,
       [DepthEval.NONE]: 0,
     };
     const depthScore = depthMap[result.depthLevel] ?? 0;
 
-    const completenessScore = result.isCompleteSentence ? 5 : 0;
-
-    const applicationScore = result.hasApplication ? 5 : 0;
-
-    const totalScore =
-      accuracyScore +
-      logicScore +
-      depthScore +
-      completenessScore +
-      applicationScore;
+    const totalScore = accuracyScore + logicScore + depthScore;
 
     return {
       totalScore,
@@ -273,8 +261,6 @@ export class AnswerEvaluationService {
         accuracy: accuracyScore,
         logic: logicScore,
         depth: depthScore,
-        completeness: completenessScore,
-        application: applicationScore,
       },
     };
   }

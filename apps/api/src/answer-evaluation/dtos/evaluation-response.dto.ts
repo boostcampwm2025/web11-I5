@@ -81,7 +81,7 @@ export class EvaluationResponseDto {
   @ApiProperty({
     description: '논리성 등급',
     enum: LogicEval,
-    example: LogicEval.CLEAR,
+    example: LogicEval.COHERENT,
     nullable: true,
   })
   logicEval: LogicEval;

@@ -63,9 +63,9 @@ export class AnswerEvaluationSeed extends BaseSeed {
 
       const accuracyEval = isHighScore
         ? AccuracyEval.PERFECT
-        : AccuracyEval.MINOR_ERROR;
-      const logicEval = isHighScore ? LogicEval.CLEAR : LogicEval.WEAK;
-      const depthEval = isHighScore ? DepthEval.DEEP : DepthEval.BASIC;
+        : AccuracyEval.GOOD;
+      const logicEval = isHighScore ? LogicEval.FLAWLESS : LogicEval.WEAK;
+      const depthEval = isHighScore ? DepthEval.EXPERT : DepthEval.BASIC;
 
       // 질문별 분기 처리
       if (sub.question_title.includes('HTTP')) {
@@ -112,13 +112,11 @@ export class AnswerEvaluationSeed extends BaseSeed {
         depth: depthDetail || '실무적인 적용 사례까지 언급하면 더 좋겠습니다.',
       }).replace(/'/g, "''");
 
-      // 점수 상세 가중치 배분 (합계가 sub.score가 되도록 구성)
+      // 점수 상세 가중치 배분
       const scoreDetails = JSON.stringify({
-        accuracy: Math.floor(sub.score * 0.35),
+        accuracy: Math.floor(sub.score * 0.4),
         logic: Math.floor(sub.score * 0.3),
-        depth: Math.floor(sub.score * 0.25),
-        completeness: Math.floor(sub.score * 0.05),
-        application: sub.score - Math.floor(sub.score * 0.95), // 나머지
+        depth: sub.score - Math.floor(sub.score * 0.7), // 나머지
       }).replace(/'/g, "''");
 
       const keywordsSql =
@@ -134,8 +132,6 @@ export class AnswerEvaluationSeed extends BaseSeed {
         '${accuracyEval}',
         '${logicEval}',
         '${depthEval}',
-        ${isHighScore ? 'true' : 'false'},
-        ${isHighScore ? 'true' : 'false'},
         ${keywordsSql}
       )`;
     };
@@ -153,8 +149,6 @@ export class AnswerEvaluationSeed extends BaseSeed {
         accuracy_eval,
         logic_eval,
         depth_eval,
-        has_application,
-        is_complete_sentence,
         extracted_keywords
       )
       VALUES 

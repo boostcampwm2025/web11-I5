@@ -1,6 +1,6 @@
-export type AccuracyEval = "PERFECT" | "GOOD" | "POOR";
-export type LogicEval = "CLEAR" | "AVERAGE" | "CONFUSING";
-export type DepthEval = "DEEP" | "BASIC" | "SHALLOW";
+export type AccuracyEval = "PERFECT" | "GOOD" | "MIXED" | "WRONG";
+export type LogicEval = "FLAWLESS" | "COHERENT" | "WEAK" | "NONE";
+export type DepthEval = "EXPERT" | "ADVANCED" | "BASIC" | "NONE";
 
 export interface EvaluationDTO {
   id: number;
@@ -20,13 +20,8 @@ export interface EvaluationDTO {
     accuracy: number;
     logic: number;
     depth: number;
-    completeness: number;
-    application: number;
   };
 
-  hasApplication: boolean;
-  isCompleteSentence: boolean;
   extractedKeywords: string[];
-
   createdAt: string;
 }

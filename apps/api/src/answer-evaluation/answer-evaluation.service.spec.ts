@@ -192,13 +192,12 @@ describe('AnswerEvaluationService', () => {
       const mockLlmResult = {
         accuracy_level: AccuracyEval.PERFECT,
         accuracy_reason: 'Good',
-        logic_level: LogicEval.CLEAR,
+        logic_level: LogicEval.FLAWLESS,
         logic_reason: 'Logic',
-        depth_level: DepthEval.DEEP,
+        depth_level: DepthEval.EXPERT,
         depth_reason: 'Deep',
-        is_complete_sentence: true,
-        has_application: true,
         mentoring_feedback: 'Excellent',
+        extracted_keywords: ['React', 'Hook'],
       };
 
       questionRepository.findOne.mockResolvedValue(mockQuestion);
@@ -217,13 +216,14 @@ describe('AnswerEvaluationService', () => {
         expect.objectContaining({
           feedbackMessage: 'Excellent',
           scoreDetails: {
-            accuracy: 35,
+            accuracy: 40,
             logic: 30,
-            depth: 25,
-            completeness: 5,
-            application: 5,
+            depth: 30,
           },
           accuracyEval: AccuracyEval.PERFECT,
+          logicEval: LogicEval.FLAWLESS,
+          depthEval: DepthEval.EXPERT,
+          extractedKeywords: ['React', 'Hook'],
         }),
       );
 
