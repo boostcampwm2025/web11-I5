@@ -1,6 +1,5 @@
 import {
   IsString,
-  IsBoolean,
   IsEnum,
   IsNumber,
   IsObject,
@@ -32,12 +31,6 @@ export class EvaluationResultDto {
   @IsString()
   depthReason: string;
 
-  @IsBoolean()
-  isCompleteSentence: boolean;
-
-  @IsBoolean()
-  hasApplication: boolean;
-
   @IsString()
   mentoringFeedback: string;
 
@@ -47,8 +40,6 @@ export class EvaluationResultDto {
     accuracy: number;
     logic: number;
     depth: number;
-    completeness: number;
-    application: number;
   };
 
   @IsOptional()

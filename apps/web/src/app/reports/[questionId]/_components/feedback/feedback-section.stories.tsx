@@ -64,8 +64,6 @@ export const Success: Story = {
           accuracy: 35,
           logic: 30,
           depth: 20,
-          completeness: 5,
-          application: 5,
         },
         extractedKeywords: ["가상DOM", "Reconciliation", "Diffing", "렌더링"],
       },

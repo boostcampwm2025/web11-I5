@@ -35,7 +35,7 @@ function MetricsList({ feedback, isPending }: MetricsListProps) {
     {
       label: "정확성",
       score: feedback.scoreDetails.accuracy,
-      max: 35,
+      max: 40,
       reason: feedback.accuracyReason,
     },
     {
@@ -47,21 +47,8 @@ function MetricsList({ feedback, isPending }: MetricsListProps) {
     {
       label: "심층성",
       score: feedback.scoreDetails.depth,
-      max: 25,
+      max: 30,
       reason: feedback.depthReason,
-    },
-  ];
-
-  const bonusMetrics = [
-    {
-      label: "문장 완성도",
-      score: feedback.scoreDetails.completeness,
-      max: 5,
-    },
-    {
-      label: "실무 활용도",
-      score: feedback.scoreDetails.application,
-      max: 5,
     },
   ];
 
@@ -88,17 +75,6 @@ function MetricsList({ feedback, isPending }: MetricsListProps) {
           />
         ))}
       </Accordion.Root>
-
-      <div className="grid grid-cols-2 gap-4 pt-2">
-        {bonusMetrics.map((m) => (
-          <MetricItem
-            key={m.label}
-            label={m.label}
-            score={m.score}
-            max={m.max}
-          />
-        ))}
-      </div>
     </div>
   );
 }

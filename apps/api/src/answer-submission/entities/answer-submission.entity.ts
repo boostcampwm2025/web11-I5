@@ -43,7 +43,7 @@ class AnswerSubmission {
   @Column({ type: 'int', default: 0 })
   score: number;
 
-  @CreateDateColumn({ name: 'submitted_at', type: 'timestamp' })
+  @CreateDateColumn({ name: 'submitted_at', type: 'timestamptz' })
   submittedAt: Date;
 
   @Column({
