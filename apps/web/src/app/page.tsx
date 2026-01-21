@@ -53,7 +53,7 @@ async function Home() {
         </div>
       </section>
 
-      <section className="flex flex-col items-center px-8 lg:px-48 py-16 border-slate-200 mb-34">
+      <section className="flex flex-col items-center px-8 lg:px-48 py-16 border-slate-200 mb-32">
         <span className="text-slate-900 font-bold text-2xl lg:text-[32px]">
           학습의 새로운 패러다임
         </span>
