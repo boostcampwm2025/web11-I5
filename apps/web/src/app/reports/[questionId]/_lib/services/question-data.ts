@@ -9,8 +9,8 @@ async function getReportQuestion(questionId: string) {
 
   return {
     ...question,
-    categoryDisplay: question.category?.parent?.name,
-    subCategory: question.category?.name,
+    categoryDisplay: question.category?.parent?.name ?? "",
+    subCategory: question.category?.name ?? "",
   };
 }
 
