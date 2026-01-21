@@ -286,8 +286,8 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
       expect(result.assetId).toBe(123);
       expect(result.fileName).toBe(`${FIXED_SESSION_ID}.wav`);
-      expect(result.filePath).toContain(
-        `/tmp/audio_sessions/${FIXED_SESSION_ID}/`,
+      expect(result.filePath).toBe(
+        `/tmp/audio_sessions/${FIXED_SESSION_ID}.wav`,
       );
     });
 
@@ -302,15 +302,11 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
       expect(uploadSpy).toHaveBeenCalledTimes(1);
 
-      const [assetId, localFilePath, calledSessionId, fileName] =
-        uploadSpy.mock.calls[0];
+      const [assetId, localFilePath, fileName] = uploadSpy.mock.calls[0];
 
       expect(assetId).toBe(123);
-      expect(calledSessionId).toBe(FIXED_SESSION_ID);
       expect(fileName).toBe(`${FIXED_SESSION_ID}.wav`);
-      expect(localFilePath).toContain(
-        `/tmp/audio_sessions/${FIXED_SESSION_ID}/`,
-      );
+      expect(localFilePath).toBe(`/tmp/audio_sessions/${FIXED_SESSION_ID}.wav`);
     });
   });
 });
