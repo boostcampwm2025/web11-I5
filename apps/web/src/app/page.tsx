@@ -10,7 +10,7 @@ async function Home() {
 
   return (
     <main className="w-full h-full flex flex-col bg-white overflow-x-hidden">
-      <section className="w-full relative py-16 px-8 flex justify-center overflow-hidden">
+      <section className="w-full h-screen relative py-16 px-8 flex justify-center overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-center items-center z-10 gap-6 lg:gap-10 w-full px-4 lg:px-0 py-40 xl:pt-0">
           <span className="bg-white border border-teal-100 rounded-[50px] px-4 py-2 text-teal-500 font-bold text-xs ">
             AI 지식 구조화 서비스
@@ -44,7 +44,7 @@ async function Home() {
             </Link>
           </div>
         </div>
-        <div className="opacity-30 w-full lg:w-4/5">
+        <div className="opacity-30 w-full lg:w-4/5 pointer-events-none">
           <GraphView
             graphData={mockData}
             textRenderScale={1.2}

@@ -22,7 +22,7 @@ export class ObjectStorageService {
   // 동시성 제한을 위한 큐
   private readonly uploadQueue: UploadTask[] = [];
   private activeUploads = 0;
-  private readonly maxConcurrentUploads = 5;
+  private readonly maxConcurrentUploads = 1;
   private readonly maxRetries = 3;
   private readonly retryDelayMs = 1000;
 
@@ -183,6 +183,7 @@ export class ObjectStorageService {
     const upload = new Upload({
       client: this.s3Client!,
       queueSize: 1,
+      partSize: 16 * 1024 * 1024,
       params: {
         Bucket: this.bucket,
         Key: objectKey,
