@@ -12,13 +12,13 @@ export class User {
   id: number;
 
   @Column({ type: 'varchar', unique: true })
-  email: string | null;
+  email: string;
+
+  @Column({ type: 'varchar', unique: true })
+  nickname: string;
 
   @Column({ type: 'varchar' })
-  nickname: string | null;
-
-  @Column({ type: 'varchar' })
-  password: string | null;
+  password: string;
 
   @Column({
     type: 'enum',
