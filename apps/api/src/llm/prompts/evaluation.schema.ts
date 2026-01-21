@@ -9,55 +9,49 @@ export const EVALUATION_RESPONSE_SCHEMA = {
   properties: {
     accuracy_level: {
       type: 'string',
-      enum: Object.values(AccuracyEval),
       description:
-        '최우선 순위. 키워드 부재/왜곡은 WRONG, 사소한 혼동은 MINOR_ERROR.',
+        '핵심 개념의 정확성 평가. (PERFECT: 완벽, GOOD: 사소한 실수, MIXED: 정답과 오답 혼재, WRONG: 개념 오류/할루시네이션)',
+      enum: Object.values(AccuracyEval),
     },
     accuracy_reason: {
       type: 'string',
       description:
-        '사용자 답변 중 어떤 문구가 Golden Standard의 키워드와 일치하거나 어긋나는지 구체적 명시.',
+        "팩트 검증 결과. (주의: '모범 답안'이나 'PERFECT'라는 단어를 쓰지 말고, '기술적 사실'이나 '공식 문서'의 내용과 비교하여 설명할 것)",
     },
     logic_level: {
       type: 'string',
+      description:
+        '논리적 구조와 문장 완결성 평가. (FLAWLESS: 완벽한 구조, COHERENT: 이해 가능하나 투박함, WEAK: 논리 비약, NONE: 비문/키워드 나열)',
       enum: Object.values(LogicEval),
-      description: '인과관계 존재 시 CLEAR, 단순 나열은 NONE.',
     },
     logic_reason: {
       type: 'string',
-      description: '인과관계가 드러난 연결 고리 분석.',
+      description:
+        "논리적 구조에 대한 피드백. (주의: 'FLAWLESS', 'WEAK' 등 내부 등급명을 절대 텍스트에 포함하지 말고, 구체적인 문장 흐름에 대해 조언할 것)",
     },
     depth_level: {
       type: 'string',
-      enum: Object.values(DepthEval),
       description:
-        'How/Why/비교 설명 중 하나라도 있으면 DEEP, 정의만 있으면 BASIC.',
+        '지식의 깊이와 응용력 평가. (EXPERT: 원리+실무적용, ADVANCED: 동작원리 설명, BASIC: 단순 정의, NONE: 동문서답)',
+      enum: Object.values(DepthEval),
     },
     depth_reason: {
       type: 'string',
-      description: '동작 원리나 이유를 설명한 문구 인용.',
-    },
-    is_complete_sentence: {
-      type: 'boolean',
-      description: '마침표나 종결 어미가 포함된 문장이 하나라도 있는가?',
-    },
-    has_application: {
-      type: 'boolean',
-      description: '실무/프로젝트 적용 경험이나 실제 사례 언급 시에만 true.',
+      description:
+        "지식의 깊이에 대한 피드백. (주의: 'BASIC', 'EXPERT' 등 내부 용어를 쓰지 말고, 어떤 원리나 사례가 부족한지 자연스럽게 설명할 것)",
     },
     mentoring_feedback: {
       type: 'string',
-      description: '지적+개선방향+격려. 학습 키워드를 제시할 것.',
+      description:
+        '지적 + 개선 방향 + 격려. 정답을 직접 알려주기보다 학습해야 할 키워드를 제시.',
     },
     extracted_keywords: {
       type: 'array',
+      description:
+        '사용자 답변에서 추출한 핵심 기술 키워드(영어). 명명된 기술 엔티티(Named Entity)만 추출.',
       items: {
         type: 'string',
       },
-      description:
-        '사용자 답변에서 추출한 핵심 기술 키워드 목록 (영어).' +
-        'Golden Standard의 key terminology 외에도 문제 맥락과 직접적으로 관련된 중요한 개념을 포함할 수 있음.' +
-        '사용자가 실제로 언급한 개념만 추출하며, 추론이나 보강은 금지.',
     },
   },
   required: [
@@ -67,8 +61,7 @@ export const EVALUATION_RESPONSE_SCHEMA = {
     'logic_reason',
     'depth_level',
     'depth_reason',
-    'is_complete_sentence',
-    'has_application',
     'mentoring_feedback',
+    'extracted_keywords',
   ],
 };
