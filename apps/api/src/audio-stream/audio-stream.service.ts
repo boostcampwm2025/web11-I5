@@ -202,17 +202,34 @@ export class AudioStreamService {
         const writeStream = createWriteStream(session.filePath);
         const readStream = createReadStream(tempPcmPath);
 
-        writeStream.write(wavHeader, (err) => {
+        let resolved = false;
+        const cleanup = (err?: Error) => {
+          if (resolved) return;
+          resolved = true;
+          readStream.destroy();
+          writeStream.destroy();
           if (err) {
             reject(err);
+          }
+        };
+
+        // 스트림 생성 직후 에러 리스너 등록 (파일 열기 실패 등 조기 에러 포착)
+        writeStream.on('error', (err) => cleanup(err));
+        readStream.on('error', (err) => cleanup(err));
+        writeStream.on('finish', () => {
+          if (!resolved) {
+            resolved = true;
+            resolve();
+          }
+        });
+
+        // WAV 헤더 쓰기 후 PCM 데이터 pipe
+        writeStream.write(wavHeader, (err) => {
+          if (err) {
+            cleanup(err);
             return;
           }
-
           readStream.pipe(writeStream);
-
-          writeStream.on('finish', resolve);
-          writeStream.on('error', reject);
-          readStream.on('error', reject);
         });
       });
       streamingSucceeded = true;
