@@ -40,4 +40,6 @@ yarn-error.log*
 # DB data
 pgdata/
 
+# ngrok
+ngrok.exe
 .secrets
