@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
-import { createWriteStream, WriteStream } from 'fs';
+import { createWriteStream, createReadStream, WriteStream } from 'fs';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { AudioAsset, AudioUploadStatus } from './entities/audio-asset.entity';
@@ -192,15 +192,33 @@ export class AudioStreamService {
       pcmDataSize,
     );
 
-    // 임시 파일로 PCM 데이터 읽기
-    const pcmData = await fs.readFile(session.filePath);
+    // 스트림 기반으로 WAV 헤더 추가 (메모리 효율적)
+    const tempPcmPath = `${session.filePath}.pcm`;
+    await fs.rename(session.filePath, tempPcmPath);
 
-    // WAV 헤더 + PCM 데이터로 최종 파일 작성
-    await fs.writeFile(session.filePath, Buffer.concat([wavHeader, pcmData]));
+    await new Promise<void>((resolve, reject) => {
+      const writeStream = createWriteStream(session.filePath);
+      const readStream = createReadStream(tempPcmPath);
+
+      writeStream.write(wavHeader, (err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        readStream.pipe(writeStream);
+
+        writeStream.on('finish', resolve);
+        writeStream.on('error', reject);
+        readStream.on('error', reject);
+      });
+    });
+
+    // 임시 PCM 파일 삭제
+    await fs.unlink(tempPcmPath);
 
     // 최종 파일 크기 확인
-    const finalStats = await fs.stat(session.filePath);
-    const byteSize = finalStats.size;
+    const byteSize = pcmDataSize + wavHeader.length;
 
     const fileName = path.basename(session.filePath);
 
