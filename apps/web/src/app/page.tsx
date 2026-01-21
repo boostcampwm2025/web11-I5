@@ -11,7 +11,7 @@ async function Home() {
   return (
     <main className="w-full h-full flex flex-col bg-white overflow-x-hidden">
       <section className="w-full relative py-16 px-8 flex justify-center overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-center items-center z-10 gap-6 lg:gap-10 w-full px-4 lg:px-0 py-40 xl:pt-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-center items-center z-10 gap-6 lg:gap-10 w-full px-4 lg:px-0 py-40 xl:pt-0">
           <span className="bg-white border border-teal-100 rounded-[50px] px-4 py-2 text-teal-500 font-bold text-xs ">
             AI 지식 구조화 서비스
           </span>
@@ -27,7 +27,7 @@ async function Home() {
             <br />
             말만해가 당신의 머릿속 지식을 체계적으로 구조화해 드립니다.
           </p>
-          <div className="flex flex-col lg:flex-row gap-4 pointer-events-auto">
+          <div className="flex flex-col lg:flex-row gap-4">
             <Link
               href={!user ? "/login" : "/mypage"}
               className="flex gap-1 text-white bg-teal-400 rounded-[50px] px-6 py-3 lg:px-9 lg:py-4 text-base lg:text-lg font-bold items-center justify-center"
@@ -45,7 +45,11 @@ async function Home() {
           </div>
         </div>
         <div className="opacity-30 w-full lg:w-4/5">
-          <GraphView graphData={mockData} textRenderScale={1.2} />
+          <GraphView
+            graphData={mockData}
+            textRenderScale={1.2}
+            clickEventDisabled={true}
+          />
         </div>
       </section>
 
