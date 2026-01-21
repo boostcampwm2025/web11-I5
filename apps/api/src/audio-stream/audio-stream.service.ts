@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
-import { createWriteStream, WriteStream } from 'fs';
+import { createWriteStream, createReadStream, WriteStream } from 'fs';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { AudioAsset, AudioUploadStatus } from './entities/audio-asset.entity';
@@ -192,15 +192,90 @@ export class AudioStreamService {
       pcmDataSize,
     );
 
-    // 임시 파일로 PCM 데이터 읽기
-    const pcmData = await fs.readFile(session.filePath);
+    // 스트림 기반으로 WAV 헤더 추가 (메모리 효율적)
+    const tempPcmPath = `${session.filePath}.pcm`;
+    await fs.rename(session.filePath, tempPcmPath);
 
-    // WAV 헤더 + PCM 데이터로 최종 파일 작성
-    await fs.writeFile(session.filePath, Buffer.concat([wavHeader, pcmData]));
+    let streamingSucceeded = false;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const writeStream = createWriteStream(session.filePath);
+        const readStream = createReadStream(tempPcmPath);
+
+        let resolved = false;
+        const cleanup = (err?: Error) => {
+          if (resolved) return;
+          resolved = true;
+          readStream.destroy();
+          writeStream.destroy();
+          if (err) {
+            reject(err);
+          }
+        };
+
+        // 스트림 생성 직후 에러 리스너 등록 (파일 열기 실패 등 조기 에러 포착)
+        writeStream.on('error', (err) => cleanup(err));
+        readStream.on('error', (err) => cleanup(err));
+        writeStream.on('finish', () => {
+          if (!resolved) {
+            resolved = true;
+            resolve();
+          }
+        });
+
+        // WAV 헤더 쓰기 후 PCM 데이터 pipe
+        writeStream.write(wavHeader, (err) => {
+          if (err) {
+            cleanup(err);
+            return;
+          }
+          readStream.pipe(writeStream);
+        });
+      });
+      streamingSucceeded = true;
+    } catch (streamError) {
+      this.logger.error(
+        `Failed to create WAV file for session ${session.sessionId}`,
+        streamError,
+      );
+
+      // 스트리밍 실패 시 원본 PCM 파일 복구 시도
+      try {
+        await fs.rename(tempPcmPath, session.filePath);
+        this.logger.log(
+          `Restored original PCM file for session ${session.sessionId}`,
+        );
+      } catch (restoreError) {
+        this.logger.error(
+          `Failed to restore PCM file for session ${session.sessionId}`,
+          restoreError,
+        );
+      }
+
+      throw streamError;
+    } finally {
+      // 스트리밍 성공 시에만 임시 파일 삭제 (실패 시 위에서 복구됨)
+      if (streamingSucceeded) {
+        try {
+          await fs.unlink(tempPcmPath);
+        } catch (unlinkError) {
+          // ENOENT는 무시 (이미 삭제된 경우)
+          const isEnoent =
+            unlinkError instanceof Error &&
+            'code' in unlinkError &&
+            (unlinkError as NodeJS.ErrnoException).code === 'ENOENT';
+          if (!isEnoent) {
+            this.logger.warn(
+              `Failed to delete temp PCM file: ${tempPcmPath}`,
+              unlinkError,
+            );
+          }
+        }
+      }
+    }
 
     // 최종 파일 크기 확인
-    const finalStats = await fs.stat(session.filePath);
-    const byteSize = finalStats.size;
+    const byteSize = pcmDataSize + wavHeader.length;
 
     const fileName = path.basename(session.filePath);
 
