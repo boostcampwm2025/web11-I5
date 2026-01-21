@@ -11,15 +11,25 @@ export interface ActionState {
 }
 
 export async function updateImportanceAction(
-  prevState: ActionState | null,
-  data: { questionId: number; score: number },
+  _prevState: ActionState | null,
+  formData: FormData,
 ): Promise<ActionState> {
+  const questionId = formData.get("questionId");
+  const score = formData.get("score");
+
+  if (!questionId || !score) {
+    return {
+      success: false,
+      message: "필수 입력값이 누락되었습니다.",
+    };
+  }
+
   try {
     const response = await apiClient("/answer-submissions/importance", {
       method: "PATCH",
       body: JSON.stringify({
-        questionId: data.questionId,
-        selfImportanceRating: data.score,
+        questionId: Number(questionId),
+        selfImportanceRating: Number(score),
       }),
     });
 
