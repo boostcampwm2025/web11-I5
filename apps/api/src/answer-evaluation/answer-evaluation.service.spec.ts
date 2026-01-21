@@ -169,7 +169,6 @@ describe('AnswerEvaluationService', () => {
       expect(result).toEqual({ evaluationId: 100 });
       expect(answerEvaluationRepository.create).toHaveBeenCalledWith({
         submissionId: 1,
-        createdAt: expect.any(Date) as Date,
       });
       expect(answerEvaluationRepository.save).toHaveBeenCalled();
     });
