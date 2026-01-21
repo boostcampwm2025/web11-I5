@@ -1,5 +1,5 @@
 export type AnalysisStatus = "COMPLETED" | "PENDING" | "FAILED";
-export type STTStatus = "PENDING" | "DONE" | "FAILED";
+export type STTStatus = "PENDING" | "IN_PROGRESS" | "DONE" | "FAILED";
 export type EvaluationStatus = AnalysisStatus;
 
 export interface FeedbackResult {

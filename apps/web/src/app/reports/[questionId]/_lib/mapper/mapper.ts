@@ -56,6 +56,7 @@ function mapToReportDetail(
   // STT 또는 Evaluation이 아직 진행 중
   if (
     submission.sttStatus === "PENDING" ||
+    submission.sttStatus === "IN_PROGRESS" ||
     submission.evaluationStatus === "PENDING"
   ) {
     return {
@@ -113,6 +114,7 @@ function mapToReportHistoryItem(
     // 하나라도 진행 중이면 최종 상태는 PENDING
     if (
       submission.sttStatus === "PENDING" ||
+      submission.sttStatus === "IN_PROGRESS" ||
       submission.evaluationStatus === "PENDING"
     ) {
       return "PENDING";

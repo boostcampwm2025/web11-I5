@@ -21,7 +21,8 @@ function FeedbackSection({
   question,
 }: FeedbackSectionProps) {
   if (status === "PENDING") {
-    const isSttPending = data.sttStatus === "PENDING";
+    const isSttPending =
+      data.sttStatus === "IN_PROGRESS" || data.sttStatus === "PENDING";
 
     return (
       <section className="bg-white rounded-xl border border-[#E2E8F0] p-9 transition-all duration-300">
