@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -67,7 +66,7 @@ export class AnswerEvaluationService {
       throw new NotFoundException('저장된 답안을 찾을 수 없습니다.');
     }
     if (!submission.rawAnswer || submission.rawAnswer.trim().length === 0) {
-      throw new BadRequestException('내용이 없는 답안은 채점할 수 없습니다.');
+      return await this.handleEmptyAnswer(submission);
     }
     if (submission.evaluationStatus === EvaluationStatus.COMPLETED) {
       throw new ConflictException('이미 채점이 완료된 답안입니다.');
@@ -104,6 +103,53 @@ export class AnswerEvaluationService {
     }
 
     void this.aiEvaluate(evaluation.id, submission);
+
+    return { evaluationId: evaluation.id };
+  }
+
+  /**
+   * 답변 내용이 없는 경우의 처리
+   */
+  private async handleEmptyAnswer(
+    submission: AnswerSubmission,
+  ): Promise<{ evaluationId: number }> {
+    const feedbackMessage =
+      '답변 내용이 입력되지 않았습니다. 내용을 작성하신 후 제출해 주세요.';
+
+    // 기존 evaluation이 있는지 확인
+    let evaluation = await this.answerEvaluationRepository.findOne({
+      where: { submissionId: submission.id },
+    });
+
+    if (!evaluation) {
+      evaluation = this.answerEvaluationRepository.create({
+        submissionId: submission.id,
+      });
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      // Evaluation 정보 업데이트 (최하위 점수 부여)
+      await manager.save(AnswerEvaluation, {
+        ...evaluation,
+        feedbackMessage,
+        detailAnalysis: {
+          accuracy: '답변 내용이 없어 정확도를 측정할 수 없습니다.',
+          logic: '답변 내용이 없어 논리 구성을 확인할 수 없습니다.',
+          depth: '답변 내용이 없어 지식의 깊이를 측정할 수 없습니다.',
+        },
+        scoreDetails: { accuracy: 0, logic: 0, depth: 0 },
+        accuracyEval: AccuracyEval.WRONG,
+        logicEval: LogicEval.NONE,
+        depthEval: DepthEval.NONE,
+        extractedKeywords: [],
+      });
+
+      // Submission 상태 업데이트
+      await manager.update(AnswerSubmission, submission.id, {
+        evaluationStatus: EvaluationStatus.COMPLETED,
+        score: 0,
+      });
+    });
 
     return { evaluationId: evaluation.id };
   }
