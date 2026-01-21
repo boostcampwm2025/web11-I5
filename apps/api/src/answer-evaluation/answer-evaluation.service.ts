@@ -79,18 +79,35 @@ export class AnswerEvaluationService {
       evaluationStatus: EvaluationStatus.PENDING,
     });
 
-    // Evaluation Entity 먼저 생성
-    const initialEvaluation = this.answerEvaluationRepository.create({
-      submissionId,
-      createdAt: new Date(),
+    // 기존 evaluation 찾기
+    let evaluation = await this.answerEvaluationRepository.findOne({
+      where: { submissionId },
     });
 
-    const savedEvaluation =
-      await this.answerEvaluationRepository.save(initialEvaluation);
+    if (evaluation) {
+      // 재채점: 기존 데이터 초기화
+      await this.answerEvaluationRepository.update(evaluation.id, {
+        feedbackMessage: null,
+        detailAnalysis: null,
+        scoreDetails: null,
+        accuracyEval: null,
+        logicEval: null,
+        depthEval: null,
+        hasApplication: false,
+        isCompleteSentence: false,
+        extractedKeywords: [],
+      });
+    } else {
+      // 첫 채점: 새로 생성
+      evaluation = this.answerEvaluationRepository.create({
+        submissionId,
+      });
+      evaluation = await this.answerEvaluationRepository.save(evaluation);
+    }
 
-    void this.aiEvaluate(savedEvaluation.id, submission);
+    void this.aiEvaluate(evaluation.id, submission);
 
-    return { evaluationId: savedEvaluation.id };
+    return { evaluationId: evaluation.id };
   }
 
   /**

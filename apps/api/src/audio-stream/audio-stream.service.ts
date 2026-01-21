@@ -1,19 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
-import { createWriteStream, WriteStream } from 'fs';
+import { createWriteStream, createReadStream, WriteStream } from 'fs';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { AudioAsset } from './entities/audio-asset.entity';
+import { AudioAsset, AudioUploadStatus } from './entities/audio-asset.entity';
 import { AudioSessionStatus } from './audio-stream.constants';
 import { ObjectStorageService } from '../object-storage/object-storage.service';
+import { AudioUploadCompletedEvent } from './events/audio-upload-completed.event';
 
 /**
  * 인메모리 세션 정보
  * MVP: 서버 재시작 시 세션 정보 손실됨 (RDB/Redis 미사용)
  */
 interface AudioSession {
+  userId: number;
   sessionId: string;
   status: AudioSessionStatus;
   lastSeq: number;
@@ -34,6 +37,7 @@ export class AudioStreamService {
     @InjectRepository(AudioAsset)
     private readonly audioAssetRepository: Repository<AudioAsset>,
     private readonly objectStorageService: ObjectStorageService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -53,6 +57,7 @@ export class AudioStreamService {
    * 새로운 세션을 생성하고 로컬 디렉토리 및 writeStream을 준비한다.
    */
   async startSession(
+    userId: number,
     codec: string,
     sampleRate: number,
     channels: number,
@@ -68,6 +73,7 @@ export class AudioStreamService {
     const writeStream = createWriteStream(filePath, { flags: 'a' });
 
     const session: AudioSession = {
+      userId,
       sessionId,
       status: AudioSessionStatus.OPEN,
       lastSeq: 0,
@@ -186,60 +192,100 @@ export class AudioStreamService {
       pcmDataSize,
     );
 
-    // 임시 파일로 PCM 데이터 읽기
-    const pcmData = await fs.readFile(session.filePath);
+    // 스트림 기반으로 WAV 헤더 추가 (메모리 효율적)
+    const tempPcmPath = `${session.filePath}.pcm`;
+    await fs.rename(session.filePath, tempPcmPath);
 
-    // WAV 헤더 + PCM 데이터로 최종 파일 작성
-    await fs.writeFile(session.filePath, Buffer.concat([wavHeader, pcmData]));
-
-    // 최종 파일 크기 확인
-    const finalStats = await fs.stat(session.filePath);
-    const byteSize = finalStats.size;
-
-    // Object Storage에 업로드
-    let storageUrl: string;
-    let objectKey: string | null = null;
-    const fileName = path.basename(session.filePath);
-
+    let streamingSucceeded = false;
     try {
-      const uploadKey = `audio-sessions/${sessionId}/${fileName}`;
-      storageUrl = await this.objectStorageService.uploadFile(
-        session.filePath,
-        uploadKey,
-      );
-      this.logger.log(
-        `File uploaded to Object Storage: ${session.filePath} -> ${storageUrl}`,
-      );
+      await new Promise<void>((resolve, reject) => {
+        const writeStream = createWriteStream(session.filePath);
+        const readStream = createReadStream(tempPcmPath);
 
-      // 업로드 성공 시에만 objectKey 설정
-      objectKey = uploadKey;
+        let resolved = false;
+        const cleanup = (err?: Error) => {
+          if (resolved) return;
+          resolved = true;
+          readStream.destroy();
+          writeStream.destroy();
+          if (err) {
+            reject(err);
+          }
+        };
 
-      // 업로드 성공 시 로컬 파일 삭제
-      try {
-        await fs.unlink(session.filePath);
-        this.logger.log(`Local file deleted: ${session.filePath}`);
-      } catch (deleteError) {
-        this.logger.warn(
-          `Failed to delete local file: ${session.filePath}`,
-          deleteError,
-        );
-        // 로컬 파일 삭제 실패는 치명적이지 않으므로 에러를 던지지 않음
-      }
-    } catch (error) {
+        // 스트림 생성 직후 에러 리스너 등록 (파일 열기 실패 등 조기 에러 포착)
+        writeStream.on('error', (err) => cleanup(err));
+        readStream.on('error', (err) => cleanup(err));
+        writeStream.on('finish', () => {
+          if (!resolved) {
+            resolved = true;
+            resolve();
+          }
+        });
+
+        // WAV 헤더 쓰기 후 PCM 데이터 pipe
+        writeStream.write(wavHeader, (err) => {
+          if (err) {
+            cleanup(err);
+            return;
+          }
+          readStream.pipe(writeStream);
+        });
+      });
+      streamingSucceeded = true;
+    } catch (streamError) {
       this.logger.error(
-        `Failed to upload file to Object Storage, using local path as fallback: ${session.filePath}`,
-        error,
+        `Failed to create WAV file for session ${session.sessionId}`,
+        streamError,
       );
-      storageUrl = session.filePath; // 업로드 실패 시 로컬 경로 사용
-      // objectKey는 null로 유지 (업로드 실패)
+
+      // 스트리밍 실패 시 원본 PCM 파일 복구 시도
+      try {
+        await fs.rename(tempPcmPath, session.filePath);
+        this.logger.log(
+          `Restored original PCM file for session ${session.sessionId}`,
+        );
+      } catch (restoreError) {
+        this.logger.error(
+          `Failed to restore PCM file for session ${session.sessionId}`,
+          restoreError,
+        );
+      }
+
+      throw streamError;
+    } finally {
+      // 스트리밍 성공 시에만 임시 파일 삭제 (실패 시 위에서 복구됨)
+      if (streamingSucceeded) {
+        try {
+          await fs.unlink(tempPcmPath);
+        } catch (unlinkError) {
+          // ENOENT는 무시 (이미 삭제된 경우)
+          const isEnoent =
+            unlinkError instanceof Error &&
+            'code' in unlinkError &&
+            (unlinkError as NodeJS.ErrnoException).code === 'ENOENT';
+          if (!isEnoent) {
+            this.logger.warn(
+              `Failed to delete temp PCM file: ${tempPcmPath}`,
+              unlinkError,
+            );
+          }
+        }
+      }
     }
 
-    // AudioAsset 생성
+    // 최종 파일 크기 확인
+    const byteSize = pcmDataSize + wavHeader.length;
+
+    const fileName = path.basename(session.filePath);
+
+    // AudioAsset을 먼저 pending 상태로 생성
     const audioAsset = this.audioAssetRepository.create({
       userId,
-      storageUrl, // Object Storage URL 또는 로컬 디스크 경로 (fallback)
-      objectKey, // 업로드 성공 시에만 설정됨, 실패 시 null
-      durationMs: null, // MVP: duration 계산 생략
+      storageUrl: session.filePath, // 초기에는 로컬 경로
+      objectKey: null,
+      uploadStatus: AudioUploadStatus.PENDING,
+      durationMs: null,
       byteSize: byteSize.toString(),
       codec: session.codec,
       sampleRate: session.sampleRate,
@@ -254,11 +300,92 @@ export class AudioStreamService {
 
     this.sessions.delete(sessionId);
 
+    // Object Storage 업로드를 비동기로 실행 (await 하지 않음)
+    void this.uploadToStorageAsync(
+      savedAsset.id,
+      session.filePath,
+      sessionId,
+      fileName,
+    );
+
     return {
       filePath: session.filePath,
       fileName,
       assetId: savedAsset.id,
     };
+  }
+
+  /**
+   * Object Storage에 비동기로 업로드하고 DB 상태를 업데이트한다.
+   */
+  private async uploadToStorageAsync(
+    assetId: number,
+    localFilePath: string,
+    sessionId: string,
+    fileName: string,
+  ): Promise<void> {
+    try {
+      const uploadKey = `audio-sessions/${sessionId}/${fileName}`;
+      const storageUrl = await this.objectStorageService.uploadFile(
+        localFilePath,
+        uploadKey,
+      );
+
+      this.logger.log(
+        `File uploaded to Object Storage: ${localFilePath} -> ${storageUrl}`,
+      );
+
+      // 업로드 성공 시 DB 업데이트
+      await this.audioAssetRepository.update(assetId, {
+        storageUrl,
+        objectKey: uploadKey,
+        uploadStatus: AudioUploadStatus.COMPLETED,
+      });
+
+      // 업로드 완료 이벤트 발행
+      try {
+        this.eventEmitter.emit(
+          'audio.upload.completed',
+          new AudioUploadCompletedEvent(assetId),
+        );
+        this.logger.log(
+          `Emitted audio.upload.completed event for assetId: ${assetId}`,
+        );
+      } catch (emitError) {
+        this.logger.error(
+          `Failed to emit audio.upload.completed event for assetId: ${assetId}`,
+          emitError,
+        );
+      }
+
+      // 로컬 파일 삭제
+      try {
+        await fs.unlink(localFilePath);
+        this.logger.log(`Local file deleted: ${localFilePath}`);
+      } catch (deleteError) {
+        this.logger.warn(
+          `Failed to delete local file: ${localFilePath}`,
+          deleteError,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to upload file to Object Storage: ${localFilePath}`,
+        error,
+      );
+
+      // 업로드 실패 시 DB 상태 업데이트
+      try {
+        await this.audioAssetRepository.update(assetId, {
+          uploadStatus: AudioUploadStatus.FAILED,
+        });
+      } catch (updateError) {
+        this.logger.error(
+          `Failed to update upload status to FAILED for assetId: ${assetId}`,
+          updateError,
+        );
+      }
+    }
   }
 
   /**

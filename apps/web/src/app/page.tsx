@@ -14,7 +14,7 @@ function Home() {
           </div>
         </div>
         <div className="opacity-20">
-          <GraphView mockData={mockData} textRenderScale={1.2} />
+          <GraphView graphData={mockData} textRenderScale={1.2} />
         </div>
       </div>
     </div>

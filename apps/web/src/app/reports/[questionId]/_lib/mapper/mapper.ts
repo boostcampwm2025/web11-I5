@@ -40,9 +40,25 @@ function mapToReportDetail(
     date: formatDateTimeKST(submission.submittedAt),
     duration: formatDuration(submission.duration),
     answerContent: submission.answerContent,
+    sttStatus: submission.sttStatus,
+    evaluationStatus: submission.evaluationStatus,
   };
 
-  if (submission.evaluationStatus === "PENDING") {
+  // STT 실패 -> 다시 도전하기 필요
+  if (submission.sttStatus === "FAILED") {
+    return {
+      ...base,
+      status: "FAILED",
+      totalScore: null,
+    };
+  }
+
+  // STT 또는 Evaluation이 아직 진행 중
+  if (
+    submission.sttStatus === "PENDING" ||
+    submission.sttStatus === "IN_PROGRESS" ||
+    submission.evaluationStatus === "PENDING"
+  ) {
     return {
       ...base,
       status: "PENDING",
@@ -50,19 +66,22 @@ function mapToReportDetail(
     };
   }
 
+  // Evaluation 실패 -> 채점 다시하기 필요
   if (submission.evaluationStatus === "FAILED") {
     return {
       ...base,
       status: "FAILED",
       totalScore: null,
-      reason: "채점 처리 중 오류가 발생했습니다.",
     };
   }
 
+  // Evaluation 완료됐는데 데이터가 없는 경우
   if (!evaluation) {
-    throw new Error(
-      `채점 완료된 답변은 채점 기록이 있어야 합니다.(id=${submission.id})`,
-    );
+    return {
+      ...base,
+      status: "FAILED",
+      totalScore: null,
+    };
   }
 
   return {
@@ -95,6 +114,7 @@ function mapToReportHistoryItem(
     // 하나라도 진행 중이면 최종 상태는 PENDING
     if (
       submission.sttStatus === "PENDING" ||
+      submission.sttStatus === "IN_PROGRESS" ||
       submission.evaluationStatus === "PENDING"
     ) {
       return "PENDING";
@@ -118,6 +138,8 @@ function mapToReportHistoryItem(
     duration: formatDuration(submission.duration),
     answerContent: submission.answerContent,
     status: unifiedStatus,
+    sttStatus: submission.sttStatus,
+    evaluationStatus: submission.evaluationStatus,
     totalScore:
       submission.evaluationStatus === "COMPLETED"
         ? submission.totalScore

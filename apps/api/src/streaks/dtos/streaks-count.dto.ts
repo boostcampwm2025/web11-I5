@@ -13,5 +13,5 @@ export class GetConsecutiveDayCountResponseDto {
     description: '연속 학습일 수',
     example: 30,
   })
-  sequencyDailyCount: number;
+  consecutiveDayCount: number;
 }

@@ -9,12 +9,6 @@ export class AudioFinalizeRequestDto {
     example: 'session-12345',
   })
   sessionId: string;
-
-  @ApiProperty({
-    description: '사용자 ID',
-    example: 1,
-  })
-  userId: number;
 }
 
 /**

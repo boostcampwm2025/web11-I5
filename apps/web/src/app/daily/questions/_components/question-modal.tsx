@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { Button } from "@/components/button/button";
-import { Toggle } from "@/components/toggle/toggle";
 import Link from "next/link";
 import { Question } from "../_types/types";
+import { SegmentedControl } from "@/components/segmented-control/segmented-control";
 
 interface QuestionModalProps {
   question: Question;
@@ -12,7 +12,7 @@ interface QuestionModalProps {
 }
 
 function QuestionModal({ question, onClose }: QuestionModalProps) {
-  const [answerMode, setAnswerMode] = React.useState<string>("text");
+  const [answerMode, setAnswerMode] = React.useState<string>("voice");
   if (!question) return null;
 
   return (
@@ -48,17 +48,14 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
           {/* 답변 모드 선택 UI */}
           <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between mb-8">
             <span className="text-sm font-medium text-gray-700">답변 모드</span>
-            <div className="w-40">
-              <Toggle
-                size="sm"
-                value={answerMode}
-                onChange={setAnswerMode}
-                options={[
-                  { label: "텍스트", value: "text" },
-                  { label: "음성", value: "voice" },
-                ]}
-              />
-            </div>
+            <SegmentedControl
+              value={answerMode}
+              onChange={setAnswerMode}
+              options={[
+                { label: "텍스트", value: "text" },
+                { label: "음성", value: "voice" },
+              ]}
+            />
           </div>
 
           {/* 하단 버튼 */}

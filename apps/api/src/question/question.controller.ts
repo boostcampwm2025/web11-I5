@@ -4,6 +4,7 @@ import {
   Param,
   Query,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,6 +19,7 @@ import { FindOneParams } from './dtos/find-one-params.dto';
 import { QuestionFilterDto } from './dtos/question-filter.dto';
 import { PaginatedQuestionsDto } from './dtos/paginated-questions.dto';
 import { Question } from './entities/question.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @ApiTags('questions')
 @Controller('questions')
@@ -84,6 +86,7 @@ export class QuestionController {
   @ApiNotFoundResponse({
     description: 'Question not found',
   })
+  @UseGuards(JwtAuthGuard)
   async getById(@Param() params: FindOneParams) {
     const question = await this.questionService.findOneById(+params.id);
     if (!question) {
