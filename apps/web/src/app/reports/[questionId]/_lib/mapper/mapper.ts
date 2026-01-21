@@ -3,7 +3,15 @@ import { ReportDetail, ReportHistoryItem } from "../../_types/report-detail";
 import { SubmissionDTO } from "../../_types/submission-dto";
 
 function formatDateTimeKST(isoString: string): string {
-  const d = new Date(isoString);
+  // ISO 형식이지만 타임존 정보(Z 또는 +HH:mm)가 없는 경우 UTC로 간주하도록 처리
+  const dateStr =
+    isoString.includes("T") &&
+    !isoString.endsWith("Z") &&
+    !/\+\d{2}:\d{2}$/.test(isoString)
+      ? `${isoString}Z`
+      : isoString;
+
+  const d = new Date(dateStr);
 
   const kstFormatter = new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
