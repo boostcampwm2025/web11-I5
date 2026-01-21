@@ -9,7 +9,7 @@ async function Footer() {
           <div className="font-bold text-xl text-slate-700">말만해</div>
         </div>
       </div>
-      <div className="flex flex-col gap-3 text-slate-400 text-center">
+      <div className="flex flex-col gap-3 text-slate-400 text-center text-sm">
         <span>© 2026 Malmanhae. All rights reserved.</span>
         <span>AI 기반 CS 지식 구조화 플랫폼</span>
       </div>

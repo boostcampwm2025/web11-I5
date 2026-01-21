@@ -143,6 +143,10 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
     await moduleRef.close();
   });
 
+  afterEach(() => {
+    jest.clearAllTimers();
+  });
+
   describe('오디오 스트리밍 시작', () => {
     it('오디오 스트리밍 시작 시 세션이 생긴다', async () => {
       const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
@@ -186,15 +190,16 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
       expect(sessions.get(sessionId).lastSeq).toBe(1);
     });
 
-    it('닫힌 스트리밍 세션에 오디오 청크 저장할 시 에러가 발생한다.', async () => {
+    it('닫힌 스트리밍 세션에 오디오 청크 저장 시 무시된다.', async () => {
       const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       const sessions = (service as any).sessions as Map<string, any>;
       sessions.get(sessionId).status = AudioSessionStatus.FINALIZED;
 
+      // 에러 없이 정상 반환되어야 함 (무시됨)
       await expect(
         service.saveChunk(sessionId, 1, Buffer.from([9])),
-      ).rejects.toThrow(/Session is not open/);
+      ).resolves.toBeUndefined();
 
       expect(writeStreamMock.write).not.toHaveBeenCalled();
     });
@@ -227,7 +232,7 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
   });
 
   describe('오디오 스트리밍 종료', () => {
-    it('오디오 스트리밍 세션 종료 시 세션이 제거된다.', async () => {
+    it('오디오 스트리밍 세션 종료 시 세션 상태가 FINALIZED로 변경된다.', async () => {
       const sessionId = await service.startSession(USER_ID, 'pcm', 16000, 1);
 
       jest
@@ -237,7 +242,8 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
       await service.finalizeSession(sessionId, USER_ID);
 
       const sessions = (service as any).sessions as Map<string, any>;
-      expect(sessions.has(sessionId)).toBe(false);
+      // 세션은 5초 후에 삭제되므로, 즉시 삭제되지 않고 상태만 변경됨
+      expect(sessions.get(sessionId).status).toBe(AudioSessionStatus.FINALIZED);
     });
 
     it('OPEN 상태가 아닌 스트리밍 세션을 종료하려고 하면 에러가 발생한다.', async () => {
@@ -280,8 +286,8 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
       expect(result.assetId).toBe(123);
       expect(result.fileName).toBe(`${FIXED_SESSION_ID}.wav`);
-      expect(result.filePath).toContain(
-        `/tmp/audio_sessions/${FIXED_SESSION_ID}/`,
+      expect(result.filePath).toBe(
+        `/tmp/audio_sessions/${FIXED_SESSION_ID}.wav`,
       );
     });
 
@@ -296,15 +302,11 @@ describe('AudioStreamService - Unit Tests (TestingModule, fs partial mock)', () 
 
       expect(uploadSpy).toHaveBeenCalledTimes(1);
 
-      const [assetId, localFilePath, calledSessionId, fileName] =
-        uploadSpy.mock.calls[0];
+      const [assetId, localFilePath, fileName] = uploadSpy.mock.calls[0];
 
       expect(assetId).toBe(123);
-      expect(calledSessionId).toBe(FIXED_SESSION_ID);
       expect(fileName).toBe(`${FIXED_SESSION_ID}.wav`);
-      expect(localFilePath).toContain(
-        `/tmp/audio_sessions/${FIXED_SESSION_ID}/`,
-      );
+      expect(localFilePath).toBe(`/tmp/audio_sessions/${FIXED_SESSION_ID}.wav`);
     });
   });
 });

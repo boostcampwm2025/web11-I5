@@ -94,6 +94,7 @@ export class AudioStreamController {
       const result = await this.audioStreamService.finalizeSession(
         data.sessionId,
         userId,
+        data.lastSeq,
       );
 
       return result;

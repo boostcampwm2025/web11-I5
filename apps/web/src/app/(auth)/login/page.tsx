@@ -12,7 +12,7 @@ async function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-20 px-5">
+    <div className="w-full flex min-h-screen flex-col items-center justify-center py-20 px-5">
       <div className="bg-white border rounded-xl p-12 w-full max-w-100">
         <div className="flex gap-2 justify-center items-center mb-9">
           <Image src="/mmh-logo.svg" alt="" width={32} height={32} />
