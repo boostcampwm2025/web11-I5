@@ -4,6 +4,8 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserRole } from './entities/user-role.enum';
 import { UserRepository } from './user.repository';
@@ -13,10 +15,18 @@ import {
   verifyPassword,
 } from './utils/password.util';
 import { QueryFailedError } from 'typeorm';
+import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
+import { EvaluationStatus } from '../answer-evaluation/answer-evaluation.constants';
+import { SolvedProblemDto } from './dtos/response/solved-problem.dto';
+import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    @InjectRepository(AnswerSubmission)
+    private readonly answerSubmissionRepository: Repository<AnswerSubmission>,
+  ) {}
 
   async findOneById(id: number): Promise<User | null> {
     return this.userRepository.findOneById(id);
@@ -100,5 +110,80 @@ export class UserService {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
     return user;
+  }
+
+  /**
+   * 채점 및 AI 피드백이 완료된 문제 목록 조회
+   * @param userId 사용자 ID
+   * @returns 푼 문제 목록 및 총 갯수
+   */
+  async getSolvedProblems(
+    userId: number,
+  ): Promise<SolvedProblemsListResponseDto> {
+    // 채점 및 피드백이 완료된 제출 내역 조회
+    const submissions = await this.answerSubmissionRepository
+      .createQueryBuilder('submission')
+      .innerJoin(
+        'answer_evaluations',
+        'evaluation',
+        'evaluation.submission_id = submission.id',
+      )
+      .innerJoinAndSelect('submission.question', 'question')
+      .leftJoinAndSelect('question.category', 'category')
+      .where('submission.user_id = :userId', { userId })
+      .andWhere('submission.evaluation_status = :status', {
+        status: EvaluationStatus.COMPLETED,
+      })
+      .andWhere('evaluation.feedback_message IS NOT NULL')
+      .orderBy('submission.submitted_at', 'DESC')
+      .getMany();
+
+    // 문제별로 가장 최근 제출 내역만 선택
+    const problemMap = new Map<
+      number,
+      {
+        submissionId: number;
+        questionId: number;
+        title: string;
+        category: string;
+        completedAt: Date;
+      }
+    >();
+
+    submissions.forEach((submission) => {
+      const questionId = submission.questionId;
+      const existing = problemMap.get(questionId);
+
+      if (!existing || submission.submittedAt > existing.completedAt) {
+        const categoryName = submission.question?.category?.name ?? '미분류';
+
+        problemMap.set(questionId, {
+          submissionId: submission.id,
+          questionId,
+          title: submission.question?.title ?? '',
+          category: categoryName,
+          completedAt: submission.submittedAt,
+        });
+      }
+    });
+
+    // DTO 변환 및 정렬
+    const problems: SolvedProblemDto[] = Array.from(problemMap.values())
+      .map((data) => ({
+        questionId: data.questionId,
+        title: data.title,
+        category: data.category,
+        completedAt: data.completedAt.toISOString(),
+        reportId: data.submissionId,
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime(),
+      );
+
+    return {
+      problems,
+      totalCount: problems.length,
+    };
   }
 }
