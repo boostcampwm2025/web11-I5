@@ -47,7 +47,6 @@ function RecordingSection({
     stopRecording,
     retryRecording,
     getAudioBlob,
-    getAudioMimeType,
   } = useRecorder({
     maxDurationSeconds,
   });
@@ -56,6 +55,7 @@ function RecordingSection({
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submissionId, setSubmissionId] = React.useState<number | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
 
   const router = useRouter();
 
@@ -63,6 +63,7 @@ function RecordingSection({
     if (dingWavReady) {
       setTimeout(() => playDing(), 100);
     }
+    setError("");
     startRecording();
   };
 
@@ -70,7 +71,6 @@ function RecordingSection({
     setIsSubmitting(true);
 
     try {
-      console.log(getAudioMimeType());
       const audioBlob = getAudioBlob();
       if (!audioBlob) {
         throw Error("failed to create an audio blob");
@@ -104,7 +104,7 @@ function RecordingSection({
         setSubmissionId(submissionResult.submissionId);
       }
     } catch {
-      console.error("답변 제출에 실패하였습니다.");
+      setError("답변 제출에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -203,6 +203,11 @@ function RecordingSection({
                         )}
                       </Button>
                     </div>
+                    {error && (
+                      <p className="text-red-500 text-center text-sm mt-2">
+                        {error}
+                      </p>
+                    )}
                   </form>
                 );
               }

@@ -6,6 +6,8 @@ function useWav(src: string, volume = 1) {
   const [ready, setReady] = React.useState(false);
 
   React.useEffect(() => {
+    setReady(false);
+
     const a = new Audio(src);
     a.preload = "auto";
     a.volume = volume;

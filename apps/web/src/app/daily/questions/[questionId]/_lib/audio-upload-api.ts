@@ -49,14 +49,14 @@ export async function requestPresignedUrl(
  */
 export async function uploadToStorage(
   uploadUrl: string,
-  wavBlob: Blob,
+  audioBlob: Blob,
 ): Promise<void> {
   const response = await fetch(uploadUrl, {
     method: "PUT",
     headers: {
-      "Content-Type": "audio/wav",
+      "Content-Type": audioBlob.type || "audio/wav",
     },
-    body: wavBlob,
+    body: audioBlob,
   });
 
   // S3 PUT은 200 또는 204를 반환

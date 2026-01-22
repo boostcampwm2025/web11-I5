@@ -11,6 +11,7 @@ interface RecordButtonProps {
 function RecordButton({ isRecording, onClick }: RecordButtonProps) {
   return (
     <motion.button
+      aria-label={isRecording ? "녹음 중지" : "녹음 시작"}
       onClick={onClick}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.98 }}
