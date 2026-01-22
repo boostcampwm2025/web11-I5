@@ -8,7 +8,7 @@ import { AnswerSubmission } from './entities/answer-submission.entity';
 import {
   AudioAsset,
   AudioUploadStatus,
-} from '../audio-stream/entities/audio-asset.entity';
+} from '../uploads/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttService } from '../stt/stt.service';
 import { StreaksService } from '../streaks/streaks.service';
@@ -18,7 +18,7 @@ import {
   ProcessStatus,
   InputType,
 } from './answer-submission.constants';
-import { AudioUploadCompletedEvent } from '../audio-stream/events/audio-upload-completed.event';
+import { AudioUploadCompletedEvent } from '../uploads/events/audio-upload-completed.event';
 
 const mockAnswerSubmissionRepository = {
   find: jest.fn(),
@@ -308,7 +308,7 @@ describe('AnswerSubmissionService', () => {
 
       const mockAudioAsset = {
         id: audioAssetId,
-        objectKey: 'audio/test.wav',
+        objectKey: 'audio/test.m4a',
         uploadStatus: AudioUploadStatus.COMPLETED,
       } as AudioAsset;
 
@@ -389,7 +389,7 @@ describe('AnswerSubmissionService', () => {
 
       const mockAudioAsset = {
         id: audioAssetId,
-        objectKey: 'audio/test.wav',
+        objectKey: 'audio/test.m4a',
         uploadStatus: AudioUploadStatus.COMPLETED,
       } as AudioAsset;
 

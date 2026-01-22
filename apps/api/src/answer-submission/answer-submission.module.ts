@@ -1,7 +1,7 @@
 import { Logger, Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StreaksModule } from 'src/streaks/streaks.module';
-import { AudioAsset } from '../audio-stream/entities/audio-asset.entity';
+import { AudioAsset } from '../uploads/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttModule } from '../stt/stt.module';
 import { AnswerSubmissionController } from './answer-submission.controller';

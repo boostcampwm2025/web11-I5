@@ -2,28 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { apiClient } from "@/lib/api-client";
 
 /**
- * POST /api/audio-stream/finalize
- * 오디오 스트리밍 세션을 종료하는 BFF 엔드포인트
+ * POST /api/uploads/complete
+ * 업로드 완료를 확인하는 BFF 엔드포인트
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sessionId, lastSeq } = body;
 
-    // NestJS API 호출 (Bearer 토큰 자동 포함)
-    const response = await apiClient("/audio-stream/finalize", {
+    const response = await apiClient("/uploads/complete", {
       method: "POST",
-      body: JSON.stringify({
-        sessionId,
-        lastSeq,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Failed to finalize session:", errorText);
+      console.error("Failed to confirm upload:", errorText);
       return NextResponse.json(
-        { error: "Failed to finalize audio session" },
+        { error: "Failed to confirm upload" },
         { status: response.status },
       );
     }
@@ -31,7 +26,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error in /audio-stream/finalize:", error);
+    console.error("Error in uploads/complete:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

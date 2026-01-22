@@ -28,8 +28,6 @@
     "migration:run": "cross-env NODE_OPTIONS='-r tsconfig-paths/register' typeorm-ts-node-commonjs -d src/datasource-cli.ts migration:run"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.966.0",
-    "@aws-sdk/lib-storage": "^3.966.0",
     "@google/genai": "^1.34.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -41,6 +39,7 @@
     "@nestjs/swagger": "^11.2.4",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.11",
+    "aws-sdk": "^2.1693.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",

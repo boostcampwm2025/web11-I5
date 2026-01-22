@@ -25,6 +25,7 @@
     "d3-delaunay": "^6.0.4",
     "d3-random": "^3.0.1",
     "lucide-react": "^0.562.0",
+    "motion": "^12.28.1",
     "next": "16.1.0",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",

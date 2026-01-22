@@ -4,12 +4,9 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import Waveform from "@/components/waveform/waveform";
 import { Button } from "@/components/button/button";
-import { CheckCircle2, Mic, RotateCcw, Square } from "lucide-react";
-import useAudioStreamSession from "../_hooks/use-audio-stream-session";
-import {
-  submitAnswerAction,
-  type SubmitAnswerState,
-} from "../_lib/submit-answer-action";
+import { CheckCircle2, LoaderCircle, RotateCcw } from "lucide-react";
+import useRecorder from "../_hooks/use-recorder";
+import { submitAnswerAction } from "../_lib/submit-answer-action";
 import ImportanceRating from "./importance-rating";
 import {
   Tabs,
@@ -17,6 +14,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/tabs/tabs";
+import RecordButton from "./record-button";
+import useWav from "@/hooks/use-wav";
+import {
+  confirmUpload,
+  requestPresignedUrl,
+  uploadToStorage,
+} from "../_lib/audio-upload-api";
+import { AUDIO_CONFIG } from "../_constants/audio-config-constant";
 
 interface RecordingSectionProps {
   questionId: number;
@@ -33,33 +38,77 @@ function RecordingSection({
   questionId,
   maxDurationSeconds = 300,
 }: RecordingSectionProps) {
-  const stopRecordingRef = React.useRef<() => void>(() => {});
-
   const {
     historyRef,
-    isLoading,
     isRecording,
-    sessionId,
-    assetId,
+    hasRecorded,
     elapsedSeconds,
     startRecording,
     stopRecording,
     retryRecording,
-  } = useAudioStreamSession({
+    getAudioBlob,
+    getAudioMimeType,
+  } = useRecorder({
     maxDurationSeconds,
-    onMaxDurationReached: () => stopRecordingRef.current(),
   });
 
-  React.useEffect(() => {
-    stopRecordingRef.current = stopRecording;
-  }, [stopRecording]);
+  const { play: playDing, ready: dingWavReady } = useWav("/ui-confirm.wav", 1);
+
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submissionId, setSubmissionId] = React.useState<number | null>(null);
 
   const router = useRouter();
 
-  const [state, formAction, isPending] = React.useActionState<
-    SubmitAnswerState | null,
-    FormData
-  >(submitAnswerAction, null);
+  const startRecordingWithSound = () => {
+    if (dingWavReady) {
+      setTimeout(() => playDing(), 100);
+    }
+    startRecording();
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+
+    try {
+      console.log(getAudioMimeType());
+      const audioBlob = getAudioBlob();
+      if (!audioBlob) {
+        throw Error("failed to create an audio blob");
+      }
+
+      // 1. Pre-signed URL 발급 받기
+      const presignedData = await requestPresignedUrl({
+        codec: AUDIO_CONFIG.codec,
+        sampleRate: AUDIO_CONFIG.sampleRate,
+        channels: AUDIO_CONFIG.channels,
+      });
+
+      // 2. Object Storage에 직접 업로드
+      await uploadToStorage(presignedData.uploadUrl, audioBlob);
+
+      // 3. 업로드 완료 확인
+      const durationMs = elapsedSeconds * 1000;
+
+      const result = await confirmUpload({
+        assetId: presignedData.assetId,
+        byteSize: audioBlob.size,
+        durationMs,
+      });
+
+      const submissionResult = await submitAnswerAction(
+        result.assetId,
+        questionId,
+      );
+
+      if (submissionResult.submissionId) {
+        setSubmissionId(submissionResult.submissionId);
+      }
+    } catch {
+      console.error("답변 제출에 실패하였습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Tabs defaultValue="voice" className="w-full">
@@ -71,15 +120,12 @@ function RecordingSection({
       </TabsList>
       <TabsContent value="voice">
         <div className="bg-white border rounded-xl h-100 flex flex-col items-center justify-center">
-          <div className="h-18 text-center">
+          <div className="h-20 text-center">
             {(() => {
-              if (isLoading) {
-                return null;
-              }
               if (isRecording) {
                 return (
                   <div className="animate-in fade-in">
-                    <p className="text-3xl font-bold tabular-nums text-center">
+                    <p className="text-5xl font-semibold tabular-nums text-center tracking-tight">
                       {formatTime(elapsedSeconds)}{" "}
                       <span className="text-lg text-muted-foreground font-normal">
                         / {formatTime(maxDurationSeconds)}
@@ -91,7 +137,7 @@ function RecordingSection({
                   </div>
                 );
               }
-              if (!isRecording && !sessionId) {
+              if (!isRecording && !hasRecorded) {
                 return (
                   <div>
                     <h3 className="text-2xl font-bold mb-3">답변 시작</h3>
@@ -101,7 +147,7 @@ function RecordingSection({
                   </div>
                 );
               }
-              if (!isRecording && sessionId) {
+              if (!isRecording && hasRecorded) {
                 return (
                   <div>
                     <h3 className="text-2xl font-bold mb-3">녹음 완료</h3>
@@ -118,40 +164,20 @@ function RecordingSection({
           </div>
           <div className="flex items-center justify-center h-24">
             {(() => {
-              if (isLoading) {
-                return null;
-              }
-
-              if (isRecording) {
+              if (!hasRecorded) {
                 return (
-                  <button
-                    onClick={stopRecording}
-                    className="w-24 h-24 flex items-center justify-center bg-teal-500 rounded-2xl hover:scale-105 transition-all border-4 border-teal-100 animate-in fade-in slide-in-from-bottom-2"
-                  >
-                    <Square className="size-7 text-white" />
-                  </button>
+                  <RecordButton
+                    isRecording={isRecording}
+                    onClick={
+                      isRecording ? stopRecording : startRecordingWithSound
+                    }
+                  />
                 );
               }
 
-              if (!isRecording && !sessionId) {
+              if (!isRecording && hasRecorded) {
                 return (
-                  <button
-                    onClick={startRecording}
-                    className="w-24 h-24 flex items-center justify-center bg-teal-500 rounded-full hover:scale-110 transition-all border-4 border-teal-100"
-                  >
-                    <Mic className="text-white size-7" />
-                  </button>
-                );
-              }
-
-              if (!isRecording && sessionId) {
-                return (
-                  <form action={formAction}>
-                    <input
-                      type="hidden"
-                      name="audioAssetId"
-                      value={assetId || ""}
-                    />
+                  <form>
                     <input type="hidden" name="questionId" value={questionId} />
                     <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <Button
@@ -163,12 +189,18 @@ function RecordingSection({
                         <RotateCcw className="w-4 h-4" /> 다시 시도
                       </Button>
                       <Button
+                        type="button"
                         size="lg"
-                        type="submit"
-                        disabled={isPending}
+                        disabled={isSubmitting || !!submissionId}
                         className="pl-6 pr-6  font-semibold"
+                        onClick={handleSubmit}
                       >
-                        답변 제출 <CheckCircle2 className="w-4 h-4" />
+                        답변 제출
+                        {isSubmitting ? (
+                          <LoaderCircle className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
                   </form>
@@ -183,11 +215,11 @@ function RecordingSection({
       </TabsContent>
 
       <ImportanceRating
-        open={Boolean(state?.success)}
+        open={!!submissionId}
         questionId={questionId}
         onSuccess={() => {
-          if (state?.submissionId) {
-            router.push(`/reports/${questionId}?attempt=${state.submissionId}`);
+          if (submissionId) {
+            router.push(`/reports/${questionId}?attempt=${submissionId}`);
           }
         }}
       />
