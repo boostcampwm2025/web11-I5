@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
 import { Repository } from 'typeorm';
-import { Question } from './entities/question.entity';
-import { QuestionFilterDto } from './dtos/question-filter.dto';
 import { PaginatedQuestionsDto } from './dtos/paginated-questions.dto';
+import { QuestionFilterDto } from './dtos/question-filter.dto';
+import { Question } from './entities/question.entity';
+import { SolvedStatus } from './question.constants';
 
 @Injectable()
 export class QuestionService {
@@ -12,6 +14,8 @@ export class QuestionService {
   constructor(
     @InjectRepository(Question)
     private questionRepository: Repository<Question>,
+    @InjectRepository(AnswerSubmission)
+    private answerSubmissionRepository: Repository<AnswerSubmission>,
   ) {}
 
   async findByCategory(categoryId: number) {
@@ -30,6 +34,7 @@ export class QuestionService {
 
   async findPaginated(
     filter: QuestionFilterDto,
+    userId?: number,
   ): Promise<PaginatedQuestionsDto> {
     const page = filter.page ?? 1;
     const skip = (page - 1) * this.pageSize;
@@ -69,8 +74,45 @@ export class QuestionService {
     const [questions, totalCount] = await queryBuilder.getManyAndCount();
     const totalPages = Math.ceil(totalCount / this.pageSize);
 
+    // userId가 있으면 해당 사용자의 점수를 조회하여 매핑
+    let questionsWithScore: (Question & { score: number | null })[] =
+      questions.map((q) => ({ ...q, score: null }));
+
+    if (userId && filter.solvedStatus) {
+      console.log(userId);
+      const questionsIds = questions.map((question) => question.id);
+      const submissions = await this.answerSubmissionRepository
+        .createQueryBuilder('submission')
+        .select('submission.questionId', 'questionId')
+        .addSelect('MAX(submission.score)', 'maxScore')
+        .where('submission.userId = :userId', { userId })
+        .andWhere('submission.questionId IN (:...questionIds)', {
+          questionIds: questionsIds,
+        })
+        .groupBy('submission.questionId')
+        .getRawMany<{ questionId: number; maxScore: number }>();
+
+      const scoreMap = new Map(
+        submissions.map((submission) => [
+          submission.questionId,
+          submission.maxScore,
+        ]),
+      );
+
+      questionsWithScore = questions.map((question) => ({
+        ...question,
+        score: scoreMap.get(question.id) ?? null,
+      }));
+
+      if (filter.solvedStatus === SolvedStatus.SOLVED) {
+        questionsWithScore = questionsWithScore.filter((q) => q.score !== null);
+      } else if (filter.solvedStatus === SolvedStatus.UNSOLVED) {
+        questionsWithScore = questionsWithScore.filter((q) => q.score === null);
+      }
+    }
+
     return {
-      questions,
+      questions: questionsWithScore,
       totalCount,
       pageSize: this.pageSize,
       currentPage: page,
