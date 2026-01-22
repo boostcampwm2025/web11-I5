@@ -77,9 +77,8 @@ export class QuestionService {
     // userId가 있으면 해당 사용자의 점수를 조회하여 매핑
     let questionsWithScore: (Question & { score: number | null })[] =
       questions.map((q) => ({ ...q, score: null }));
-
-    if (userId) {
-      const questionsIds = questions.map((question) => question.id);
+    const questionsIds = questions.map((question) => question.id);
+    if (userId && questionsIds.length > 0) {
       const submissions = await this.answerSubmissionRepository
         .createQueryBuilder('submission')
         .select('submission.questionId', 'questionId')
