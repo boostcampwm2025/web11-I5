@@ -78,8 +78,7 @@ export class QuestionService {
     let questionsWithScore: (Question & { score: number | null })[] =
       questions.map((q) => ({ ...q, score: null }));
 
-    if (userId && filter.solvedStatus) {
-      console.log(userId);
+    if (userId) {
       const questionsIds = questions.map((question) => question.id);
       const submissions = await this.answerSubmissionRepository
         .createQueryBuilder('submission')
