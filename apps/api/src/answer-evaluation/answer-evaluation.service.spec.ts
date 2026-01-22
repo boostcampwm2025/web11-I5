@@ -5,7 +5,8 @@ import { DataSource, EntityManager } from 'typeorm';
 import { AnswerEvaluationService } from './answer-evaluation.service';
 import { LlmService } from '../llm/llm.service';
 import {
-  AccuracyEval,
+  CoreConceptEval,
+  CoverageEval,
   LogicEval,
   DepthEval,
   EvaluationStatus,
@@ -202,12 +203,14 @@ describe('AnswerEvaluationService', () => {
         commonMisconceptions: '',
       };
       const mockLlmResult = {
-        accuracy_level: AccuracyEval.PERFECT,
-        accuracy_reason: 'Good',
-        logic_level: LogicEval.FLAWLESS,
-        logic_reason: 'Logic',
-        depth_level: DepthEval.EXPERT,
-        depth_reason: 'Deep',
+        core_concept_level: CoreConceptEval.CORRECT,
+        core_concept_reason: 'Core concept is accurate',
+        coverage_level: CoverageEval.COMPLETE,
+        coverage_reason: 'Complete explanation',
+        logic_level: LogicEval.CLEAR,
+        logic_reason: 'Logic is clear',
+        depth_level: DepthEval.ADVANCED,
+        depth_reason: 'Deep understanding',
         mentoring_feedback: 'Excellent',
         extracted_keywords: ['React', 'Hook'],
       };
@@ -228,13 +231,15 @@ describe('AnswerEvaluationService', () => {
         expect.objectContaining({
           feedbackMessage: 'Excellent',
           scoreDetails: {
-            accuracy: 40,
-            logic: 30,
-            depth: 30,
+            coreConcept: 50,
+            coverage: 20,
+            logic: 10,
+            depth: 20,
           },
-          accuracyEval: AccuracyEval.PERFECT,
-          logicEval: LogicEval.FLAWLESS,
-          depthEval: DepthEval.EXPERT,
+          coreConceptEval: CoreConceptEval.CORRECT,
+          coverageEval: CoverageEval.COMPLETE,
+          logicEval: LogicEval.CLEAR,
+          depthEval: DepthEval.ADVANCED,
           extractedKeywords: ['React', 'Hook'],
         }),
       );
@@ -245,6 +250,7 @@ describe('AnswerEvaluationService', () => {
         1,
         expect.objectContaining({
           evaluationStatus: EvaluationStatus.COMPLETED,
+          score: 100,
         }),
       );
     });

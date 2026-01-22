@@ -1,7 +1,8 @@
 import { QueryRunner } from 'typeorm';
 import { BaseSeed } from './seed.interface';
 import {
-  AccuracyEval,
+  CoreConceptEval,
+  CoverageEval,
   LogicEval,
   DepthEval,
   EvaluationStatus,
@@ -44,22 +45,27 @@ export class AnswerEvaluationSeed extends BaseSeed {
       const isHighScore = sub.score >= 80;
 
       let feedback = '';
-      let accuracyDetail = '';
+      let coreConceptDetail = '';
+      let coverageDetail = '';
       let logicDetail = '';
       let depthDetail = '';
       let keywords: string[] = [];
 
-      const accuracyEval = isHighScore
-        ? AccuracyEval.PERFECT
-        : AccuracyEval.GOOD;
-      const logicEval = isHighScore ? LogicEval.FLAWLESS : LogicEval.WEAK;
-      const depthEval = isHighScore ? DepthEval.EXPERT : DepthEval.BASIC;
+      const coreConceptEval = isHighScore
+        ? CoreConceptEval.CORRECT
+        : CoreConceptEval.MINOR_ERROR;
+      const coverageEval = isHighScore
+        ? CoverageEval.COMPLETE
+        : CoverageEval.ADEQUATE;
+      const logicEval = isHighScore ? LogicEval.CLEAR : LogicEval.WEAK;
+      const depthEval = isHighScore ? DepthEval.ADVANCED : DepthEval.BASIC;
 
       if (sub.question_title.includes('작업 실행 단위')) {
         feedback = isHighScore
           ? '프로세스와 스레드의 자원 공유 방식을 아주 정확하게 설명하셨습니다.'
           : '기본적인 정의는 맞으나 멀티 스레드의 동기화 문제에 대한 언급이 부족합니다.';
-        accuracyDetail = '독립된 메모리 영역과 공유 영역의 구분이 명확함';
+        coreConceptDetail = '핵심 개념이 정확하게 이해됨';
+        coverageDetail = '독립된 메모리 영역과 공유 영역의 구분이 명확함';
         logicDetail = '비교 분석의 흐름이 논리적임';
         depthDetail = 'Context Switching 오버헤드 관점의 설명 포함';
         keywords = ['Process', 'Thread', 'Context Switching', 'IPC'];
@@ -67,8 +73,8 @@ export class AnswerEvaluationSeed extends BaseSeed {
         feedback = isHighScore
           ? '네트워크 핸드셰이크부터 브라우저의 렌더링 파이프라인까지 전체 과정을 잘 요약했습니다.'
           : '렌더링 과정은 잘 설명하셨으나 네트워크 단계(DNS, TCP) 설명이 다소 생략되었습니다.';
-        accuracyDetail =
-          'DNS 조회 및 레이아웃/페인트 과정의 기술적 정확도 높음';
+        coreConceptDetail = '기술적 정확도가 높음';
+        coverageDetail = 'DNS 조회 및 레이아웃/페인트 과정의 주요 내용 포함';
         logicDetail = '순차적 발생 과정을 시간순으로 잘 배정함';
         depthDetail = 'Reflow/Repaint 최적화 관점의 인사이트 포함';
         keywords = ['Browser Rendering', 'DOM', 'CSSOM', 'DNS', 'TCP'];
@@ -78,15 +84,17 @@ export class AnswerEvaluationSeed extends BaseSeed {
       }
 
       const detailAnalysis = JSON.stringify({
-        accuracy: accuracyDetail || '핵심 개념을 잘 파악하고 있습니다.',
+        coreConcept: coreConceptDetail || '핵심 개념을 잘 파악하고 있습니다.',
+        coverage: coverageDetail || '주요 내용을 적절히 포함했습니다.',
         logic: logicDetail || '서론-본론-결론의 구조가 명확합니다.',
         depth: depthDetail || '실무적인 적용 사례까지 언급하면 더 좋겠습니다.',
       }).replace(/'/g, "''");
 
       const scoreDetails = JSON.stringify({
-        accuracy: Math.floor(sub.score * 0.4),
-        logic: Math.floor(sub.score * 0.3),
-        depth: sub.score - Math.floor(sub.score * 0.7),
+        coreConcept: Math.floor(sub.score * 0.5),
+        coverage: Math.floor(sub.score * 0.2),
+        logic: Math.floor(sub.score * 0.1),
+        depth: Math.floor(sub.score * 0.2),
       }).replace(/'/g, "''");
 
       const keywordsSql =
@@ -99,7 +107,8 @@ export class AnswerEvaluationSeed extends BaseSeed {
         '${feedback.replace(/'/g, "''")}',
         '${detailAnalysis}',
         '${scoreDetails}',
-        '${accuracyEval}',
+        '${coreConceptEval}',
+        '${coverageEval}',
         '${logicEval}',
         '${depthEval}',
         ${keywordsSql}
@@ -114,12 +123,13 @@ export class AnswerEvaluationSeed extends BaseSeed {
         feedback_message,
         detail_analysis,
         score_details,
-        accuracy_eval,
+        core_concept_eval,
+        coverage_eval,
         logic_eval,
         depth_eval,
         extracted_keywords
       )
-      VALUES 
+      VALUES
       ${values};
     `);
 

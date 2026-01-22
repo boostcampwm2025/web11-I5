@@ -16,16 +16,12 @@ function MetricsList({ feedback, isPending }: MetricsListProps) {
           <div className="h-3 w-40 bg-slate-50 rounded" />
         </div>
         <div className="flex flex-col gap-4">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
               className="h-24 bg-slate-50 rounded-2xl border border-slate-100"
             />
           ))}
-        </div>
-        <div className="grid grid-cols-2 gap-4 pt-2">
-          <div className="h-16 bg-slate-50 rounded-2xl" />
-          <div className="h-16 bg-slate-50 rounded-2xl" />
         </div>
       </div>
     );
@@ -33,22 +29,28 @@ function MetricsList({ feedback, isPending }: MetricsListProps) {
 
   const coreMetrics = [
     {
-      label: "정확성",
-      score: feedback.scoreDetails.accuracy,
-      max: 40,
-      reason: feedback.accuracyReason,
+      label: "핵심 개념",
+      score: feedback.scoreDetails.coreConcept,
+      max: 50,
+      reason: feedback.coreConceptReason,
     },
     {
-      label: "논리성",
-      score: feedback.scoreDetails.logic,
-      max: 30,
-      reason: feedback.logicReason,
+      label: "완성도",
+      score: feedback.scoreDetails.coverage,
+      max: 20,
+      reason: feedback.coverageReason,
     },
     {
       label: "심층성",
       score: feedback.scoreDetails.depth,
-      max: 30,
+      max: 20,
       reason: feedback.depthReason,
+    },
+    {
+      label: "논리성",
+      score: feedback.scoreDetails.logic,
+      max: 10,
+      reason: feedback.logicReason,
     },
   ];
 
