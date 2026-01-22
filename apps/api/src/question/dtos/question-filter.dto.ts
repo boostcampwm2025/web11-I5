@@ -1,5 +1,13 @@
-import { IsOptional, IsInt, Min, IsString, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
+import {
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
+import { SolvedStatus } from '../question.constants';
 
 export class QuestionFilterDto {
   @IsOptional()
@@ -17,6 +25,10 @@ export class QuestionFilterDto {
   @IsOptional()
   @IsString()
   search?: string; // 문제 제목 검색
+
+  @IsOptional()
+  @IsEnum(SolvedStatus)
+  solvedStatus?: SolvedStatus;
 
   @IsOptional()
   @Type(() => Number)
