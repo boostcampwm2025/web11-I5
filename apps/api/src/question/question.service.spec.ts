@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
 import { Question } from './entities/question.entity';
+import { SolvedStatus } from './question.constants';
 import { QuestionService } from './question.service';
 
 describe('QuestionService', () => {
@@ -16,10 +18,23 @@ describe('QuestionService', () => {
     getManyAndCount: jest.fn(),
   };
 
+  const mockSubmissionQueryBuilder = {
+    select: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    groupBy: jest.fn().mockReturnThis(),
+    getRawMany: jest.fn(),
+  };
+
   const mockQuestionRepository = {
     find: jest.fn(),
     findOne: jest.fn(),
     createQueryBuilder: jest.fn(() => mockQueryBuilder),
+  };
+
+  const mockAnswerSubmissionRepository = {
+    createQueryBuilder: jest.fn(() => mockSubmissionQueryBuilder),
   };
 
   beforeEach(async () => {
@@ -29,6 +44,10 @@ describe('QuestionService', () => {
         {
           provide: getRepositoryToken(Question),
           useValue: mockQuestionRepository,
+        },
+        {
+          provide: getRepositoryToken(AnswerSubmission),
+          useValue: mockAnswerSubmissionRepository,
         },
       ],
     }).compile();
@@ -131,7 +150,10 @@ describe('QuestionService', () => {
         const result = await service.findPaginated({});
 
         expect(result).toEqual({
-          questions: mockQuestionsWithCategory,
+          questions: mockQuestionsWithCategory.map((q) => ({
+            ...q,
+            score: null,
+          })),
           totalCount: 30,
           pageSize: 15,
           currentPage: 1,
@@ -218,6 +240,88 @@ describe('QuestionService', () => {
         await service.findPaginated({});
 
         expect(mockQueryBuilder.andWhere).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('userId가 있을 때 score 매핑', () => {
+      it('userId가 있으면 해당 사용자의 제출 점수를 조회하여 매핑한다', async () => {
+        setupMockReturn(mockQuestionsWithCategory, 2);
+        mockSubmissionQueryBuilder.getRawMany.mockResolvedValue([
+          { questionId: 1, maxScore: 85 },
+        ]);
+
+        const result = await service.findPaginated({}, 1);
+
+        expect(
+          mockAnswerSubmissionRepository.createQueryBuilder,
+        ).toHaveBeenCalledWith('submission');
+        expect(result.questions[0].score).toBe(85);
+        expect(result.questions[1].score).toBeNull();
+      });
+
+      it('userId가 없으면 모든 질문의 score가 null이다', async () => {
+        setupMockReturn(mockQuestionsWithCategory, 2);
+
+        const result = await service.findPaginated({});
+
+        expect(
+          mockAnswerSubmissionRepository.createQueryBuilder,
+        ).not.toHaveBeenCalled();
+        expect(result.questions.every((q) => q.score === null)).toBe(true);
+      });
+
+      it('질문 목록이 비어있으면 submission 쿼리를 실행하지 않는다', async () => {
+        setupMockReturn([], 0);
+
+        await service.findPaginated({}, 1);
+
+        expect(
+          mockAnswerSubmissionRepository.createQueryBuilder,
+        ).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('solvedStatus 필터', () => {
+      it('solvedStatus가 SOLVED이면 score가 있는 질문만 반환한다', async () => {
+        setupMockReturn(mockQuestionsWithCategory, 2);
+        mockSubmissionQueryBuilder.getRawMany.mockResolvedValue([
+          { questionId: 1, maxScore: 85 },
+        ]);
+
+        const result = await service.findPaginated(
+          { solvedStatus: SolvedStatus.SOLVED },
+          1,
+        );
+
+        expect(result.questions).toHaveLength(1);
+        expect(result.questions[0].id).toBe(1);
+        expect(result.questions[0].score).toBe(85);
+      });
+
+      it('solvedStatus가 UNSOLVED이면 score가 null인 질문만 반환한다', async () => {
+        setupMockReturn(mockQuestionsWithCategory, 2);
+        mockSubmissionQueryBuilder.getRawMany.mockResolvedValue([
+          { questionId: 1, maxScore: 85 },
+        ]);
+
+        const result = await service.findPaginated(
+          { solvedStatus: SolvedStatus.UNSOLVED },
+          1,
+        );
+
+        expect(result.questions).toHaveLength(1);
+        expect(result.questions[0].id).toBe(2);
+        expect(result.questions[0].score).toBeNull();
+      });
+
+      it('userId가 없으면 solvedStatus 필터가 적용되지 않는다', async () => {
+        setupMockReturn(mockQuestionsWithCategory, 2);
+
+        const result = await service.findPaginated({
+          solvedStatus: SolvedStatus.SOLVED,
+        });
+
+        expect(result.questions).toHaveLength(2);
       });
     });
   });
