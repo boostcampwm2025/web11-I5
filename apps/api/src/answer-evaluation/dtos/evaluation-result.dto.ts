@@ -7,17 +7,24 @@ import {
   IsArray,
 } from 'class-validator';
 import {
-  AccuracyEval,
+  CoreConceptEval,
+  CoverageEval,
   DepthEval,
   LogicEval,
 } from '../answer-evaluation.constants';
 
 export class EvaluationResultDto {
-  @IsEnum(AccuracyEval)
-  accuracyLevel: AccuracyEval;
+  @IsEnum(CoreConceptEval)
+  coreConceptLevel: CoreConceptEval;
 
   @IsString()
-  accuracyReason: string;
+  coreConceptReason: string;
+
+  @IsEnum(CoverageEval)
+  coverageLevel: CoverageEval;
+
+  @IsString()
+  coverageReason: string;
 
   @IsEnum(LogicEval)
   logicLevel: LogicEval;
@@ -34,10 +41,15 @@ export class EvaluationResultDto {
   @IsString()
   mentoringFeedback: string;
 
+  @IsArray()
+  @IsString({ each: true })
+  extractedKeywords: string[];
+
   @IsOptional()
   @IsObject()
   scoreDetails?: {
-    accuracy: number;
+    coreConcept: number;
+    coverage: number;
     logic: number;
     depth: number;
   };
@@ -45,8 +57,4 @@ export class EvaluationResultDto {
   @IsOptional()
   @IsNumber()
   totalScore?: number;
-
-  @IsOptional()
-  @IsArray()
-  extractedKeywords: string[];
 }

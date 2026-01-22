@@ -1,23 +1,27 @@
-export type AccuracyEval = "PERFECT" | "GOOD" | "MIXED" | "WRONG";
-export type LogicEval = "FLAWLESS" | "COHERENT" | "WEAK" | "NONE";
-export type DepthEval = "EXPERT" | "ADVANCED" | "BASIC" | "NONE";
+export type CoreConceptEval = "CORRECT" | "MINOR_ERROR" | "WRONG";
+export type CoverageEval = "COMPLETE" | "ADEQUATE" | "MINIMAL";
+export type LogicEval = "CLEAR" | "WEAK" | "NONE";
+export type DepthEval = "ADVANCED" | "BASIC" | "NONE";
 
 export interface EvaluationDTO {
   id: number;
   submissionId: number;
   feedbackMessage: string;
-  accuracyEval: AccuracyEval;
+  coreConceptEval: CoreConceptEval;
+  coverageEval: CoverageEval;
   logicEval: LogicEval;
   depthEval: DepthEval;
 
   detailAnalysis: {
-    accuracy: string;
+    coreConcept: string;
+    coverage: string;
     logic: string;
     depth: string;
   };
 
   scoreDetails: {
-    accuracy: number;
+    coreConcept: number;
+    coverage: number;
     logic: number;
     depth: number;
   };
