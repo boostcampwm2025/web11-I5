@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import { GraphNode } from './entities/graph-node.entity';
 import { GraphEdge } from './entities/graph-edge.entity';
 import {
@@ -13,6 +13,8 @@ import { NodeType } from './graph.constants';
 
 @Injectable()
 export class GraphService {
+  private readonly logger = new Logger(GraphService.name);
+
   constructor(
     @InjectRepository(GraphNode)
     private graphNodeRepository: Repository<GraphNode>,
@@ -26,68 +28,37 @@ export class GraphService {
    * 특정 유저가 학습한 그래프 데이터를 조회한다
    *
    * 조회 로직:
-   * 1. answer_submissions에서 userId로 question_id 목록 조회
-   * 2. 해당 question_id에 연결된 GraphNode (QUESTION 타입) 조회
-   * 3. 해당 노드들과 연결된 GraphEdge 조회
-   * 4. 엣지의 sourceId, targetId를 통해 연결된 모든 노드 조회 (KEYWORD 포함)
-   * 5. nodes와 edges를 반환
+   * 1. 해당 userId의 모든 GraphNode 조회 (QUESTION + KEYWORD)
+   * 2. 해당 userId의 모든 GraphEdge 조회
+   * 3. nodes와 edges를 반환
    *
    * @param userId - 조회할 유저 ID
    * @returns 그래프 데이터 (nodes, edges)
    */
   async getGraphByUserId(userId: number): Promise<GraphResponseDto> {
-    // 1. userId로 학습한 question_id 목록 조회
-    const questionIds = await this.getQuestionIdsByUserId(userId);
-
-    // 학습한 문제가 없으면 빈 그래프 반환
-    if (questionIds.length === 0) {
-      return {
-        nodes: [],
-        edges: [],
-      };
-    }
-
-    // 2. 해당 question_id에 연결된 QUESTION 노드 조회
-    const questionNodes = await this.graphNodeRepository.find({
-      where: {
-        type: NodeType.QUESTION,
-        questionId: In(questionIds),
-      },
-    });
-
-    // QUESTION 노드가 없으면 빈 그래프 반환
-    if (questionNodes.length === 0) {
-      return {
-        nodes: [],
-        edges: [],
-      };
-    }
-
-    const questionNodeIds = questionNodes.map((node) => node.id);
-
-    // 3. 해당 노드들과 연결된 엣지 조회 (sourceId 또는 targetId가 questionNodeIds에 포함)
-    const edges = await this.graphEdgeRepository
-      .createQueryBuilder('edge')
-      .where('edge.sourceId IN (:...nodeIds)', { nodeIds: questionNodeIds })
-      .orWhere('edge.targetId IN (:...nodeIds)', { nodeIds: questionNodeIds })
-      .getMany();
-
-    // 4. 엣지에 연결된 모든 노드 ID 수집 (QUESTION + KEYWORD)
-    const connectedNodeIds = new Set<number>();
-    questionNodeIds.forEach((id) => connectedNodeIds.add(id));
-    edges.forEach((edge) => {
-      connectedNodeIds.add(edge.sourceId);
-      connectedNodeIds.add(edge.targetId);
-    });
-
-    // 5. 연결된 모든 노드 조회 (QUESTION + KEYWORD)
+    // 1. 해당 사용자의 모든 노드 조회 (QUESTION + KEYWORD)
     const allNodes = await this.graphNodeRepository.find({
       where: {
-        id: In(Array.from(connectedNodeIds)),
+        userId: userId,
       },
     });
 
-    // 6. DTO 형태로 변환
+    // 노드가 없으면 빈 그래프 반환
+    if (allNodes.length === 0) {
+      return {
+        nodes: [],
+        edges: [],
+      };
+    }
+
+    // 2. 해당 사용자의 모든 엣지 조회
+    const edges = await this.graphEdgeRepository.find({
+      where: {
+        userId: userId,
+      },
+    });
+
+    // 3. DTO 형태로 변환
     const nodeDtos: GraphNodeDto[] = allNodes.map((node) => ({
       id: node.id,
       type: node.type,
@@ -125,5 +96,120 @@ export class GraphService {
     );
 
     return result.map((row: QuestionIdRow): number => row.question_id);
+  }
+
+  /**
+   * AI 평가 결과로부터 그래프 데이터를 생성한다
+   *
+   * 로직:
+   * 1. 문제 노드 생성 또는 재사용 (userId, questionId로 기존 노드 확인)
+   * 2. 각 키워드에 대해 키워드 노드 생성 또는 재사용 (userId, label로 유니크 제약 활용)
+   * 3. 문제-키워드 간 엣지 생성 (중복 방지)
+   *
+   * @param userId - 사용자 ID
+   * @param questionId - 문제 ID
+   * @param questionTitle - 문제 제목
+   * @param keywords - 추출된 키워드 배열
+   */
+  async createGraphFromEvaluation(
+    userId: number,
+    questionId: number,
+    questionTitle: string,
+    keywords: string[],
+  ): Promise<void> {
+    // 키워드가 없으면 그래프 생성하지 않음
+    if (!keywords || keywords.length === 0) {
+      this.logger.debug(
+        `userId: ${userId}, questionId: ${questionId}에 대해 생성할 키워드가 존재하지 않습니다.`,
+      );
+      return;
+    }
+
+    try {
+      await this.dataSource.transaction(async (manager) => {
+        // 1. 문제 노드 생성 또는 재사용 (사용자별로 독립적)
+        let questionNode = await manager.findOne(GraphNode, {
+          where: {
+            userId: userId,
+            type: NodeType.QUESTION,
+            questionId: questionId,
+          },
+        });
+
+        if (!questionNode) {
+          questionNode = manager.create(GraphNode, {
+            userId: userId,
+            type: NodeType.QUESTION,
+            label: questionTitle,
+            questionId: questionId,
+          });
+          questionNode = await manager.save(GraphNode, questionNode);
+        }
+
+        // 2. 각 키워드에 대해 키워드 노드 생성 또는 재사용 (사용자별로 독립적)
+        const keywordNodes: GraphNode[] = [];
+
+        for (const keyword of keywords) {
+          // 빈 문자열이나 공백만 있는 키워드는 제외
+          if (!keyword || keyword.trim().length === 0) {
+            continue;
+          }
+
+          const trimmedKeyword = keyword.trim();
+
+          // 사용자별 유니크 제약을 활용하여 기존 노드 확인
+          let keywordNode = await manager.findOne(GraphNode, {
+            where: {
+              userId: userId,
+              type: NodeType.KEYWORD,
+              label: trimmedKeyword,
+            },
+          });
+
+          if (!keywordNode) {
+            keywordNode = manager.create(GraphNode, {
+              userId: userId,
+              type: NodeType.KEYWORD,
+              label: trimmedKeyword,
+              questionId: null,
+            });
+            keywordNode = await manager.save(GraphNode, keywordNode);
+          }
+
+          keywordNodes.push(keywordNode);
+        }
+
+        // 3. 문제-키워드 간 엣지 생성 (중복 방지, 사용자별로 독립적)
+        for (const keywordNode of keywordNodes) {
+          // sourceId와 targetId의 순서를 일관되게 유지 (sourceId < targetId)
+          const sourceId = Math.min(questionNode.id, keywordNode.id);
+          const targetId = Math.max(questionNode.id, keywordNode.id);
+
+          // 이미 존재하는 엣지인지 확인 (사용자별로)
+          const existingEdge = await manager.findOne(GraphEdge, {
+            where: {
+              userId: userId,
+              sourceId: sourceId,
+              targetId: targetId,
+            },
+          });
+
+          if (!existingEdge) {
+            const edge = manager.create(GraphEdge, {
+              userId: userId,
+              sourceId: sourceId,
+              targetId: targetId,
+            });
+            await manager.save(GraphEdge, edge);
+          }
+        }
+      });
+    } catch (error) {
+      this.logger.error(
+        `userId: ${userId}, questionId: ${questionId}에 대한 그래프 데이터 생성에 실패했습니다.`,
+        error,
+      );
+      // 그래프 생성 실패는 평가 프로세스를 중단하지 않도록 에러를 throw하지 않음
+    }
   }
 }
