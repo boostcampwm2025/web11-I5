@@ -118,3 +118,12 @@ export async function apiDelete<T>(endpoint: string): Promise<T> {
 
   return response.json();
 }
+
+/**
+ * BFF 요청시 인증된 유저인지 확인하는 헬퍼
+ */
+export async function checkAuthUser(): Promise<boolean> {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  return !!accessToken;
+}
