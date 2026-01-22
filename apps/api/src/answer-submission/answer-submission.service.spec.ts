@@ -308,7 +308,7 @@ describe('AnswerSubmissionService', () => {
 
       const mockAudioAsset = {
         id: audioAssetId,
-        objectKey: 'audio/test.m4a',
+        objectKey: 'audio/test.wav',
         uploadStatus: AudioUploadStatus.COMPLETED,
       } as AudioAsset;
 
@@ -389,7 +389,7 @@ describe('AnswerSubmissionService', () => {
 
       const mockAudioAsset = {
         id: audioAssetId,
-        objectKey: 'audio/test.m4a',
+        objectKey: 'audio/test.wav',
         uploadStatus: AudioUploadStatus.COMPLETED,
       } as AudioAsset;
 

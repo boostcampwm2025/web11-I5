@@ -39,7 +39,7 @@ export class UploadsService {
   ): Promise<PresignedUrlResponseDto> {
     // 1. Object Key 생성 (UUID 기반)
     const sessionId = randomUUID();
-    const objectKey = `audio-sessions/${sessionId}.m4a`;
+    const objectKey = `audio-sessions/${sessionId}.wav`;
 
     // 2. AudioAsset PENDING 상태로 미리 생성
     const audioAsset = this.audioAssetRepository.create({

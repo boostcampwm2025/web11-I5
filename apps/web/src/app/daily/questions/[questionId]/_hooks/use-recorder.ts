@@ -1,28 +1,13 @@
 import * as React from "react";
-import { WAVEFORM_CONFIG } from "../_constants/audio-config-constant";
+import createAudioStreamer, { AudioStreamerHandle } from "@/lib/audio-streamer";
+import { encodePcmToWav } from "@/lib/wav-encoder";
+import {
+  AUDIO_CONFIG,
+  WAVEFORM_CONFIG,
+} from "../_constants/audio-config-constant";
 
 interface UseRecorderOptions {
   maxDurationSeconds?: number;
-}
-
-type RecorderBlob = {
-  blob: Blob;
-  mimeType: string; // 항상 audio/mp4 계열
-};
-
-function pickM4aMimeTypeStrict(): string {
-  if (typeof MediaRecorder === "undefined") return "";
-
-  const candidates = ["audio/mp4;codecs=mp4a.40.2", "audio/mp4"];
-
-  for (const t of candidates) {
-    try {
-      if (MediaRecorder.isTypeSupported(t)) return t;
-    } catch {
-      // ignore
-    }
-  }
-  return "";
 }
 
 function useRecorder(options: UseRecorderOptions = {}) {
@@ -32,8 +17,11 @@ function useRecorder(options: UseRecorderOptions = {}) {
   const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
   const [hasRecorded, setHasRecorded] = React.useState(false);
 
-  // 결과(m4a만)
-  const recordedRef = React.useRef<RecorderBlob | null>(null);
+  // 결과 WAV Blob
+  const recordedBlobRef = React.useRef<Blob | null>(null);
+
+  // PCM 청크를 메모리에 누적
+  const pcmChunksRef = React.useRef<ArrayBuffer[]>([]);
 
   // 파형 데이터(RMS 히스토리)
   const historyRef = React.useRef<number[]>(
@@ -41,155 +29,121 @@ function useRecorder(options: UseRecorderOptions = {}) {
   );
 
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const streamerRef = React.useRef<AudioStreamerHandle | null>(null);
 
-  const mediaStreamRef = React.useRef<MediaStream | null>(null);
-  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
-  const recordedChunksRef = React.useRef<BlobPart[]>([]);
+  const accumRef = React.useRef({
+    sumSq: 0,
+    count: 0,
+    nextFlushAt: 0,
+  });
 
-  const audioCtxRef = React.useRef<AudioContext | null>(null);
-  const analyserRef = React.useRef<AnalyserNode | null>(null);
-  const waveformTimerRef = React.useRef<number | null>(null);
+  // AudioStreamer 초기화 (한 번만 실행)
+  React.useEffect(() => {
+    const streamer = createAudioStreamer({
+      sampleRate: AUDIO_CONFIG.sampleRate,
+      channels: AUDIO_CONFIG.channels,
+      bitsPerSample: AUDIO_CONFIG.bitsPerSample,
+    });
 
-  const stopAll = React.useCallback(() => {
-    if (waveformTimerRef.current != null) {
-      window.clearInterval(waveformTimerRef.current);
-      waveformTimerRef.current = null;
-    }
+    streamerRef.current = streamer;
 
-    if (audioCtxRef.current) {
-      try {
-        void audioCtxRef.current.close();
-      } catch {
-        // ignore
-      }
-      audioCtxRef.current = null;
-    }
-    analyserRef.current = null;
-
-    if (mediaStreamRef.current) {
-      for (const t of mediaStreamRef.current.getTracks()) t.stop();
-      mediaStreamRef.current = null;
-    }
-
-    mediaRecorderRef.current = null;
+    return () => {
+      streamer.stop();
+      streamerRef.current = null;
+    };
   }, []);
 
-  const startWaveform = React.useCallback((stream: MediaStream) => {
-    const AudioContextCtor = window.AudioContext;
-    if (!AudioContextCtor) return;
+  // onAudioChunk 콜백 설정
+  React.useEffect(() => {
+    if (!streamerRef.current) return;
 
-    const ctx: AudioContext = new AudioContextCtor();
-    audioCtxRef.current = ctx;
+    // 초기화
+    accumRef.current.sumSq = 0;
+    accumRef.current.count = 0;
+    accumRef.current.nextFlushAt =
+      Date.now() + WAVEFORM_CONFIG.updateIntervalMs;
 
-    const source = ctx.createMediaStreamSource(stream);
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 2048;
-    analyserRef.current = analyser;
+    streamerRef.current.setOnAudioChunk(({ wave, buffer }) => {
+      // PCM 청크를 메모리에 저장
+      const arrayBuffer = buffer as ArrayBuffer;
+      pcmChunksRef.current.push(arrayBuffer.slice(0));
 
-    source.connect(analyser);
+      const now = Date.now();
 
-    const buf = new Float32Array(analyser.fftSize);
-
-    waveformTimerRef.current = window.setInterval(() => {
-      if (!analyserRef.current) return;
-
-      analyserRef.current.getFloatTimeDomainData(buf);
-
+      // 그래프용 누적: 제곱합 + 카운트
       let sumSq = 0;
-      for (let i = 0; i < buf.length; i++) sumSq += buf[i] * buf[i];
-      const rms = Math.sqrt(sumSq / buf.length);
+      for (let i = 0; i < wave.length; i++) sumSq += wave[i] * wave[i];
 
-      historyRef.current.push(rms);
-      if (historyRef.current.length > WAVEFORM_CONFIG.maxBars) {
-        historyRef.current.shift();
+      accumRef.current.sumSq += sumSq;
+      accumRef.current.count += wave.length;
+
+      // 100ms마다 한 번만 history 업데이트
+      if (now >= accumRef.current.nextFlushAt) {
+        const meanSq = accumRef.current.count
+          ? accumRef.current.sumSq / accumRef.current.count
+          : 0;
+        const rms100 = Math.sqrt(meanSq);
+
+        historyRef.current.push(rms100);
+        if (historyRef.current.length > WAVEFORM_CONFIG.maxBars) {
+          historyRef.current.shift();
+        }
+
+        // 다음 버킷으로 리셋
+        accumRef.current.sumSq = 0;
+        accumRef.current.count = 0;
+        accumRef.current.nextFlushAt = now + WAVEFORM_CONFIG.updateIntervalMs;
       }
-    }, WAVEFORM_CONFIG.updateIntervalMs);
+    });
   }, []);
 
   const startRecording = React.useCallback(async () => {
     try {
-      recordedRef.current = null;
-      recordedChunksRef.current = [];
+      // 초기화
+      recordedBlobRef.current = null;
+      pcmChunksRef.current = [];
       historyRef.current = Array.from(
         { length: WAVEFORM_CONFIG.maxBars },
         () => 0,
       );
+      setHasRecorded(false);
 
-      if (!navigator?.mediaDevices?.getUserMedia) {
-        throw new Error("mediaDevices not available");
-      }
-      if (typeof MediaRecorder === "undefined") {
-        throw new Error("MediaRecorder not supported");
-      }
-
-      // ✅ m4a 강제: 지원 안 되면 여기서 막음
-      const mimeType = pickM4aMimeTypeStrict();
-      if (!mimeType) {
-        throw new Error("This browser cannot record audio/mp4 (m4a).");
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-        video: false,
-      });
-
-      mediaStreamRef.current = stream;
-      startWaveform(stream);
-
-      const recorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = recorder;
-
-      recorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) recordedChunksRef.current.push(e.data);
-      };
-
-      recorder.onstop = () => {
-        // mimeType은 항상 audio/mp4 계열
-        const finalMime = recorder.mimeType || mimeType;
-        const blob = new Blob(recordedChunksRef.current, { type: finalMime });
-
-        recordedRef.current = { blob, mimeType: finalMime };
-        recordedChunksRef.current = [];
-        setHasRecorded(true);
-      };
-
-      recorder.onerror = (e) => {
-        console.error("MediaRecorder error:", e);
-      };
-
-      // timeslice: 1초 단위로 청크 생성(메모리 피크 예측 가능)
-      recorder.start(1000);
+      // 오디오 스트리머 시작
+      await streamerRef.current?.start();
 
       setIsRecording(true);
     } catch (error) {
       console.error("Failed to start recording:", error);
       setIsRecording(false);
-      stopAll();
-      // 필요하면 여기서 UI 토스트로 “m4a 미지원 브라우저” 안내
     }
-  }, [startWaveform, stopAll]);
+  }, []);
 
   const stopRecording = React.useCallback(async () => {
     try {
-      const r = mediaRecorderRef.current;
-      if (r && r.state !== "inactive") r.stop();
+      // 녹음 중지
+      await streamerRef.current?.stop();
+
+      // PCM -> WAV 변환
+      if (pcmChunksRef.current.length > 0) {
+        const wavBlob = encodePcmToWav(
+          pcmChunksRef.current,
+          AUDIO_CONFIG.sampleRate,
+          AUDIO_CONFIG.channels,
+        );
+        recordedBlobRef.current = wavBlob;
+        setHasRecorded(true);
+      }
 
       setIsRecording(false);
-      stopAll();
     } catch (error) {
       console.error("Failed to stop recording:", error);
       setIsRecording(false);
-      stopAll();
     }
-  }, [stopAll]);
+  }, []);
 
   const retryRecording = React.useCallback(() => {
-    recordedRef.current = null;
-    recordedChunksRef.current = [];
+    recordedBlobRef.current = null;
+    pcmChunksRef.current = [];
     historyRef.current = Array.from(
       { length: WAVEFORM_CONFIG.maxBars },
       () => 0,
@@ -200,13 +154,11 @@ function useRecorder(options: UseRecorderOptions = {}) {
   }, []);
 
   const getAudioBlob = React.useCallback(
-    () => recordedRef.current?.blob ?? null,
+    () => recordedBlobRef.current ?? null,
     [],
   );
-  const getAudioMimeType = React.useCallback(
-    () => recordedRef.current?.mimeType ?? null,
-    [],
-  );
+
+  const getAudioMimeType = React.useCallback(() => "audio/wav", []);
 
   // 녹음 타이머 + maxDurationSeconds 도달 시 stop
   React.useEffect(() => {
@@ -245,8 +197,8 @@ function useRecorder(options: UseRecorderOptions = {}) {
     stopRecording,
     retryRecording,
 
-    getAudioBlob, // m4a Blob
-    getAudioMimeType, // "audio/mp4" 계열
+    getAudioBlob, // WAV Blob
+    getAudioMimeType, // "audio/wav"
   };
 }
 
