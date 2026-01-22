@@ -63,7 +63,7 @@ function RecordingSection({
     if (dingWavReady) {
       setTimeout(() => playDing(), 100);
     }
-    setError("");
+    setError(null);
     startRecording();
   };
 
