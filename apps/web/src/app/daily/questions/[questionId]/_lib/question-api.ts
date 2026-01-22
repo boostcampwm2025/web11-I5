@@ -17,7 +17,7 @@ export async function getQuestion(
   }
 
   if (caughtError instanceof ApiError && caughtError.status === 401) {
-    redirect("/signin");
+    redirect("/login");
   }
 
   if (caughtError) {

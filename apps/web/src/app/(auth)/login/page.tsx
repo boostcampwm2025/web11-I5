@@ -1,44 +1,39 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser, login } from "../_utils/auth";
+import { getCurrentUser, loginAction } from "../_utils/auth";
 import LoginForm from "../_components/login-form";
 import Image from "next/image";
 import Link from "next/link";
 
 async function LoginPage() {
   const user = await getCurrentUser();
-  const mmhLogo = "/mmh-logo.svg";
 
   if (user) {
     redirect("/");
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 dark:bg-black">
-      <div className="flex flex-1 items-center justify-center ">
-        <div className="flex flex-col justify-center items-center w-full max-w-md rounded-lg border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex gap-2 justify-center items-center mb-12">
-            <Image src={mmhLogo} alt="말만해 로고" width={32} height={32} />
-            <p className="text-xl text-slate-700 font-semibold">말만해</p>
-          </div>
-          <div className="flex flex-col gap-2 justify-center items-center mb-6 ">
-            <h1 className="text-2xl font-semibold text-black dark:text-zinc-50">
-              로그인
-            </h1>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              서비스 이용을 위해 로그인이 필요합니다.
-            </p>
-          </div>
-
-          <LoginForm loginAction={login} />
-          <div className="mt-8 text-center text-sm text-zinc-500">
-            말만해 서비스가 처음이신가요?{" "}
-            <Link
-              href="/signup"
-              className="text-[#2DD4BF] font-semibold hover:underline"
-            >
-              회원가입하기
-            </Link>
-          </div>
+    <div className="w-full flex min-h-screen flex-col items-center justify-center py-20 px-5">
+      <div className="bg-white border rounded-xl p-12 w-full max-w-100">
+        <div className="flex gap-2 justify-center items-center mb-9">
+          <Image src="/mmh-logo.svg" alt="" width={32} height={32} />
+          <span className="text-xl font-bold text-slate-700">말만해</span>
+        </div>
+        <div className="flex flex-col gap-3 items-center">
+          <h1 className="text-2xl font-bold">로그인</h1>
+          <p className="text-sm text-muted-foreground">
+            서비스 이용을 위해 로그인이 필요합니다.
+          </p>
+        </div>
+        <div className="py-6">
+          <LoginForm loginAction={loginAction} />
+        </div>
+        <div className="flex items-center justify-center gap-1">
+          <span className="text-sm text-muted-foreground">
+            계정이 없으신가요?
+          </span>
+          <Link href="/signup" className="text-sm font-bold text-teal-500">
+            3초 만에 회원가입
+          </Link>
         </div>
       </div>
     </div>

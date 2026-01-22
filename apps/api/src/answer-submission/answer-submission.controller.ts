@@ -6,7 +6,9 @@ import {
   Query,
   ParseIntPipe,
   Param,
+  Patch,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,11 +21,13 @@ import {
   ApiOkResponse,
   ApiUnauthorizedResponse,
   ApiParam,
+  ApiBody,
 } from '@nestjs/swagger';
 import { AnswerSubmissionService } from './answer-submission.service';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
+import { UpdateImportanceDto } from './dtos/update-importance-rating.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserId } from '../auth/decorators/user-id.decorator';
 
@@ -124,5 +128,26 @@ export class AnswerSubmissionController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return await this.answerSubmissionService.getSubmissionById(id, userId);
+  }
+
+  @Patch('importance')
+  @ApiOperation({
+    summary: '중요도 평가 업데이트',
+    description:
+      '방금 제출한 답변에 대해 사용자가 입력한 중요도(별점)를 업데이트합니다.',
+  })
+  @ApiBody({ type: UpdateImportanceDto })
+  @ApiResponse({ status: 200, description: '업데이트 성공' })
+  async updateImportance(
+    @Req() req: Request,
+    @Body() updateDto: UpdateImportanceDto,
+  ) {
+    // TODO: 실제 프로젝트의 인증 방식에 맞춰 userId를 가져오세요.
+    const userId = 1;
+
+    return await this.answerSubmissionService.updateImportance(
+      userId,
+      updateDto,
+    );
   }
 }

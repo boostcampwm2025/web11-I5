@@ -9,11 +9,15 @@ interface GraphViewProps {
   graphData: GraphData;
   textRenderScale?: number;
   clickEventDisabled?: boolean;
+  nodeMap?: NodeMap;
+  changeNodeMap?: (map: NodeMap) => void;
 }
 function GraphView({
   graphData,
   textRenderScale,
   clickEventDisabled,
+  nodeMap,
+  changeNodeMap,
 }: GraphViewProps) {
   // canvasRef: Canvas DOM 참조
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -21,13 +25,16 @@ function GraphView({
   const { ctx, width, height } = useCanvas2D(canvasRef);
 
   // nodeMapRef: NodeMap 인스턴스를 관리하는 ref
-  const nodeMapRef = React.useRef<NodeMap | null>(null);
+  const nodeMapRef = React.useRef<NodeMap | null>(nodeMap || null);
 
-  // NodeMap 초기화 (캔버스 크기나 노드 데이터가 변경될 때만 재생성)
+  // NodeMap 초기화
   React.useEffect(() => {
     if (width === 0 || height === 0) return;
+    // nodeMap을 props로 받았았을 때 초기화 안되게
+    // nodeMap이 존재할 때 width, height이 변경되도 초기화안되게
+    if (nodeMap || nodeMapRef.current) return;
     nodeMapRef.current = new NodeMap(graphData.nodes, width, height);
-  }, [width, height, graphData.nodes]);
+  }, [width, height, graphData.nodes, nodeMap]);
 
   // 캔버스 인터랙션 훅에서 반환된 값들
   // offset: 캔버스 이동 오프셋, scale: 줌 레벨
@@ -79,6 +86,10 @@ function GraphView({
         textRenderScale,
       );
 
+      if (changeNodeMap) {
+        changeNodeMap(nodeMapRef.current);
+      }
+
       // 3. 애니메이션 지속 조건 확인
       // 모든 노드의 속도가 0이면 수렴한 것으로 판단
       const isStable = nodeMapRef.current.checkStable();
@@ -103,6 +114,7 @@ function GraphView({
     activeInteraction,
     hoveredNodeId,
     textRenderScale,
+    changeNodeMap,
   ]);
 
   return (
@@ -112,7 +124,7 @@ function GraphView({
     // onMouseUp: 드래그 종료
     // onMouseLeave: 캔버스 밖으로 나갈 때 드래그 종료 (마우스 업과 동일한 처리)
     <canvas
-      className="w-full h-full rounded-md border border-gray-300 "
+      className="w-full h-full  "
       ref={canvasRef}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}

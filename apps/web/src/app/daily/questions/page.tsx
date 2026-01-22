@@ -92,7 +92,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   };
 
   return (
-    <main className="max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-screen">
+    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-screen">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">문제 리스트</h1>
         <p className="text-muted-foreground">

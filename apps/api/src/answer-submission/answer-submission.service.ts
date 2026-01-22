@@ -15,6 +15,8 @@ import {
 } from '../audio-stream/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttService } from '../stt/stt.service';
+import { UpdateImportanceDto } from './dtos/update-importance-rating.dto';
+
 import {
   InputType,
   ProcessStatus,
@@ -24,6 +26,10 @@ import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.d
 import { AudioUploadCompletedEvent } from '../audio-stream/events/audio-upload-completed.event';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerSubmission } from './entities/answer-submission.entity';
+
+interface AvgImportanceResult {
+  avg: string | null;
+}
 
 @Injectable()
 export class AnswerSubmissionService {
@@ -212,6 +218,50 @@ export class AnswerSubmissionService {
       totalScore: submission.score,
       duration: submission.takenTime,
     };
+  }
+
+  async updateImportance(
+    userId: number,
+    updateDto: UpdateImportanceDto,
+  ): Promise<AnswerSubmission> {
+    const { questionId, selfImportanceRating } = updateDto;
+
+    // 해당 유저가 특정 문제에 대해 제출한 가장 최신 기록 조회
+    const latestSubmission = await this.answerSubmissionRepository.findOne({
+      where: { userId, questionId },
+      order: { submittedAt: 'DESC' }, // 가장 최근에 제출한 것
+    });
+
+    if (!latestSubmission) {
+      throw new NotFoundException(
+        `유저 ID ${userId}의 질문 ${questionId}에 대한 제출 기록을 찾을 수 없습니다.`,
+      );
+    }
+
+    latestSubmission.selfImportanceRating = selfImportanceRating;
+    const savedSubmission =
+      await this.answerSubmissionRepository.save(latestSubmission);
+
+    this.calculateAvgImportance(questionId).catch((err) =>
+      this.logger.error('평균 중요도 업데이트 실패', err),
+    );
+
+    return savedSubmission;
+  }
+
+  private async calculateAvgImportance(questionId: number): Promise<void> {
+    const result = await this.answerSubmissionRepository
+      .createQueryBuilder('submission')
+      .select('AVG(submission.self_importance_rating)', 'avg')
+      .where('submission.questionId = :questionId', { questionId })
+      .andWhere('submission.self_importance_rating IS NOT NULL')
+      .getRawOne<AvgImportanceResult>();
+
+    const newAverage = result?.avg ? parseFloat(result.avg) : 0;
+
+    await this.questionRepository.update(questionId, {
+      avgImportance: newAverage,
+    });
   }
 
   /**

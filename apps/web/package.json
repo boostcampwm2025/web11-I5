@@ -26,6 +26,7 @@
     "d3-random": "^3.0.1",
     "lucide-react": "^0.562.0",
     "next": "16.1.0",
+    "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "skmeans": "^0.11.3",
@@ -59,7 +60,7 @@
     "jsdom": "^27.4.0",
     "storybook": "^10.1.11",
     "tailwindcss": "^4",
-    "typescript": "^5",
+    "typescript": "^5.9.2",
     "vite": "^7.3.0",
     "vitest": "^4.0.16"
   }

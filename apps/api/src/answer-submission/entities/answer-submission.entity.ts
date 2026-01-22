@@ -30,6 +30,13 @@ class AnswerSubmission {
   @Column({ name: 'raw_answer', type: 'text' })
   rawAnswer: string;
 
+  @Column({
+    name: 'self_importance_rating',
+    type: 'float',
+    nullable: true,
+  })
+  selfImportanceRating: number;
+
   @Column({ name: 'taken_time', type: 'int' })
   takenTime: number;
 

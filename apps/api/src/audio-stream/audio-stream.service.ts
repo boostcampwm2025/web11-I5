@@ -12,6 +12,15 @@ import { ObjectStorageService } from '../object-storage/object-storage.service';
 import { AudioUploadCompletedEvent } from './events/audio-upload-completed.event';
 
 /**
+ * lastSeq 대기자 정보
+ */
+interface SeqWaiter {
+  targetSeq: number;
+  resolve: () => void;
+  timeoutId: NodeJS.Timeout;
+}
+
+/**
  * 인메모리 세션 정보
  * MVP: 서버 재시작 시 세션 정보 손실됨 (RDB/Redis 미사용)
  */
@@ -20,13 +29,13 @@ interface AudioSession {
   sessionId: string;
   status: AudioSessionStatus;
   lastSeq: number;
-  localDirPath: string;
   filePath: string; // 최종 파일 경로
   writeStream: WriteStream; // 청크를 append할 스트림
   codec: string;
   sampleRate: number;
   channels: number;
   createdAt: Date;
+  seqWaiters: SeqWaiter[]; // lastSeq 대기자 목록
 }
 
 @Injectable()
@@ -63,13 +72,12 @@ export class AudioStreamService {
     channels: number,
   ): Promise<string> {
     const sessionId = randomUUID();
-    const localDirPath = path.join(this.audioRootDir, sessionId);
 
-    // 로컬 디렉토리 생성
-    await fs.mkdir(localDirPath, { recursive: true });
+    // 루트 디렉토리 생성 (없으면)
+    await fs.mkdir(this.audioRootDir, { recursive: true });
 
-    // 최종 파일 경로 및 writeStream 생성
-    const filePath = path.join(localDirPath, `${sessionId}.wav`);
+    // 최종 파일 경로 및 writeStream 생성 (세션별 디렉토리 없이 바로 파일 생성)
+    const filePath = path.join(this.audioRootDir, `${sessionId}.wav`);
     const writeStream = createWriteStream(filePath, { flags: 'a' });
 
     const session: AudioSession = {
@@ -77,18 +85,18 @@ export class AudioStreamService {
       sessionId,
       status: AudioSessionStatus.OPEN,
       lastSeq: 0,
-      localDirPath,
       filePath,
       writeStream,
       codec,
       sampleRate,
       channels,
       createdAt: new Date(),
+      seqWaiters: [],
     };
 
     this.sessions.set(sessionId, session);
 
-    this.logger.log(`Session started: ${sessionId} at ${localDirPath}`);
+    this.logger.log(`Session started: ${sessionId} at ${filePath}`);
 
     return sessionId;
   }
@@ -104,14 +112,9 @@ export class AudioStreamService {
   ): Promise<void> {
     const session = this.sessions.get(sessionId);
 
-    if (!session) {
-      throw new Error(`Session not found: ${sessionId}`);
-    }
-
-    if (session.status !== AudioSessionStatus.OPEN) {
-      throw new Error(
-        `Session is not open: ${sessionId} (status: ${session.status})`,
-      );
+    // 세션이 없거나 이미 닫힌 경우 조용히 무시 (finalize 후 뒤늦게 도착한 청크)
+    if (!session || session.status !== AudioSessionStatus.OPEN) {
+      return;
     }
 
     // MVP: 간단한 seq 검증 (역순/중복 거부)
@@ -136,6 +139,9 @@ export class AudioStreamService {
           // 세션 정보 업데이트
           session.lastSeq = seq;
 
+          // 대기자 깨우기 (targetSeq에 도달한 대기자들)
+          this.notifySeqWaiters(session);
+
           resolve();
         }
       });
@@ -143,12 +149,65 @@ export class AudioStreamService {
   }
 
   /**
+   * targetSeq에 도달한 대기자들을 깨움
+   */
+  private notifySeqWaiters(session: AudioSession): void {
+    const waitersToNotify = session.seqWaiters.filter(
+      (w) => session.lastSeq >= w.targetSeq,
+    );
+
+    for (const waiter of waitersToNotify) {
+      clearTimeout(waiter.timeoutId);
+      waiter.resolve();
+    }
+
+    session.seqWaiters = session.seqWaiters.filter(
+      (w) => session.lastSeq < w.targetSeq,
+    );
+  }
+
+  /**
+   * 특정 seq까지 수신될 때까지 대기 (이벤트 기반, 논블로킹)
+   */
+  private waitForSeq(
+    session: AudioSession,
+    targetSeq: number,
+    timeoutMs: number,
+  ): Promise<void> {
+    // 이미 도달한 경우 즉시 반환
+    if (session.lastSeq >= targetSeq) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      const timeoutId = setTimeout(() => {
+        // 타임아웃 시 대기자 목록에서 제거하고 resolve
+        session.seqWaiters = session.seqWaiters.filter(
+          (w) => w.timeoutId !== timeoutId,
+        );
+        this.logger.warn(
+          `Timeout waiting for seq: expected=${targetSeq}, received=${session.lastSeq}, session=${session.sessionId}`,
+        );
+        resolve();
+      }, timeoutMs);
+
+      session.seqWaiters.push({
+        targetSeq,
+        resolve,
+        timeoutId,
+      });
+    });
+  }
+
+  /**
    * 오디오 스트리밍 종료
    * writeStream을 닫고 AudioAsset을 DB에 저장한 후 최종 파일 정보를 반환한다.
+   * @param lastSeq 클라이언트가 전송한 마지막 seq (이 seq까지 수신 대기)
    */
   async finalizeSession(
     sessionId: string,
-    userId: number, // MVP: 인증/인가는 Gateway에서 처리되었다고 가정
+    userId: number,
+    lastSeq?: number,
   ): Promise<{ filePath: string; fileName: string; assetId: number }> {
     const session = this.sessions.get(sessionId);
 
@@ -159,6 +218,19 @@ export class AudioStreamService {
     if (session.status !== AudioSessionStatus.OPEN) {
       throw new Error(
         `Session is not open: ${sessionId} (status: ${session.status})`,
+      );
+    }
+
+    // lastSeq가 제공되면 해당 seq까지 수신 대기 (이벤트 기반, 최대 1분)
+    if (lastSeq !== undefined && lastSeq > session.lastSeq) {
+      this.logger.log(
+        `Waiting for lastSeq: expected=${lastSeq}, current=${session.lastSeq}, session=${sessionId}`,
+      );
+
+      await this.waitForSeq(session, lastSeq, 60000);
+
+      this.logger.log(
+        `Done waiting for lastSeq: expected=${lastSeq}, received=${session.lastSeq}, session=${sessionId}`,
       );
     }
 
@@ -298,15 +370,18 @@ export class AudioStreamService {
       `Session finalized: ${sessionId}, file: ${session.filePath}, asset_id: ${savedAsset.id}`,
     );
 
-    this.sessions.delete(sessionId);
+    // 세션 상태를 FINALIZED로 변경 (청크 무시)
+    session.status = AudioSessionStatus.FINALIZED;
+
+    // 세션 삭제를 지연 (뒤늦게 도착하는 청크 처리를 위해)
+    const cleanupTimer = setTimeout(() => {
+      this.sessions.delete(sessionId);
+      this.logger.debug(`Session deleted from memory: ${sessionId}`);
+    }, 5000);
+    cleanupTimer.unref(); // 프로세스 종료를 막지 않도록
 
     // Object Storage 업로드를 비동기로 실행 (await 하지 않음)
-    void this.uploadToStorageAsync(
-      savedAsset.id,
-      session.filePath,
-      sessionId,
-      fileName,
-    );
+    void this.uploadToStorageAsync(savedAsset.id, session.filePath, fileName);
 
     return {
       filePath: session.filePath,
@@ -321,11 +396,10 @@ export class AudioStreamService {
   private async uploadToStorageAsync(
     assetId: number,
     localFilePath: string,
-    sessionId: string,
     fileName: string,
   ): Promise<void> {
     try {
-      const uploadKey = `audio-sessions/${sessionId}/${fileName}`;
+      const uploadKey = `audio-sessions/${fileName}`;
       const storageUrl = await this.objectStorageService.uploadFile(
         localFilePath,
         uploadKey,

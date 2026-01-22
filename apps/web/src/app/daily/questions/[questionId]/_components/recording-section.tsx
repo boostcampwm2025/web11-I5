@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import Waveform from "@/components/waveform/waveform";
 import { Button } from "@/components/button/button";
 import { CheckCircle2, Mic, RotateCcw, Square } from "lucide-react";
@@ -9,6 +10,7 @@ import {
   submitAnswerAction,
   type SubmitAnswerState,
 } from "../_lib/submit-answer-action";
+import ImportanceRating from "./importance-rating";
 import {
   Tabs,
   TabsContent,
@@ -52,7 +54,9 @@ function RecordingSection({
     stopRecordingRef.current = stopRecording;
   }, [stopRecording]);
 
-  const [_, formAction, isPending] = React.useActionState<
+  const router = useRouter();
+
+  const [state, formAction, isPending] = React.useActionState<
     SubmitAnswerState | null,
     FormData
   >(submitAnswerAction, null);
@@ -177,6 +181,16 @@ function RecordingSection({
       <TabsContent value="text">
         <div className="bg-white border rounded-xl p-7">hi</div>
       </TabsContent>
+
+      <ImportanceRating
+        open={Boolean(state?.success)}
+        questionId={questionId}
+        onSuccess={() => {
+          if (state?.submissionId) {
+            router.push(`/reports/${questionId}?attempt=${state.submissionId}`);
+          }
+        }}
+      />
     </Tabs>
   );
 }
