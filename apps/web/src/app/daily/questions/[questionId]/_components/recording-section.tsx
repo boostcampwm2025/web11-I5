@@ -100,9 +100,15 @@ function RecordingSection({
         questionId,
       );
 
-      if (submissionResult.submissionId) {
-        setSubmissionId(submissionResult.submissionId);
+      if (!submissionResult.success || !submissionResult.submissionId) {
+        setError(
+          submissionResult.error ||
+            "제출 결과를 확인할 수 없습니다. 다시 시도해주세요.",
+        );
+        return;
       }
+
+      setSubmissionId(submissionResult.submissionId);
     } catch {
       setError("답변 제출에 실패했습니다. 다시 시도해주세요.");
     } finally {
