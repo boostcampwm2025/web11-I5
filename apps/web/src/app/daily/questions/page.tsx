@@ -1,4 +1,11 @@
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/pagination/pagination";
+import {
   Table,
   TableBody,
   TableCell,
@@ -7,20 +14,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/table/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/pagination/pagination";
-import { fetchQuestions } from "./_lib/fetch-questions";
-import {
-  fetchRootCategories,
-  fetchCategoryTree,
-} from "./_lib/fetch-categories";
 import QuestionFilters from "./_components/question-filters";
 import { QuestionLinkButton } from "./_components/question-link-button";
+import {
+  fetchCategoryTree,
+  fetchRootCategories,
+} from "./_lib/fetch-categories";
+import { fetchQuestions } from "./_lib/fetch-questions";
 
 interface QuestionListPageProps {
   searchParams: Promise<{
@@ -28,13 +28,20 @@ interface QuestionListPageProps {
     categoryId?: string;
     subCategoryId?: string;
     search?: string;
+    solvedStatus?: string;
     minImportance?: string;
   }>;
 }
 
 async function QuestionListPage({ searchParams }: QuestionListPageProps) {
-  const { page, categoryId, subCategoryId, search, minImportance } =
-    await searchParams;
+  const {
+    page,
+    categoryId,
+    subCategoryId,
+    search,
+    solvedStatus,
+    minImportance,
+  } = await searchParams;
 
   const parseIntOrNull = (value: string | undefined): number | null => {
     if (!value) return null;
@@ -53,6 +60,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   const selectedCategoryId = parseIntOrNull(categoryId);
   const selectedSubCategoryId = parseIntOrNull(subCategoryId);
   const searchQuery = search ?? "";
+  const selectedSolvedStatus = solvedStatus ?? null;
   const selectedMinImportance = parseFloatOrNull(minImportance);
 
   const rootCategoriesPromise = fetchRootCategories();
@@ -64,6 +72,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
     parentCategoryId: selectedCategoryId ?? undefined,
     categoryId: selectedSubCategoryId ?? undefined,
     search: searchQuery || undefined,
+    solvedStatus: selectedSolvedStatus ?? undefined,
     minImportance: selectedMinImportance ?? undefined,
   });
 
@@ -87,6 +96,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
     if (categoryId) params.set("categoryId", categoryId);
     if (subCategoryId) params.set("subCategoryId", subCategoryId);
     if (searchQuery) params.set("search", searchQuery);
+    if (solvedStatus) params.set("solvedStatus", solvedStatus);
     if (minImportance) params.set("minImportance", minImportance);
     return `/daily/questions?${params.toString()}`;
   };
@@ -106,6 +116,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
         selectedCategoryId={selectedCategoryId}
         selectedSubCategoryId={selectedSubCategoryId}
         searchQuery={searchQuery}
+        selectedSolvedStatus={selectedSolvedStatus}
         selectedMinImportance={selectedMinImportance}
       />
       <Table>
@@ -115,6 +126,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
             <TableHead className="w-32">중분류</TableHead>
             <TableHead>문제 제목</TableHead>
             <TableHead className="w-20 text-center">중요도</TableHead>
+            <TableHead className="w-20 text-center">내 점수</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -144,6 +156,15 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
                 <TableCell className="text-center">
                   {(question.avgImportance ?? 0).toFixed(1)}
                 </TableCell>
+                <TableCell className="text-center">
+                  {question.score !== null ? (
+                    <span className="text-teal-600 font-medium text-sm bg-teal-50 px-2 py-1 rounded-lg">
+                      {question.score}점
+                    </span>
+                  ) : (
+                    ""
+                  )}
+                </TableCell>
               </TableRow>
             ))
           )}
@@ -155,7 +176,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
                 {startIndex} - {endIndex} / 총 {totalCount}개
               </span>
             </TableCell>
-            <TableCell colSpan={2} className="text-right">
+            <TableCell colSpan={3} className="text-right">
               <Pagination className="justify-end">
                 <PaginationContent>
                   <PaginationItem>
