@@ -1,4 +1,5 @@
 import { apiGet, checkAuthUser } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { PaginatedQuestionsDTO } from "../_types/types";
 
 interface FetchQuestionsParams {
@@ -13,11 +14,6 @@ interface FetchQuestionsParams {
 async function fetchQuestions(
   params: FetchQuestionsParams = {},
 ): Promise<PaginatedQuestionsDTO> {
-  const baseUrl = process.env.API_URL;
-  if (!baseUrl) {
-    throw new Error("API_URL environment variable is not defined");
-  }
-
   const searchParams = new URLSearchParams();
   if (params.page) {
     searchParams.set("page", params.page.toString());
@@ -43,7 +39,15 @@ async function fetchQuestions(
   const endpoint = userStatus ? `/questions/auth` : `/questions`;
   const url = `${endpoint}${queryString ? `?${queryString}` : ""}`;
 
-  return apiGet<PaginatedQuestionsDTO>(url);
+  try {
+    return await apiGet<PaginatedQuestionsDTO>(url);
+  } catch (err) {
+    if (userStatus && err instanceof ApiError && err.status === 401) {
+      const fallbackUrl = `/questions${queryString ? `?${queryString}` : ""}`;
+      return apiGet<PaginatedQuestionsDTO>(fallbackUrl);
+    }
+    throw err;
+  }
 }
 
 export { fetchQuestions };
