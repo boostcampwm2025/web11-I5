@@ -1,3 +1,4 @@
+import { apiGet, checkAuthUser } from "@/lib/api-client";
 import { PaginatedQuestionsDTO } from "../_types/types";
 
 interface FetchQuestionsParams {
@@ -5,14 +6,15 @@ interface FetchQuestionsParams {
   categoryId?: number;
   parentCategoryId?: number;
   search?: string;
+  solvedStatus?: string;
   minImportance?: number;
 }
 
 async function fetchQuestions(
   params: FetchQuestionsParams = {},
 ): Promise<PaginatedQuestionsDTO> {
-  const apiUrl = process.env.API_URL;
-  if (!apiUrl) {
+  const baseUrl = process.env.API_URL;
+  if (!baseUrl) {
     throw new Error("API_URL environment variable is not defined");
   }
 
@@ -29,22 +31,19 @@ async function fetchQuestions(
   if (params.search) {
     searchParams.set("search", params.search);
   }
+  if (params.solvedStatus) {
+    searchParams.set("solvedStatus", params.solvedStatus.toUpperCase());
+  }
   if (params.minImportance !== undefined) {
     searchParams.set("minImportance", params.minImportance.toString());
   }
 
   const queryString = searchParams.toString();
-  const url = `${apiUrl}/questions${queryString ? `?${queryString}` : ""}`;
+  const userStatus = await checkAuthUser();
+  const endpoint = userStatus ? `/questions/auth` : `/questions`;
+  const url = `${endpoint}${queryString ? `?${queryString}` : ""}`;
 
-  const response = await fetch(url, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch questions: ${response.statusText}`);
-  }
-
-  return await response.json();
+  return apiGet<PaginatedQuestionsDTO>(url);
 }
 
 export { fetchQuestions };

@@ -16,6 +16,7 @@ export interface Question {
   avgImportance: number;
   categoryId: number;
   category?: Category;
+  score: number | null;
 }
 
 export interface PaginatedQuestionsDTO {
