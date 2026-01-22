@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import FeedbackSection from "./feedback-section";
-import { ReportDetail } from "../../_types/report-detail";
 import { Question } from "@/app/daily/questions/_types/types";
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { ReportDetail } from "../../_types/report-detail";
+import FeedbackSection from "./feedback-section";
 
 const MOCK_QUESTION: Question = {
   id: 1,
@@ -12,6 +12,7 @@ const MOCK_QUESTION: Question = {
   avgScore: 85,
   avgImportance: 4,
   categoryId: 101,
+  score: null,
 };
 
 const meta = {
