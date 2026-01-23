@@ -97,7 +97,8 @@ function mapToReportDetail(
     totalScore: submission.totalScore ?? 0,
     feedback: {
       feedbackMessage: evaluation.feedbackMessage,
-      accuracyReason: evaluation.detailAnalysis.accuracy,
+      coreConceptReason: evaluation.detailAnalysis.coreConcept,
+      coverageReason: evaluation.detailAnalysis.coverage,
       logicReason: evaluation.detailAnalysis.logic,
       depthReason: evaluation.detailAnalysis.depth,
       scoreDetails: evaluation.scoreDetails,

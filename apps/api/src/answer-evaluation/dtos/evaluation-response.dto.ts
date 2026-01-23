@@ -1,43 +1,47 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  AccuracyEval,
+  CoreConceptEval,
+  CoverageEval,
   LogicEval,
   DepthEval,
 } from '../answer-evaluation.constants';
 
 class ScoreDetailsDto {
-  @ApiProperty({ description: '정확성 점수', example: 35 })
-  accuracy: number;
+  @ApiProperty({ description: '핵심 개념 점수', example: 50 })
+  coreConcept: number;
 
-  @ApiProperty({ description: '논리성 점수', example: 30 })
+  @ApiProperty({ description: '완성도 점수', example: 20 })
+  coverage: number;
+
+  @ApiProperty({ description: '논리성 점수', example: 10 })
   logic: number;
 
-  @ApiProperty({ description: '심층성 점수', example: 10 })
+  @ApiProperty({ description: '심층성 점수', example: 20 })
   depth: number;
-
-  @ApiProperty({ description: '완전성 점수', example: 5 })
-  completeness: number;
-
-  @ApiProperty({ description: '적용성 점수', example: 5 })
-  application: number;
 }
 
 class DetailAnalysisDto {
   @ApiProperty({
-    description: '정확성 분석 멘트',
-    example: '핵심 개념이 정확합니다.',
+    description: '핵심 개념 분석 멘트',
+    example: '핵심 개념이 정확하게 이해되었습니다.',
   })
-  accuracy: string;
+  coreConcept: string;
+
+  @ApiProperty({
+    description: '완성도 분석 멘트',
+    example: '주요 내용을 대부분 포함하고 있습니다.',
+  })
+  coverage: string;
 
   @ApiProperty({
     description: '논리성 분석 멘트',
-    example: '구조가 탄탄합니다.',
+    example: '논리적 구조가 명확합니다.',
   })
   logic: string;
 
   @ApiProperty({
     description: '심층성 분석 멘트',
-    example: '심화 내용이 부족합니다.',
+    example: '깊이 있는 설명이 잘 드러납니다.',
   })
   depth: string;
 }
@@ -71,17 +75,25 @@ export class EvaluationResponseDto {
   scoreDetails: ScoreDetailsDto | null;
 
   @ApiProperty({
-    description: '정확성 등급',
-    enum: AccuracyEval,
-    example: AccuracyEval.PERFECT,
+    description: '핵심 개념 등급',
+    enum: CoreConceptEval,
+    example: CoreConceptEval.CORRECT,
     nullable: true,
   })
-  accuracyEval: AccuracyEval;
+  coreConceptEval: CoreConceptEval;
+
+  @ApiProperty({
+    description: '완성도 등급',
+    enum: CoverageEval,
+    example: CoverageEval.COMPLETE,
+    nullable: true,
+  })
+  coverageEval: CoverageEval;
 
   @ApiProperty({
     description: '논리성 등급',
     enum: LogicEval,
-    example: LogicEval.COHERENT,
+    example: LogicEval.CLEAR,
     nullable: true,
   })
   logicEval: LogicEval;
@@ -94,11 +106,12 @@ export class EvaluationResponseDto {
   })
   depthEval: DepthEval;
 
-  @ApiProperty({ description: '실무 적용 여부', example: false })
-  hasApplication: boolean;
-
-  @ApiProperty({ description: '완전한 문장 여부', example: true })
-  isCompleteSentence: boolean;
+  @ApiProperty({
+    description: '추출된 키워드 목록',
+    example: ['React', 'HTTP', 'Process'],
+    type: [String],
+  })
+  extractedKeywords: string[];
 
   @ApiProperty({ description: '생성 일시' })
   createdAt: Date;

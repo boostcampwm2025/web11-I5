@@ -7,7 +7,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 import {
-  AccuracyEval,
+  CoreConceptEval,
+  CoverageEval,
   LogicEval,
   DepthEval,
 } from '../answer-evaluation.constants';
@@ -26,25 +27,35 @@ export class AnswerEvaluation {
 
   @Column({ name: 'detail_analysis', type: 'jsonb', nullable: true })
   detailAnalysis: {
-    accuracy: string;
+    coreConcept: string;
+    coverage: string;
     logic: string;
     depth: string;
   } | null;
 
   @Column({ name: 'score_details', type: 'jsonb', nullable: true })
   scoreDetails: {
-    accuracy: number;
+    coreConcept: number;
+    coverage: number;
     logic: number;
     depth: number;
   } | null;
 
   @Column({
-    name: 'accuracy_eval',
+    name: 'core_concept_eval',
     type: 'enum',
-    enum: AccuracyEval,
+    enum: CoreConceptEval,
     nullable: true,
   })
-  accuracyEval: AccuracyEval | null;
+  coreConceptEval: CoreConceptEval | null;
+
+  @Column({
+    name: 'coverage_eval',
+    type: 'enum',
+    enum: CoverageEval,
+    nullable: true,
+  })
+  coverageEval: CoverageEval | null;
 
   @Column({ name: 'logic_eval', type: 'enum', enum: LogicEval, nullable: true })
   logicEval: LogicEval | null;

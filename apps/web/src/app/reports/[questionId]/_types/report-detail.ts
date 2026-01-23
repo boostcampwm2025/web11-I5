@@ -4,11 +4,13 @@ export type EvaluationStatus = AnalysisStatus;
 
 export interface FeedbackResult {
   feedbackMessage: string;
-  accuracyReason: string;
+  coreConceptReason: string;
+  coverageReason: string;
   logicReason: string;
   depthReason: string;
   scoreDetails: {
-    accuracy: number;
+    coreConcept: number;
+    coverage: number;
     logic: number;
     depth: number;
   };

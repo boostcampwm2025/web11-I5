@@ -14,7 +14,8 @@ import { buildEvaluationUserPrompt } from '../llm/prompts/evaluation-user.prompt
 import { EvaluationResultDto } from './dtos/evaluation-result.dto';
 import { EVALUATION_RESPONSE_SCHEMA } from '../llm/prompts/evaluation.schema';
 import {
-  AccuracyEval,
+  CoreConceptEval,
+  CoverageEval,
   DepthEval,
   EvaluationStatus,
   LogicEval,
@@ -25,8 +26,10 @@ import { Question } from '../question/entities/question.entity';
 import { QuestionSolution } from '../question-solution/entities/question-solution.entity';
 
 interface AiEvaluationRawResponse {
-  accuracy_level: AccuracyEval;
-  accuracy_reason: string;
+  core_concept_level: CoreConceptEval;
+  core_concept_reason: string;
+  coverage_level: CoverageEval;
+  coverage_reason: string;
   logic_level: LogicEval;
   logic_reason: string;
   depth_level: DepthEval;
@@ -87,7 +90,8 @@ export class AnswerEvaluationService {
         feedbackMessage: null,
         detailAnalysis: null,
         scoreDetails: null,
-        accuracyEval: null,
+        coreConceptEval: null,
+        coverageEval: null,
         logicEval: null,
         depthEval: null,
         hasApplication: false,
@@ -137,12 +141,14 @@ export class AnswerEvaluationService {
         ...evaluation,
         feedbackMessage,
         detailAnalysis: {
-          accuracy: '답변 내용이 없어 정확도를 측정할 수 없습니다.',
+          coreConcept: '답변 내용이 없어 핵심 개념을 측정할 수 없습니다.',
+          coverage: '답변 내용이 없어 완성도를 측정할 수 없습니다.',
           logic: '답변 내용이 없어 논리 구성을 확인할 수 없습니다.',
           depth: '답변 내용이 없어 지식의 깊이를 측정할 수 없습니다.',
         },
-        scoreDetails: { accuracy: 0, logic: 0, depth: 0 },
-        accuracyEval: AccuracyEval.WRONG,
+        scoreDetails: { coreConcept: 0, coverage: 0, logic: 0, depth: 0 },
+        coreConceptEval: CoreConceptEval.WRONG,
+        coverageEval: CoverageEval.MINIMAL,
         logicEval: LogicEval.NONE,
         depthEval: DepthEval.NONE,
         extractedKeywords: [],
@@ -224,12 +230,14 @@ export class AnswerEvaluationService {
         await manager.update(AnswerEvaluation, evaluationId, {
           feedbackMessage: result.mentoringFeedback,
           detailAnalysis: {
-            accuracy: result.accuracyReason,
+            coreConcept: result.coreConceptReason,
+            coverage: result.coverageReason,
             logic: result.logicReason,
             depth: result.depthReason,
           },
           scoreDetails: result.scoreDetails,
-          accuracyEval: result.accuracyLevel,
+          coreConceptEval: result.coreConceptLevel,
+          coverageEval: result.coverageLevel,
           logicEval: result.logicLevel,
           depthEval: result.depthLevel,
           extractedKeywords: result.extractedKeywords,
@@ -266,8 +274,10 @@ export class AnswerEvaluationService {
     rawResponse: AiEvaluationRawResponse,
   ): EvaluationResultDto {
     return {
-      accuracyLevel: rawResponse.accuracy_level,
-      accuracyReason: rawResponse.accuracy_reason,
+      coreConceptLevel: rawResponse.core_concept_level,
+      coreConceptReason: rawResponse.core_concept_reason,
+      coverageLevel: rawResponse.coverage_level,
+      coverageReason: rawResponse.coverage_reason,
       logicLevel: rawResponse.logic_level,
       logicReason: rawResponse.logic_reason,
       depthLevel: rawResponse.depth_level,
@@ -281,36 +291,42 @@ export class AnswerEvaluationService {
     totalScore: number;
     scoreDetails: Required<EvaluationResultDto>['scoreDetails'];
   } {
-    const accuracyMap: Record<AccuracyEval, number> = {
-      [AccuracyEval.PERFECT]: 40,
-      [AccuracyEval.GOOD]: 30,
-      [AccuracyEval.MIXED]: 10,
-      [AccuracyEval.WRONG]: 0,
+    const coreConceptMap: Record<CoreConceptEval, number> = {
+      [CoreConceptEval.CORRECT]: 50,
+      [CoreConceptEval.MINOR_ERROR]: 35,
+      [CoreConceptEval.WRONG]: 0,
     };
-    const accuracyScore = accuracyMap[result.accuracyLevel] ?? 0;
+    const coreConceptScore = coreConceptMap[result.coreConceptLevel] ?? 0;
+
+    const coverageMap: Record<CoverageEval, number> = {
+      [CoverageEval.COMPLETE]: 20,
+      [CoverageEval.ADEQUATE]: 12,
+      [CoverageEval.MINIMAL]: 5,
+    };
+    const coverageScore = coverageMap[result.coverageLevel] ?? 0;
 
     const logicMap: Record<LogicEval, number> = {
-      [LogicEval.FLAWLESS]: 30,
-      [LogicEval.COHERENT]: 20,
-      [LogicEval.WEAK]: 10,
+      [LogicEval.CLEAR]: 10,
+      [LogicEval.WEAK]: 5,
       [LogicEval.NONE]: 0,
     };
     const logicScore = logicMap[result.logicLevel] ?? 0;
 
     const depthMap: Record<DepthEval, number> = {
-      [DepthEval.EXPERT]: 30,
       [DepthEval.ADVANCED]: 20,
       [DepthEval.BASIC]: 10,
       [DepthEval.NONE]: 0,
     };
     const depthScore = depthMap[result.depthLevel] ?? 0;
 
-    const totalScore = accuracyScore + logicScore + depthScore;
+    const totalScore =
+      coreConceptScore + coverageScore + logicScore + depthScore;
 
     return {
       totalScore,
       scoreDetails: {
-        accuracy: accuracyScore,
+        coreConcept: coreConceptScore,
+        coverage: coverageScore,
         logic: logicScore,
         depth: depthScore,
       },
