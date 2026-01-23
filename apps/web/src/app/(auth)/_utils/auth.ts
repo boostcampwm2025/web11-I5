@@ -3,6 +3,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { apiClient, apiGet } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
+import { revalidatePath } from "next/cache";
 
 const API_BASE_URL = process.env.API_URL || "http://localhost:8000";
 
@@ -16,11 +18,28 @@ export interface User {
   createdAt: string;
 }
 
-// 현재 사용자 정보 가져오기
+// 로그인 여부 확인 (쿠키 존재 여부만 확인, API 호출 없음)
+async function hasAccessToken(): Promise<boolean> {
+  const cookieStore = await cookies();
+  return !!cookieStore.get("accessToken")?.value;
+}
+
+// 현재 사용자 정보 가져오기 (실패 시 쿠키 삭제)
 async function getCurrentUser(): Promise<User | null> {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+
+  if (!accessToken) {
+    return null;
+  }
+
   try {
     return await apiGet<User>(`/api/users/me`);
-  } catch {
+  } catch (error) {
+    // 401 Unauthorized일 때만 쿠키 삭제
+    if (error instanceof ApiError && error.status === 401) {
+      cookieStore.delete("accessToken");
+    }
     return null;
   }
 }
@@ -86,6 +105,7 @@ async function loginAction(
   }
 
   if (success) {
+    revalidatePath("/");
     redirect("/");
   } else {
     return { success, error };
@@ -103,6 +123,7 @@ async function logoutAction() {
     const cookieStore = await cookies();
     cookieStore.delete("accessToken");
 
+    revalidatePath("/");
     redirect("/");
   } catch (error) {
     throw error;
@@ -158,6 +179,7 @@ async function signupAction(
 }
 
 export {
+  hasAccessToken,
   getCurrentUser,
   getTestUsers,
   loginAction,
