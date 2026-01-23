@@ -12,7 +12,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import {
   AudioAsset,
   AudioUploadStatus,
-} from '../audio-stream/entities/audio-asset.entity';
+} from '../uploads/entities/audio-asset.entity';
 import { Question } from '../question/entities/question.entity';
 import { SttService } from '../stt/stt.service';
 import { UpdateImportanceDto } from './dtos/update-importance-rating.dto';
@@ -23,7 +23,7 @@ import {
   QuizMode,
 } from './answer-submission.constants';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
-import { AudioUploadCompletedEvent } from '../audio-stream/events/audio-upload-completed.event';
+import { AudioUploadCompletedEvent } from '../uploads/events/audio-upload-completed.event';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 

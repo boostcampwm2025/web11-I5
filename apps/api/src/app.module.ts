@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnswerEvaluationModule } from './answer-evaluation/answer-evaluation.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AudioStreamModule } from './audio-stream/audio-stream.module';
 import { typeOrmModuleOptions } from './configs/typeorm.config';
 import { StreaksModule } from './streaks/streaks.module';
 import { UserModule } from './user/user.module';
@@ -16,6 +15,7 @@ import { QuestionModule } from './question/question.module';
 import { AnswerSubmissionModule } from './answer-submission/answer-submission.module';
 import { GraphModule } from './graph/graph.module';
 import { AuthModule } from './auth/auth.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -28,7 +28,6 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
     UserModule,
     AnswerEvaluationModule,
-    AudioStreamModule,
     CategoryModule,
     QuestionModule,
     GraphModule,
@@ -36,6 +35,7 @@ import { AuthModule } from './auth/auth.module';
     SttModule,
     ObjectStorageModule,
     AnswerSubmissionModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

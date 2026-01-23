@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AudioAsset } from 'src/audio-stream/entities/audio-asset.entity';
+import { AudioAsset } from 'src/uploads/entities/audio-asset.entity';
 
 @Injectable()
 export class SttService {

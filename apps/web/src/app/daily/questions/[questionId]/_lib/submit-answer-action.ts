@@ -10,12 +10,9 @@ export interface SubmitAnswerState {
 }
 
 export async function submitAnswerAction(
-  prevState: SubmitAnswerState | null,
-  formData: FormData,
+  audioAssetId: number,
+  questionId: number,
 ): Promise<SubmitAnswerState> {
-  const audioAssetId = formData.get("audioAssetId");
-  const questionId = formData.get("questionId");
-
   if (!audioAssetId || !questionId) {
     return {
       success: false,
