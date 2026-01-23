@@ -5,9 +5,14 @@ import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { AuthModule } from '../auth/auth.module';
+import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
+import { Question } from '../question/entities/question.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([User, AnswerSubmission, Question]),
+    AuthModule,
+  ],
   controllers: [UserController],
   providers: [UserRepository, UserService],
   exports: [UserService],

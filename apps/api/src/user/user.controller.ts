@@ -26,6 +26,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserId } from '../auth/decorators/user-id.decorator';
 import { CreateUserRequestDto } from './dtos/request/create-user.request.dto';
 import { UserPublicResponseDto } from './dtos/response/user.public.response.dto';
+import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
 
 const USER_CONTROLLER_VALIDATION_PIPE = new ValidationPipe({
   transform: true,
@@ -158,5 +159,25 @@ export class UserController {
       totalScore: user.totalScore ?? 0,
       createdAt: user.createdAt.toISOString(),
     };
+  }
+
+  @Get('solved-problems')
+  @ApiOperation({ summary: '내가 푼 문제 목록 조회' })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 200,
+    description: '푼 문제 목록 조회 성공',
+    type: SolvedProblemsListResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: '로그인이 필요합니다',
+  })
+  async getSolvedProblems(
+    @UserId() userId: number,
+  ): Promise<SolvedProblemsListResponseDto> {
+    return await this.userService.getSolvedProblems(userId);
   }
 }
