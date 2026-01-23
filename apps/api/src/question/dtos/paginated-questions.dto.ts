@@ -3,7 +3,7 @@ import { Question } from '../entities/question.entity';
 
 export class PaginatedQuestionsDto {
   @ApiProperty({ type: [Question], description: '질문 목록' })
-  questions: Question[];
+  questions: (Question & { score: number | null })[];
 
   @ApiProperty({ example: 100, description: '필터링된 전체 질문 수' })
   totalCount: number;

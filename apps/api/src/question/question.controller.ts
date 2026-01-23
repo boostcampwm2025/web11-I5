@@ -1,25 +1,27 @@
 import {
   Controller,
   Get,
+  NotFoundException,
   Param,
   Query,
-  NotFoundException,
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiTags,
+  ApiBearerAuth,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiResponse,
-  ApiNotFoundResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { QuestionService } from './question.service';
-import { FindOneParams } from './dtos/find-one-params.dto';
-import { QuestionFilterDto } from './dtos/question-filter.dto';
-import { PaginatedQuestionsDto } from './dtos/paginated-questions.dto';
-import { Question } from './entities/question.entity';
+import { UserId } from 'src/auth/decorators/user-id.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { FindOneParams } from './dtos/find-one-params.dto';
+import { PaginatedQuestionsDto } from './dtos/paginated-questions.dto';
+import { QuestionFilterDto } from './dtos/question-filter.dto';
+import { Question } from './entities/question.entity';
+import { QuestionService } from './question.service';
 
 @ApiTags('questions')
 @Controller('questions')
@@ -60,6 +62,51 @@ export class QuestionController {
     @Query() filter: QuestionFilterDto,
   ): Promise<PaginatedQuestionsDto> {
     return await this.questionService.findPaginated(filter);
+  }
+
+  @Get('/auth')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: '질문 목록 조회',
+    description:
+      '페이지네이션과 카테고리 필터를 적용하여 질문 목록을 조회합니다.',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: '페이지 번호 (기본값: 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    type: Number,
+    description: '중분류 카테고리 ID',
+  })
+  @ApiQuery({
+    name: 'parentCategoryId',
+    required: false,
+    type: Number,
+    description: '대분류 카테고리 ID',
+  })
+  @ApiQuery({
+    name: 'solvedStatus',
+    required: false,
+    type: 'string',
+    description: 'SOLVED / UNSOLVED',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '질문 목록 조회 성공',
+    type: PaginatedQuestionsDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  async getPaginatedWithAuth(
+    @Query() filter: QuestionFilterDto,
+    @UserId() userId: number,
+  ): Promise<PaginatedQuestionsDto> {
+    return await this.questionService.findPaginated(filter, userId);
   }
 
   @Get('category/:categoryId')

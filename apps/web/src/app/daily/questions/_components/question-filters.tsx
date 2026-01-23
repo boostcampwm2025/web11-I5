@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/button/button";
 import {
   InputGroup,
@@ -9,9 +7,11 @@ import {
   InputGroupInput,
 } from "@/components/input-group/input-group";
 import { SegmentedControl } from "@/components/segmented-control/segmented-control";
-import { Search } from "lucide-react";
-import { Category } from "../_types/types";
 import { cn } from "@/lib/cn";
+import { Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import * as React from "react";
+import { Category } from "../_types/types";
 
 interface QuestionFiltersProps {
   categories: Category[];
@@ -19,6 +19,7 @@ interface QuestionFiltersProps {
   selectedCategoryId: number | null;
   selectedSubCategoryId: number | null;
   searchQuery: string;
+  selectedSolvedStatus: string | null;
   selectedMinImportance: number | null;
 }
 
@@ -28,11 +29,11 @@ function QuestionFilters({
   selectedCategoryId,
   selectedSubCategoryId,
   searchQuery,
+  selectedSolvedStatus,
   selectedMinImportance,
 }: QuestionFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [solveStatus, setSolveStatus] = React.useState("");
   const [searchInput, setSearchInput] = React.useState(searchQuery);
 
   const updateSearchParams = React.useCallback(
@@ -154,11 +155,15 @@ function QuestionFilters({
           <SegmentedControl
             options={[
               { label: "전체", value: "" },
-              { label: "푼 문제", value: "solved" },
-              { label: "안 푼 문제", value: "unsolved" },
+              { label: "푼 문제", value: "SOLVED" },
+              { label: "안 푼 문제", value: "UNSOLVED" },
             ]}
-            value={solveStatus}
-            onChange={setSolveStatus}
+            value={selectedSolvedStatus ?? ""}
+            onChange={(value) =>
+              updateSearchParams({
+                solvedStatus: value || null,
+              })
+            }
           />
         </div>
         <div className="flex gap-3 items-center">
