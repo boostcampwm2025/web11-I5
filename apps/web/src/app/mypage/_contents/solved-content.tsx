@@ -35,7 +35,7 @@ async function SolvedContent({
           <TableRow>
             <TableHead className="w-20">분류</TableHead>
             <TableHead>문제 제목</TableHead>
-            <TableHead className="text-end">제출 시간</TableHead>
+            <TableHead className="text-center">제출 시간</TableHead>
             <TableHead className="text-center">내 점수</TableHead>
           </TableRow>
         </TableHeader>
@@ -65,7 +65,7 @@ async function SolvedContent({
                     {problem.title}
                   </Link>
                 </TableCell>
-                <TableCell className="text-end">
+                <TableCell className="text-center">
                   {formattingDate(problem.completedAt)}
                 </TableCell>
                 <TableCell className="text-center">
