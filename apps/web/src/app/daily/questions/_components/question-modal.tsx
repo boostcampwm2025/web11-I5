@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { Button } from "@/components/button/button";
-import Link from "next/link";
 import { Question } from "../_types/types";
 import { SegmentedControl } from "@/components/segmented-control/segmented-control";
+import Link from "next/link";
 
 interface QuestionModalProps {
   question: Question;
@@ -13,6 +13,7 @@ interface QuestionModalProps {
 
 function QuestionModal({ question, onClose }: QuestionModalProps) {
   const [answerMode, setAnswerMode] = React.useState<string>("voice");
+
   if (!question) return null;
 
   return (
@@ -74,7 +75,9 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
               size="lg"
               className="flex-1 rounded-xl text-sm font-semibold shadow-lg shadow-gray-200"
             >
-              <Link href={`/daily/questions/${question.id}`}>시작하기</Link>
+              <Link href={`/daily/questions/${question.id}?mode=${answerMode}`}>
+                시작하기
+              </Link>
             </Button>
           </div>
         </div>

@@ -1,11 +1,14 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
+import { AnswerEvaluationService } from 'src/answer-evaluation/answer-evaluation.service';
 import { StreaksService } from 'src/streaks/streaks.service';
 import { Repository } from 'typeorm';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -43,13 +46,93 @@ export class AnswerSubmissionService {
     private readonly sttService: SttService,
     private readonly streaksService: StreaksService,
     private readonly logger: Logger,
+    @Inject(forwardRef(() => AnswerEvaluationService))
+    private readonly answerEvaluationService: AnswerEvaluationService,
   ) {}
 
   async submitAnswer(
     userId: number,
     submitAnswerDto: SubmitAnswerDto,
   ): Promise<AnswerSubmission> {
-    const { audioAssetId, questionId } = submitAnswerDto;
+    const { audioAssetId, questionId, rawAnswer } = submitAnswerDto;
+
+    // 텍스트 답변인지 음성 답변인지 판단
+    const isTextInput = !!rawAnswer && rawAnswer.trim().length > 0;
+
+    // Validate question exists
+    const question = await this.questionRepository.findOne({
+      where: { id: questionId },
+    });
+
+    if (!question) {
+      throw new NotFoundException(`Question with ID ${questionId} not found`);
+    }
+
+    // 텍스트 답변 처리
+    if (isTextInput) {
+      return this.submitTextAnswer(userId, questionId, rawAnswer);
+    }
+
+    // 음성 답변 처리 (기존 로직)
+    return this.submitVoiceAnswer(userId, questionId, audioAssetId);
+  }
+
+  /**
+   * 텍스트 답변 제출 처리
+   * STT 없이 바로 채점 요청
+   */
+  private async submitTextAnswer(
+    userId: number,
+    questionId: number,
+    rawAnswer: string,
+  ): Promise<AnswerSubmission> {
+    const answerSubmission = this.answerSubmissionRepository.create({
+      userId,
+      questionId,
+      audioAssetId: null,
+      quizMode: QuizMode.DAILY,
+      inputType: InputType.TEXT,
+      rawAnswer: rawAnswer.trim(),
+      takenTime: 0,
+      sttStatus: ProcessStatus.DONE, // 텍스트 입력은 STT 불필요
+      evaluationStatus: EvaluationStatus.PENDING,
+    });
+
+    const savedSubmission =
+      await this.answerSubmissionRepository.save(answerSubmission);
+
+    // 바로 채점 요청
+    this.answerEvaluationService.evaluate(savedSubmission.id).catch((error) => {
+      this.logger.error(
+        `Failed to request evaluation for submissionId: ${savedSubmission.id}`,
+        error,
+      );
+    });
+
+    try {
+      await this.streaksService.recordDailyActivity(userId);
+    } catch (error) {
+      this.logger.error(
+        `Failed to record daily activity for userId: ${userId}`,
+        error,
+      );
+    }
+
+    return savedSubmission;
+  }
+
+  /**
+   * 음성 답변 제출 처리
+   * 기존 STT 플로우 유지
+   */
+  private async submitVoiceAnswer(
+    userId: number,
+    questionId: number,
+    audioAssetId?: number,
+  ): Promise<AnswerSubmission> {
+    if (!audioAssetId) {
+      throw new BadRequestException('음성 답변 시 audioAssetId가 필요합니다.');
+    }
 
     // Validate audio asset exists and has objectKey
     const audioAsset = await this.audioAssetRepository.findOne({
@@ -67,15 +150,6 @@ export class AnswerSubmissionService {
       throw new BadRequestException(
         `Audio asset ${audioAssetId} upload failed. Please re-record your answer.`,
       );
-    }
-
-    // Validate question exists
-    const question = await this.questionRepository.findOne({
-      where: { id: questionId },
-    });
-
-    if (!question) {
-      throw new NotFoundException(`Question with ID ${questionId} not found`);
     }
 
     // Create answer submission
