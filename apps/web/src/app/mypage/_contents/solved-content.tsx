@@ -16,14 +16,14 @@ async function SolvedContent({
 }) {
   const formattingDate = (completedAt: string) => {
     const date = new Date(completedAt);
-    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getDate()}`;
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
   };
   return (
     <>
       <div className="flex py-8 justify-between items-center">
         <div className="flex flex-col justify-start gap-2">
           <span className="text-lg font-bold text-slate-900">
-            내가 푼 문제 리스트{" "}
+            내가 푼 문제 리스트
           </span>
           <span className="text-sm font-medium text-slate-500">
             어떤 문제를 풀었는지 확인할 수 있습니다.
@@ -46,7 +46,7 @@ async function SolvedContent({
                 className="h-32 text-center text-muted-foreground"
                 colSpan={4}
               >
-                검색 결과가 없습니다.
+                푼 문제가 없습니다.
               </TableCell>
             </TableRow>
           ) : (
