@@ -33,20 +33,8 @@ function ImportanceRating({
     if (state.success) {
       toast.success(state.message, {
         duration: 1500,
-        style: {
-          background: "rgba(45, 212, 191, 0.9)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
-          color: "#fff",
-          fontWeight: "600",
-          padding: "16px 24px",
-          borderRadius: "16px",
-          fontSize: "16px",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
-          boxShadow:
-            "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-          minWidth: "280px",
-        },
+        className:
+          "bg-[#2dd4bf]/90 backdrop-blur-md text-white font-semibold py-4 px-6 rounded-[16px] text-base border border-white/20 shadow-xl min-w-[280px]",
         iconTheme: {
           primary: "#fff",
           secondary: "#2dd4bf",
