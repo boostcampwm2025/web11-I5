@@ -137,26 +137,43 @@ export class GraphService {
         });
 
         if (!questionNode) {
-          questionNode = manager.create(GraphNode, {
-            userId: userId,
-            type: NodeType.QUESTION,
-            label: questionTitle,
-            questionId: questionId,
+          await manager
+            .createQueryBuilder()
+            .insert()
+            .into(GraphNode)
+            .values({
+              userId: userId,
+              type: NodeType.QUESTION,
+              label: questionTitle,
+              questionId: questionId,
+            })
+            .orIgnore()
+            .execute();
+
+          questionNode = await manager.findOne(GraphNode, {
+            where: {
+              userId: userId,
+              type: NodeType.QUESTION,
+              label: questionTitle,
+              questionId: questionId,
+            },
           });
-          questionNode = await manager.save(GraphNode, questionNode);
+          if (!questionNode) {
+            throw new Error('문제 노드 생성에 실패했습니다.');
+          }
         }
 
         // 2. 각 키워드에 대해 키워드 노드 생성 또는 재사용 (사용자별로 독립적)
         const keywordNodes: GraphNode[] = [];
+        const normalizedKeywords = Array.from(
+          new Set(
+            keywords
+              .map((k) => k.trim())
+              .filter((k): k is string => !!k && k.length > 0),
+          ),
+        );
 
-        for (const keyword of keywords) {
-          // 빈 문자열이나 공백만 있는 키워드는 제외
-          if (!keyword || keyword.trim().length === 0) {
-            continue;
-          }
-
-          const trimmedKeyword = keyword.trim();
-
+        for (const trimmedKeyword of normalizedKeywords) {
           // 사용자별 유니크 제약을 활용하여 기존 노드 확인
           let keywordNode = await manager.findOne(GraphNode, {
             where: {
