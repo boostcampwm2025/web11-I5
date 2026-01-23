@@ -63,7 +63,7 @@ export const Success: Story = {
         feedbackMessage:
           "완벽에 가까운 답변입니다! 특히 Diffing 알고리즘 예시가 좋았습니다.",
         scoreDetails: {
-          coreConcept: 50,
+          coreConcept: 40,
           coverage: 20,
           logic: 10,
           depth: 20,
