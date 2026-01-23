@@ -115,11 +115,17 @@ export class UserService {
   /**
    * 채점 및 AI 피드백이 완료된 문제 목록 조회
    * @param userId 사용자 ID
-   * @returns 푼 문제 목록 및 총 갯수
+   * @returns 푼 문제 목록 및 총 갯수, 총 점수, 총 포인트
    */
   async getSolvedProblems(
     userId: number,
   ): Promise<SolvedProblemsListResponseDto> {
+    // 사용자 정보 조회 (totalScore, totalPoint를 위해)
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
     // 채점 및 피드백이 완료된 제출 내역 조회
     const submissions = await this.answerSubmissionRepository
       .createQueryBuilder('submission')
@@ -184,6 +190,8 @@ export class UserService {
     return {
       problems,
       totalCount: problems.length,
+      totalScore: user.totalScore ?? 0,
+      totalPoint: user.totalPoint ?? 0,
     };
   }
 }
