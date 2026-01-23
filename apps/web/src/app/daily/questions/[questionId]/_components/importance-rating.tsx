@@ -27,8 +27,17 @@ function ImportanceRating({
     FormData
   >(updateImportanceAction, null);
 
+  const onSuccessRef = React.useRef(onSuccess);
   React.useEffect(() => {
-    if (!state) return;
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
+
+  const lastProcessedStateRef = React.useRef<ActionState | null>(null);
+
+  React.useEffect(() => {
+    if (!state || state === lastProcessedStateRef.current) return;
+
+    lastProcessedStateRef.current = state;
 
     if (state.success) {
       toast.success(state.message, {
@@ -40,17 +49,17 @@ function ImportanceRating({
           secondary: "#2dd4bf",
         },
       });
-      if (onSuccess) {
-        const timer = setTimeout(() => {
-          onSuccess();
-          setScore(0);
-        }, 1500);
-        return () => clearTimeout(timer);
-      }
+
+      const timer = setTimeout(() => {
+        onSuccessRef.current?.();
+        setScore(0);
+      }, 1500);
+
+      return () => clearTimeout(timer);
     } else {
       toast.error(state.message);
     }
-  }, [state, onSuccess]);
+  }, [state]);
 
   if (!open) return null;
 
