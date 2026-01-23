@@ -167,8 +167,8 @@ export class GraphService {
         const normalizedKeywords = Array.from(
           new Set(
             keywords
-              .map((k) => k.trim())
-              .filter((k): k is string => !!k && k.length > 0),
+              .filter((k): k is string => typeof k === 'string' && k.length > 0)
+              .map((k) => k.trim()),
           ),
         );
 
