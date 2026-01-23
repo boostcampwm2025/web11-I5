@@ -29,7 +29,7 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-8 py-15 flex gap-8">
+    <main className="w-full max-w-4xl mx-auto px-8 py-15 flex gap-8">
       <div className="flex flex-col gap-14 flex-1">
         <ReportHeader question={question} highestScore={highestScore} />
 
@@ -46,7 +46,7 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
         />
       </div>
 
-      <div className="sticky top-8 self-start">
+      <div className="sticky top-22 self-start">
         <HistoryList
           history={history}
           selectedId={selectedAttempt.submissionId}
