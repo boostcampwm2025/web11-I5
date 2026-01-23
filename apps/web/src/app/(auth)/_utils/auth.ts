@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { apiClient, apiGet } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { revalidatePath } from "next/cache";
 
 const API_BASE_URL = process.env.API_URL || "http://localhost:8000";
@@ -34,9 +35,11 @@ async function getCurrentUser(): Promise<User | null> {
 
   try {
     return await apiGet<User>(`/api/users/me`);
-  } catch {
-    // 401 또는 기타 실패 시 쿠키 삭제
-    cookieStore.delete("accessToken");
+  } catch (error) {
+    // 401 Unauthorized일 때만 쿠키 삭제
+    if (error instanceof ApiError && error.status === 401) {
+      cookieStore.delete("accessToken");
+    }
     return null;
   }
 }
