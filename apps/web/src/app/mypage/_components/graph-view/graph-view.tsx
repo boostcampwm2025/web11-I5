@@ -124,7 +124,7 @@ function GraphView({
     // onMouseUp: 드래그 종료
     // onMouseLeave: 캔버스 밖으로 나갈 때 드래그 종료 (마우스 업과 동일한 처리)
     <canvas
-      className="w-full h-full  "
+      className="w-full h-full"
       ref={canvasRef}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
