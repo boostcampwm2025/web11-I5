@@ -36,7 +36,7 @@ async function SolvedContent({
             <TableHead className="w-20">분류</TableHead>
             <TableHead>문제 제목</TableHead>
             <TableHead className="text-center">제출 시간</TableHead>
-            <TableHead className="text-center">내 점수</TableHead>
+            <TableHead className="text-center">내 최고 점수</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
