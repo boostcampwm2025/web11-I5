@@ -1,4 +1,23 @@
-async function SolvedContent() {
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/table/table";
+import Link from "next/link";
+import { SolvedProblem } from "../_types/solved-probrlem";
+
+async function SolvedContent({
+  solvedProblems,
+}: {
+  solvedProblems: SolvedProblem[];
+}) {
+  const formattingDate = (completedAt: string) => {
+    const date = new Date(completedAt);
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getDate()}`;
+  };
   return (
     <>
       <div className="flex py-8 justify-between items-center">
@@ -11,6 +30,54 @@ async function SolvedContent() {
           </span>
         </div>
       </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-20">분류</TableHead>
+            <TableHead>문제 제목</TableHead>
+            <TableHead className="text-end">제출 시간</TableHead>
+            <TableHead className="text-center">내 점수</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {solvedProblems.length === 0 ? (
+            <TableRow>
+              <TableCell
+                className="h-32 text-center text-muted-foreground"
+                colSpan={4}
+              >
+                검색 결과가 없습니다.
+              </TableCell>
+            </TableRow>
+          ) : (
+            solvedProblems.map((problem) => (
+              <TableRow key={problem.questionId}>
+                <TableCell>
+                  <span className="text-sm py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
+                    {problem.category}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Link
+                    href={`/reports/${problem.reportId}`}
+                    className="text-slate-900 font-medium text-sm hover:text-teal-600 hover:cursor-pointer hover:underline"
+                  >
+                    {problem.title}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-end">
+                  {formattingDate(problem.completedAt)}
+                </TableCell>
+                <TableCell className="text-center">
+                  <span className="text-teal-600 font-medium text-sm bg-teal-50 px-2 py-1 rounded-sm">
+                    {problem.score}
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
     </>
   );
 }

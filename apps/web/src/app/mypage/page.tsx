@@ -13,6 +13,7 @@ import GraphContent from "./_contents/graph-content";
 import SolvedContent from "./_contents/solved-content";
 import StreakContent from "./_contents/streak-content";
 import { fetchGraph } from "./_lib/fetch/fetch-graph";
+import { fetchSolvedProblem } from "./_lib/fetch/fetch-solved-problem";
 import { fetchStreaks } from "./_lib/fetch/fetch-streaks";
 import { fetchUserInfo } from "./_lib/fetch/fetch-user-info";
 
@@ -21,12 +22,14 @@ async function MyPage() {
   if (!user) {
     redirect("/login");
   }
-  const [userData, _graphData, streakData] = await Promise.all([
+  const [userData, _graphData, streakData, solvedData] = await Promise.all([
     fetchUserInfo(),
     fetchGraph(),
     fetchStreaks(),
+    fetchSolvedProblem(),
   ]);
   const { streakCount, consecutiveDayCount } = streakData;
+  const { problems, totalCount } = solvedData;
 
   const imageSrc = "/starry-night.jpg";
   const mockData = mockGraphData; // 추후 리팩토링시 해당 부분 삭제
@@ -35,7 +38,7 @@ async function MyPage() {
       <UserStatsCard
         nickname={userData.nickname}
         email={userData.email || "@test123"} // 추후 작업에서 해당 부분 email 리턴하도록 수정 필요.
-        totalPoint={userData.totalPoint}
+        totalPoint={totalCount}
         role={userData.role}
         consecutiveDayCount={consecutiveDayCount}
       />
@@ -70,7 +73,7 @@ async function MyPage() {
           className="bg-white w-full px-8 pb-8 rounded-xl border border-slate-200"
           value="solvedList"
         >
-          <SolvedContent />
+          <SolvedContent solvedProblems={problems} />
         </TabsContent>
       </Tabs>
     </div>
