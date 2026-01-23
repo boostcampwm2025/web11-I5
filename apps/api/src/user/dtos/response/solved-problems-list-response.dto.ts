@@ -16,16 +16,4 @@ export class SolvedProblemsListResponseDto {
     example: 15,
   })
   totalCount: number;
-
-  @ApiProperty({
-    description: '총 점수',
-    example: 100,
-  })
-  totalScore: number;
-
-  @ApiProperty({
-    description: '총 포인트',
-    example: 100,
-  })
-  totalPoint: number;
 }
