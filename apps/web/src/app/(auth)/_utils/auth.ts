@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { apiClient, apiGet } from "@/lib/api-client";
+import { revalidatePath } from "next/cache";
 
 const API_BASE_URL = process.env.API_URL || "http://localhost:8000";
 
@@ -101,6 +102,7 @@ async function loginAction(
   }
 
   if (success) {
+    revalidatePath("/");
     redirect("/");
   } else {
     return { success, error };
@@ -118,6 +120,7 @@ async function logoutAction() {
     const cookieStore = await cookies();
     cookieStore.delete("accessToken");
 
+    revalidatePath("/");
     redirect("/");
   } catch (error) {
     throw error;
