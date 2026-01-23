@@ -135,7 +135,7 @@ export class UserService {
         status: EvaluationStatus.COMPLETED,
       })
       .andWhere('evaluation.feedback_message IS NOT NULL')
-      .orderBy('submission.submitted_at', 'DESC')
+      .orderBy('submission.score', 'DESC')
       .getMany();
 
     // 문제별로 가장 최근 제출 내역만 선택
