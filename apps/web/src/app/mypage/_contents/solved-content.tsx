@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/table/table";
 import Link from "next/link";
-import { SolvedProblem } from "../_types/solved-probrlem";
+import { SolvedProblem } from "../_types/solved-problem";
 
 async function SolvedContent({
   solvedProblems,

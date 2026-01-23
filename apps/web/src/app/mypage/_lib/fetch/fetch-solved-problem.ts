@@ -1,5 +1,5 @@
 import { apiGet } from "@/lib/api-client";
-import { SolvedProblemResDto } from "../../_types/solved-probrlem";
+import { SolvedProblemResDto } from "../../_types/solved-problem";
 
 async function fetchSolvedProblem(): Promise<SolvedProblemResDto> {
   try {
