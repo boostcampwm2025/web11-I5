@@ -154,7 +154,6 @@ export class GraphService {
             where: {
               userId: userId,
               type: NodeType.QUESTION,
-              label: questionTitle,
               questionId: questionId,
             },
           });
