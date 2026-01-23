@@ -33,4 +33,10 @@ export class SolvedProblemDto {
     example: 123,
   })
   reportId: number;
+
+  @ApiProperty({
+    description: '문제 풀이 점수 (0~100)',
+    example: 85,
+  })
+  score: number;
 }

@@ -147,6 +147,7 @@ export class UserService {
         title: string;
         category: string;
         completedAt: Date;
+        score: number;
       }
     >();
 
@@ -163,6 +164,7 @@ export class UserService {
           title: submission.question?.title ?? '',
           category: categoryName,
           completedAt: submission.submittedAt,
+          score: submission.score,
         });
       }
     });
@@ -175,6 +177,7 @@ export class UserService {
         category: data.category,
         completedAt: data.completedAt.toISOString(),
         reportId: data.submissionId,
+        score: data.score,
       }))
       .sort(
         (a, b) =>
