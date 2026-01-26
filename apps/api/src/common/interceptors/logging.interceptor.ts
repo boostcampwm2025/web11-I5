@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   CallHandler,
   Logger,
+  HttpException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -66,7 +67,7 @@ export class LoggingInterceptor implements NestInterceptor {
         },
         error: (error: unknown) => {
           const duration = Date.now() - startTime;
-          const statusCode = response.statusCode || 500;
+          const statusCode = this.extractStatusCode(error, response.statusCode);
           const errorMessage =
             error instanceof Error ? error.message : String(error);
           const errorStack = error instanceof Error ? error.stack : undefined;
@@ -85,5 +86,20 @@ export class LoggingInterceptor implements NestInterceptor {
    */
   private generateRequestId(): string {
     return `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  }
+
+  private extractStatusCode(
+    error: unknown,
+    responseStatusCode: number,
+  ): number {
+    if (error instanceof HttpException) {
+      return error.getStatus();
+    }
+
+    if (error instanceof Error) {
+      return responseStatusCode >= 400 ? responseStatusCode : 500;
+    }
+
+    return 500;
   }
 }
