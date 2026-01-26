@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { LlmModule } from '../llm/llm.module';
+import { GraphModule } from '../graph/graph.module';
 import { AnswerEvaluationService } from './answer-evaluation.service';
 import { AnswerEvaluationController } from './answer-evaluation.controller';
 import { AnswerEvaluation } from './entities/answer-evaluation.entity';
@@ -19,6 +20,7 @@ import { QuestionSolution } from 'src/question-solution/entities/question-soluti
     ]),
     ConfigModule,
     LlmModule,
+    GraphModule,
   ],
   controllers: [AnswerEvaluationController],
   providers: [AnswerEvaluationService],

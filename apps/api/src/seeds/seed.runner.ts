@@ -6,6 +6,12 @@ import { AppModule } from '../app.module';
 async function runSeeds() {
   console.log('🌱 Starting seed process...\n');
 
+  // 명령줄 인자 또는 환경 변수로 특정 시드 필터링
+  const seedFilter = process.argv[2] || process.env.SEED_FILTER;
+  const seedNames = seedFilter
+    ? seedFilter.split(',').map((name) => name.trim())
+    : null;
+
   // NestJS ApplicationContext 생성 (서버 띄우지 않음)
   const app = await NestFactory.createApplicationContext(AppModule, {
     logger: ['error', 'warn', 'log'],
@@ -27,7 +33,31 @@ async function runSeeds() {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const seedsToRun = seeds.filter((seed) => seed.shouldRun());
+    let seedsToRun = seeds.filter((seed) => seed.shouldRun());
+
+    // 특정 시드만 필터링
+    if (seedNames && seedNames.length > 0) {
+      seedsToRun = seedsToRun.filter((seed) =>
+        seedNames.some(
+          (name) =>
+            seed.name.toLowerCase().includes(name.toLowerCase()) ||
+            name.toLowerCase() === 'all',
+        ),
+      );
+
+      if (seedsToRun.length === 0) {
+        console.warn(`⚠️  No seeds found matching: ${seedNames.join(', ')}\n`);
+        console.log('Available seeds:');
+        seeds.forEach((seed) => {
+          console.log(`  - ${seed.name}`);
+        });
+        return;
+      }
+
+      console.log(
+        `📌 Running filtered seeds: ${seedsToRun.map((s) => s.name).join(', ')}\n`,
+      );
+    }
 
     // Seed 순차 실행
     for (const seed of seedsToRun) {

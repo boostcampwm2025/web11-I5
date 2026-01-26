@@ -24,6 +24,7 @@ import { AnswerEvaluation } from './entities/answer-evaluation.entity';
 import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
 import { Question } from '../question/entities/question.entity';
 import { QuestionSolution } from '../question-solution/entities/question-solution.entity';
+import { GraphService } from '../graph/graph.service';
 
 interface AiEvaluationRawResponse {
   core_concept_level: CoreConceptEval;
@@ -55,6 +56,7 @@ export class AnswerEvaluationService {
     @InjectRepository(QuestionSolution)
     private readonly questionSolutionRepository: Repository<QuestionSolution>,
     private readonly dataSource: DataSource,
+    private readonly graphService: GraphService,
   ) {
     this.evaluationModel =
       this.configService.get<string>('GEMINI_EVALUATION_MODEL') ||
@@ -248,6 +250,24 @@ export class AnswerEvaluationService {
           score: totalScore,
         });
       });
+
+      // 그래프 데이터 생성 (평가 완료 후 비동기로 처리)
+      // 그래프 생성 실패는 평가 프로세스에 영향을 주지 않도록 별도로 처리
+      if (result.extractedKeywords && result.extractedKeywords.length > 0) {
+        void this.graphService
+          .createGraphFromEvaluation(
+            submission.userId,
+            submission.questionId,
+            questionEntity.title,
+            result.extractedKeywords,
+          )
+          .catch((error) => {
+            this.logger.error(
+              `userId: ${submission.userId}, questionId: ${submission.questionId}에 대한 그래프 데이터 생성에 실패했습니다.`,
+              error,
+            );
+          });
+      }
     } catch (error) {
       this.logger.error(error);
       await this.answerSubmissionRepository.update(submission.id, {

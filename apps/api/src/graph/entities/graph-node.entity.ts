@@ -12,12 +12,26 @@ import { Question } from '../../question/entities/question.entity';
 /**
  * 그래프 노드 Entity
  * QUESTION 또는 KEYWORD 타입의 노드를 표현한다
+ * 사용자별로 독립적인 그래프 구조를 관리한다
  */
 @Entity('graph_nodes')
-@Index(['type', 'label'], { unique: true, where: `type = 'KEYWORD'` })
+@Index(['userId', 'type', 'label'], {
+  unique: true,
+  where: `type = 'KEYWORD'`,
+})
+@Index(['userId', 'type', 'questionId'], {
+  unique: true,
+  where: `type = 'QUESTION'`,
+})
 export class GraphNode {
   @PrimaryGeneratedColumn()
   id: number;
+
+  /**
+   * 노드를 소유한 사용자 ID
+   */
+  @Column({ name: 'user_id', type: 'int' })
+  userId: number;
 
   /**
    * 노드 타입 (QUESTION 또는 KEYWORD)
@@ -28,7 +42,7 @@ export class GraphNode {
   /**
    * 노드 라벨 (표시용 텍스트)
    * QUESTION 타입: 문제 제목
-   * KEYWORD 타입: 키워드 텍스트 (유니크)
+   * KEYWORD 타입: 키워드 텍스트 (사용자별로 유니크)
    */
   @Column({ type: 'varchar', length: 255 })
   label: string;

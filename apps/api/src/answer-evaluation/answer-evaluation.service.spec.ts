@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 import { AnswerEvaluationService } from './answer-evaluation.service';
 import { LlmService } from '../llm/llm.service';
+import { GraphService } from '../graph/graph.service';
 import {
   CoreConceptEval,
   CoverageEval,
@@ -42,6 +43,10 @@ describe('AnswerEvaluationService', () => {
     get: jest.fn().mockReturnValue('gemini-2.5-flash-lite-preview-09-2025'),
   };
 
+  const mockGraphService = {
+    createGraphFromEvaluation: jest.fn().mockResolvedValue(undefined),
+  };
+
   const mockEntityManager = {
     update: jest.fn(),
     save: jest.fn(),
@@ -68,6 +73,10 @@ describe('AnswerEvaluationService', () => {
         {
           provide: ConfigService,
           useValue: mockConfigService,
+        },
+        {
+          provide: GraphService,
+          useValue: mockGraphService,
         },
         {
           provide: getRepositoryToken(AnswerEvaluation),
@@ -191,10 +200,15 @@ describe('AnswerEvaluationService', () => {
     it('LLM 호출 후 점수를 계산하고 엔티티를 업데이트해야 한다', async () => {
       const mockSubmission = {
         id: 1,
+        userId: 1,
         questionId: 10,
         rawAnswer: 'User Answer',
       } as AnswerSubmission;
-      const mockQuestion = { content: 'Question Content' };
+      const mockQuestion = {
+        id: 10,
+        title: 'Test Question',
+        content: 'Question Content',
+      };
       const mockSolution = {
         standardDefinition: 'def',
         technicalMechanism: {},
@@ -252,6 +266,14 @@ describe('AnswerEvaluationService', () => {
           evaluationStatus: EvaluationStatus.COMPLETED,
           score: 100,
         }),
+      );
+
+      // 그래프 생성이 호출되었는지 확인
+      expect(mockGraphService.createGraphFromEvaluation).toHaveBeenCalledWith(
+        1, // userId
+        10, // questionId
+        'Test Question', // questionTitle
+        ['React', 'Hook'], // keywords
       );
     });
 

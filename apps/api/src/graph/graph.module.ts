@@ -10,6 +10,6 @@ import { AuthModule } from '../auth/auth.module';
   imports: [TypeOrmModule.forFeature([GraphNode, GraphEdge]), AuthModule],
   controllers: [GraphController],
   providers: [GraphService],
-  exports: [TypeOrmModule],
+  exports: [GraphService, TypeOrmModule],
 })
 export class GraphModule {}
