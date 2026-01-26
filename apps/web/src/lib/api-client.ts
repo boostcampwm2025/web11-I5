@@ -3,6 +3,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { cookies } from "next/headers";
 import { ApiError } from "./api-error";
+import { logger } from "./sentry-logger";
 
 const API_BASE_URL = process.env.API_URL || "http://localhost:8000";
 
@@ -78,6 +79,7 @@ export async function apiClient(
  * GET 요청 헬퍼
  */
 export async function apiGet<T>(endpoint: string): Promise<T> {
+  logger.info(`GET ${endpoint} API 호출`);
   const response = await apiClient(endpoint, { method: "GET" });
 
   if (!response.ok) {
@@ -91,6 +93,7 @@ export async function apiGet<T>(endpoint: string): Promise<T> {
  * POST 요청 헬퍼
  */
 export async function apiPost<T>(endpoint: string, body?: unknown): Promise<T> {
+  logger.info(`POST ${endpoint} API 호출`);
   const response = await apiClient(endpoint, {
     method: "POST",
     body: body ? JSON.stringify(body) : undefined,
@@ -107,6 +110,7 @@ export async function apiPost<T>(endpoint: string, body?: unknown): Promise<T> {
  * PUT 요청 헬퍼
  */
 export async function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
+  logger.info(`PUT ${endpoint} API 호출`);
   const response = await apiClient(endpoint, {
     method: "PUT",
     body: body ? JSON.stringify(body) : undefined,
@@ -123,6 +127,7 @@ export async function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
  * DELETE 요청 헬퍼
  */
 export async function apiDelete<T>(endpoint: string): Promise<T> {
+  logger.info(`DELETE ${endpoint} API 호출`);
   const response = await apiClient(endpoint, { method: "DELETE" });
 
   if (!response.ok) {
