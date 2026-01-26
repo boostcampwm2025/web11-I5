@@ -27,7 +27,7 @@ const segmentedControlItemVariants = cva(
       size: {
         default: "px-4 h-8",
         sm: "px-3 h-6 text-xs",
-        lg: "px-5 h-14",
+        lg: "px-5 h-10",
       },
       selected: {
         true: "text-foreground",
