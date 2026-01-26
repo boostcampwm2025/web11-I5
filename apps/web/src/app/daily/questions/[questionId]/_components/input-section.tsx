@@ -31,19 +31,32 @@ function InputSection({
   const [error, setError] = React.useState<string | null>(null);
 
   const handleAssetSubmit = async (assetId: number) => {
-    const result = await submitAnswerAction({
-      questionId,
-      audioAssetId: assetId,
-    });
+    setIsSubmitting(true);
+    setError(null);
 
-    if (!result.success || !result.submissionId) {
-      setError(
-        result.error || "제출 결과를 확인할 수 없습니다. 다시 시도해주세요.",
-      );
-      return;
+    try {
+      const result = await submitAnswerAction({
+        questionId,
+        audioAssetId: assetId,
+      });
+
+      if (!result.success || !result.submissionId) {
+        setError(
+          result.error || "제출 결과를 확인할 수 없습니다. 다시 시도해주세요.",
+        );
+        return;
+      }
+
+      setSubmissionId(result.submissionId);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : String(err) || "제출 중 오류가 발생했습니다.";
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setSubmissionId(result.submissionId);
   };
 
   const handleTextSubmit = async (text: string) => {
