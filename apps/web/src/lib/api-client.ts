@@ -1,5 +1,6 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
 import { cookies } from "next/headers";
 import { ApiError } from "./api-error";
 
@@ -12,7 +13,19 @@ async function handleErrorResponse(response: Response): Promise<never> {
   } catch {
     // JSON 파싱 실패 시 body는 undefined
   }
-  throw new ApiError(response.status, response.statusText, body);
+  const error = new ApiError(response.status, response.statusText, body);
+
+  Sentry.captureException(error, {
+    contexts: {
+      response: {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+      },
+    },
+  });
+
+  throw error;
 }
 
 /**
