@@ -110,6 +110,7 @@ function VoiceInput({
           <RecordButton
             isRecording={isRecording}
             onClick={isRecording ? stopRecording : handleStartRecording}
+            disabled={isSubmitting || disabled}
           />
         ) : (
           <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">

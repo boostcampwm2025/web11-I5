@@ -6,16 +6,29 @@ import { Mic, Square } from "lucide-react";
 interface RecordButtonProps {
   isRecording: boolean;
   onClick: () => void;
+  disabled?: boolean;
 }
 
-function RecordButton({ isRecording, onClick }: RecordButtonProps) {
+function RecordButton({
+  isRecording,
+  onClick,
+  disabled = false,
+}: RecordButtonProps) {
+  const handleClick = () => {
+    if (disabled) return;
+    onClick();
+  };
+
   return (
     <motion.button
       aria-label={isRecording ? "녹음 중지" : "녹음 시작"}
-      onClick={onClick}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.98 }}
-      className="relative w-24 h-24 flex items-center justify-center bg-transparent p-0 border-0"
+      onClick={handleClick}
+      whileHover={disabled ? {} : { scale: 1.1 }}
+      whileTap={disabled ? {} : { scale: 0.98 }}
+      disabled={disabled}
+      className={`relative w-24 h-24 flex items-center justify-center bg-transparent p-0 border-0 ${
+        disabled ? "opacity-50 cursor-not-allowed" : ""
+      }`}
     >
       {/* PULSE AURA */}
       {isRecording && (
