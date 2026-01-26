@@ -19,9 +19,7 @@ export class AtLeastOneAnswerConstraint implements ValidatorConstraintInterface 
     const hasAudioAssetId =
       dto.audioAssetId !== undefined && dto.audioAssetId !== null;
     const hasRawAnswer =
-      dto.rawAnswer !== undefined &&
-      dto.rawAnswer !== null &&
-      dto.rawAnswer.length > 0;
+      typeof dto.rawAnswer === 'string' && dto.rawAnswer.trim().length > 0;
     return hasAudioAssetId || hasRawAnswer;
   }
 
