@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -16,6 +16,7 @@ import { AnswerSubmissionModule } from './answer-submission/answer-submission.mo
 import { GraphModule } from './graph/graph.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { RequestIdMiddleware } from './common/middlewares';
 
 @Module({
   imports: [
@@ -40,4 +41,9 @@ import { UploadsModule } from './uploads/uploads.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // 모든 경로에 Request ID Middleware 적용
+    consumer.apply(RequestIdMiddleware).forRoutes('*');
+  }
+}
