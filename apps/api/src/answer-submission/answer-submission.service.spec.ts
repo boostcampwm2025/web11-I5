@@ -19,6 +19,7 @@ import {
   InputType,
 } from './answer-submission.constants';
 import { AudioUploadCompletedEvent } from '../uploads/events/audio-upload-completed.event';
+import { AnswerEvaluationService } from '../answer-evaluation/answer-evaluation.service';
 
 const mockAnswerSubmissionRepository = {
   find: jest.fn(),
@@ -44,6 +45,10 @@ const mockSttService = {
 
 const mockStreaksService = {
   recordDailyActivity: jest.fn(),
+};
+
+const mockAnswerEvaluationService = {
+  requestEvaluation: jest.fn(),
 };
 
 describe('AnswerSubmissionService', () => {
@@ -84,6 +89,10 @@ describe('AnswerSubmissionService', () => {
           useValue: mockStreaksService,
         },
         { provide: Logger, useValue: loggerMock },
+        {
+          provide: AnswerEvaluationService,
+          useValue: mockAnswerEvaluationService,
+        },
       ],
     }).compile();
 
