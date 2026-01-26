@@ -24,14 +24,6 @@ interface RootLayoutProps {
 function RootLayout({ children }: Readonly<RootLayoutProps>) {
   return (
     <html lang="ko">
-      <head>
-        <Script
-          src="https://kr.object.ncloudstorage.com/boostad-sdk-dev/sdk/sdk.js"
-          data-blog-key={process.env.BOOSTAD_BLOG_KEY || "test-local"}
-          data-auto="false"
-          strategy="afterInteractive"
-        />
-      </head>
       <body
         className={cn(
           pretendard.className,
@@ -51,6 +43,12 @@ function RootLayout({ children }: Readonly<RootLayoutProps>) {
         />
 
         <Footer />
+        <Script
+          src="https://kr.object.ncloudstorage.com/boostad-sdk-dev/sdk/sdk.js"
+          data-blog-key={process.env.BOOSTAD_BLOG_KEY || "test-local"}
+          data-auto="false"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
