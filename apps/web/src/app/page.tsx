@@ -9,7 +9,7 @@ async function Home() {
   const user = await getCurrentUser();
 
   return (
-    <main className="w-full h-full flex flex-col bg-white overflow-x-hidden">
+    <main className="w-full h-full flex flex-col bg-white overflow-x-hidden pb-20 lg:pb-25">
       <section className="w-full h-screen relative py-16 px-8 flex justify-center overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-center items-center z-10 gap-6 lg:gap-10 w-full px-4 lg:px-0 py-40 xl:pt-0">
           <span className="bg-white border border-teal-100 rounded-[50px] px-4 py-2 text-teal-500 font-bold text-xs ">
@@ -95,8 +95,8 @@ async function Home() {
           </article>
         </div>
       </section>
-      <section className="fixed left-0 bottom-0 w-full px-8 z-50">
-        <div data-boostad-zone style={{ height: "100px" }}></div>
+      <section className="fixed left-0 bottom-0 w-full px-4 lg:px-8 z-30">
+        <div data-boostad-zone className="h-16 lg:h-25"></div>
       </section>
     </main>
   );
