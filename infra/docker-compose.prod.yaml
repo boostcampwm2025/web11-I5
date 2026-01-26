@@ -66,6 +66,7 @@ services:
     environment:
       NODE_ENV: production
       API_URL: http://api:8000
+      BOOSTAD_BLOG_KEY: ${BOOSTAD_BLOG_KEY}
     depends_on:
       - api
     networks:
