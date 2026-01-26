@@ -6,7 +6,6 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { QueryFailedError } from 'typeorm';
 import { ErrorResponse } from '../types/error-response.type';
 
 /**
@@ -65,11 +64,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
     message: string;
     details?: string;
   } {
-    // TypeORM QueryFailedError
-    if (exception instanceof QueryFailedError) {
-      return this.handleTypeORMError(exception as QueryFailedError<Error>);
-    }
-
     // JavaScript 기본 에러
     if (exception instanceof Error) {
       return {
@@ -83,53 +77,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
     return {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: '서버 내부 오류가 발생했습니다.',
-    };
-  }
-
-  /**
-   * TypeORM 에러 처리
-   */
-  private handleTypeORMError(error: QueryFailedError<Error>): {
-    statusCode: number;
-    message: string;
-    details?: string;
-  } {
-    const driverError = (
-      error as unknown as { driverError?: { code?: string } }
-    ).driverError;
-
-    // PostgreSQL 에러 코드
-    if (driverError?.code) {
-      switch (driverError.code) {
-        case '23505':
-          return {
-            statusCode: HttpStatus.CONFLICT,
-            message: '이미 존재하는 데이터입니다.',
-          };
-
-        case '23503':
-          return {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: '참조하는 데이터가 존재하지 않습니다.',
-          };
-
-        case '23502':
-          return {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: '필수 입력값이 누락되었습니다.',
-          };
-
-        default:
-          return {
-            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: '데이터베이스 오류가 발생했습니다.',
-          };
-      }
-    }
-
-    return {
-      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: '데이터베이스 오류가 발생했습니다.',
     };
   }
 
