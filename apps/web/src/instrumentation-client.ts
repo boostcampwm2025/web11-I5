@@ -25,7 +25,7 @@ Sentry.init({
   // 에러 발생 시 Replay 이벤트가 샘플링될 확률을 정의합니다.
   replaysOnErrorSampleRate: 1.0,
 
-  // 사용자 개인정보(PII) 전송을 활성화합니다
+  // 사용자 개인정보(PII) 전송을 활성화 여부 판단
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: false,
 });
