@@ -16,9 +16,10 @@ interface LoginFormProps {
     prevState: LoginState | undefined,
     formData: FormData,
   ) => Promise<LoginState | undefined>;
+  defaultEmail?: string;
 }
 
-function LoginForm({ loginAction }: LoginFormProps) {
+function LoginForm({ loginAction, defaultEmail = "" }: LoginFormProps) {
   const [state, formAction, isPending] = React.useActionState(
     loginAction,
     undefined,
@@ -39,6 +40,7 @@ function LoginForm({ loginAction }: LoginFormProps) {
             id="email"
             name="email"
             placeholder="name@example.com"
+            defaultValue={defaultEmail}
           />
         </InputGroup>
       </div>

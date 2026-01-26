@@ -193,6 +193,15 @@ async function signupAction(
     return { success: false, error: "회원가입 중 오류가 발생했습니다." };
   }
 
+  const cookieStore = await cookies();
+  cookieStore.set("saved_email", email, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 10,
+    path: "/login",
+  });
+
   redirect("/login");
 }
 
