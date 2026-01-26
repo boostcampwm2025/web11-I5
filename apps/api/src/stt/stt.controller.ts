@@ -82,22 +82,52 @@ export class SttController {
     const isSuccess = data.result === 'SUCCEEDED';
     const sttText = data.text || '';
 
-    this.logger.log(sttText);
+    this.logger.log(
+      `Original STT text for audioAssetId ${audioAssetId}: ${sttText}`,
+    );
 
-    const postProcessedSttText = await this.llmService.callWithSchema<{
-      postProcessed: string;
-    }>(STT_POST_PROCESSING_SYSTEM_PROMPT, sttText, STT_POST_PROCESSING_SCHEMA);
+    // LLM 후처리 시도, 실패 시 원본 텍스트로 폴백
+    let finalText = sttText;
+    let usedFallback = false;
 
-    this.logger.log(postProcessedSttText.postProcessed);
+    try {
+      const postProcessedSttText = await this.llmService.callWithSchema<{
+        postProcessed: string;
+      }>(
+        STT_POST_PROCESSING_SYSTEM_PROMPT,
+        sttText,
+        STT_POST_PROCESSING_SCHEMA,
+      );
 
+      if (postProcessedSttText.postProcessed) {
+        finalText = postProcessedSttText.postProcessed;
+        this.logger.log(
+          `Post-processed text for audioAssetId ${audioAssetId}: ${finalText}`,
+        );
+      } else {
+        usedFallback = true;
+        this.logger.warn(
+          `LLM returned empty post-processed text for audioAssetId ${audioAssetId}, using original STT text`,
+        );
+      }
+    } catch (error) {
+      usedFallback = true;
+      this.logger.error(
+        `LLM post-processing failed for audioAssetId ${audioAssetId}, using original STT text as fallback`,
+        error,
+      );
+    }
+
+    // 원본 또는 후처리된 텍스트로 제출 업데이트 (데이터 손실 방지)
     const submission = await this.answerSubmissionService.updateSttResult(
       audioAssetId,
-      postProcessedSttText.postProcessed || sttText,
+      finalText,
       isSuccess,
     );
 
     this.logger.log(
-      `Successfully updated answer submission for audioAssetId: ${audioAssetId}`,
+      `Successfully updated answer submission for audioAssetId: ${audioAssetId}` +
+        (usedFallback ? ' (with fallback to original STT)' : ''),
     );
 
     if (isSuccess) {
