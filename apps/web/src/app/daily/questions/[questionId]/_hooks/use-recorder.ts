@@ -126,7 +126,9 @@ function useRecorder(options: UseRecorderOptions = {}) {
           permissionStatus = await navigator.permissions.query({
             name: "microphone" as PermissionName,
           });
-          permissionStatus.addEventListener("change", updateStatus);
+          if (typeof permissionStatus.addEventListener === "function") {
+            permissionStatus.addEventListener("change", updateStatus);
+          }
         }
       } catch {
         // Permissions API not supported
@@ -140,7 +142,10 @@ function useRecorder(options: UseRecorderOptions = {}) {
       void updateStatus();
     };
 
-    if (navigator.mediaDevices) {
+    if (
+      navigator.mediaDevices &&
+      typeof navigator.mediaDevices.addEventListener === "function"
+    ) {
       navigator.mediaDevices.addEventListener(
         "devicechange",
         handleDeviceChange,
@@ -148,10 +153,16 @@ function useRecorder(options: UseRecorderOptions = {}) {
     }
 
     return () => {
-      if (permissionStatus) {
+      if (
+        permissionStatus &&
+        typeof permissionStatus.removeEventListener === "function"
+      ) {
         permissionStatus.removeEventListener("change", updateStatus);
       }
-      if (navigator.mediaDevices) {
+      if (
+        navigator.mediaDevices &&
+        typeof navigator.mediaDevices.removeEventListener === "function"
+      ) {
         navigator.mediaDevices.removeEventListener(
           "devicechange",
           handleDeviceChange,
