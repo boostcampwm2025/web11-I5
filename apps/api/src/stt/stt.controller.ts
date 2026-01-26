@@ -17,7 +17,7 @@ import { SttResult } from './dtos/stt-result.dto';
 import { AnswerSubmissionService } from '../answer-submission/answer-submission.service';
 import { AnswerEvaluationService } from 'src/answer-evaluation/answer-evaluation.service';
 import { LlmService } from 'src/llm/llm.service';
-import { STT_POST_PROCESSING_SYSTEM_PROMPT } from 'src/llm/prompts/stt-post-proceessing.prompt';
+import { STT_POST_PROCESSING_SYSTEM_PROMPT } from 'src/llm/prompts/stt-post-processing.prompt';
 import { STT_POST_PROCESSING_SCHEMA } from 'src/llm/prompts/stt-post-processing.schema';
 
 @ApiTags('stt')
