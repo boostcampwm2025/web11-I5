@@ -1,6 +1,8 @@
-![](https://github.com/user-attachments/assets/f4ee6cd3-3622-4f7c-b729-f842cb3a971d)
-
 # 말만해
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f4ee6cd3-3622-4f7c-b729-f842cb3a971d" width="80%">
+</p>
 
 **말만해**는 말로 설명하며 생각을 정리하는 과정을 학습으로 삼아, 구두 기반의 CS 학습을 돕는 플랫폼입니다.
 AI 피드백과 지식 구조화·시각화를 통해 개념의 흐름과 연결을 자연스럽게 이해할 수 있게 합니다.
