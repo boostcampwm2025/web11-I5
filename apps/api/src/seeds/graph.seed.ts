@@ -22,15 +22,28 @@ export class GraphSeed extends BaseSeed {
   environment: 'development' | 'production' | 'both' = 'development';
 
   async run(queryRunner: QueryRunner): Promise<void> {
-    // 이미 데이터가 있으면 스킵
-    const result = (await queryRunner.query(
-      `SELECT COUNT(*) as count FROM graph_nodes`,
-    )) as Array<{ count: string }>;
+    // 개발 환경에서는 기존 데이터 삭제 (재시딩 가능하도록)
+    console.log('Cleaning existing graph data...');
+    await queryRunner.query(`DELETE FROM graph_edges`);
+    await queryRunner.query(`DELETE FROM graph_nodes`);
 
-    if (parseInt(result[0].count) > 0) {
-      console.log('Graph nodes already exist, skipping...');
-      return;
+    // 기본 사용자 조회 또는 생성 (GraphNode는 사용자별로 관리됨)
+    let users = (await queryRunner.query(
+      `SELECT id FROM users ORDER BY id LIMIT 1`,
+    )) as Array<{ id: number }>;
+
+    // 사용자가 없으면 임시 사용자 생성
+    if (users.length === 0) {
+      await queryRunner.query(
+        `INSERT INTO users (email, nickname, password, role, total_point, total_score)
+         VALUES ('seed@example.com', 'Seed User', 'temp', 'USER', 0, 0)`,
+      );
+      users = (await queryRunner.query(
+        `SELECT id FROM users ORDER BY id LIMIT 1`,
+      )) as Array<{ id: number }>;
     }
+
+    const userId = users[0].id;
 
     // 기존 questions 테이블에서 React 관련 질문 조회
     // "React의 Virtual DOM" 질문을 활용하거나, 없으면 새로 생성
@@ -51,7 +64,7 @@ export class GraphSeed extends BaseSeed {
     // 3개 미만이면 다른 질문으로 채움
     if (questionIds.length < 3) {
       const allQuestions = (await queryRunner.query(`
-        SELECT id, title FROM questions ORDER BY id LIMIT 3;
+        SELECT id, title FROM questions ORDER BY id;
       `)) as QuestionRow[];
 
       if (allQuestions.length === 0) {
@@ -68,9 +81,11 @@ export class GraphSeed extends BaseSeed {
         }
       }
 
-      // 여전히 부족하면 첫 번째 질문으로 채움
-      while (questionIds.length < 3) {
-        questionIds.push(allQuestions[0].id);
+      // 여전히 부족하면 경고만 출력 (중복 ID 사용 방지)
+      if (questionIds.length < 3) {
+        console.warn(
+          `Warning: Only ${questionIds.length} unique questions available. Creating graph with ${questionIds.length} question nodes instead of 3.`,
+        );
       }
     }
 
@@ -89,38 +104,40 @@ export class GraphSeed extends BaseSeed {
       i++
     ) {
       await queryRunner.query(
-        `INSERT INTO graph_nodes (type, label, question_id) VALUES ('QUESTION', $1, $2) RETURNING id`,
-        [questionLabelsToUse[i], questionIds[i]],
+        `INSERT INTO graph_nodes (user_id, type, label, question_id) VALUES ($1, 'QUESTION', $2, $3) RETURNING id`,
+        [userId, questionLabelsToUse[i], questionIds[i]],
       );
     }
 
     // 생성된 QUESTION 노드 조회
-    const questionNodes = (await queryRunner.query(`
-      SELECT id, type, label FROM graph_nodes WHERE type = 'QUESTION' ORDER BY id;
-    `)) as GraphNodeRow[];
+    const questionNodes = (await queryRunner.query(
+      `SELECT id, type, label FROM graph_nodes WHERE user_id = $1 AND type = 'QUESTION' ORDER BY id`,
+      [userId],
+    )) as GraphNodeRow[];
 
     // KEYWORD 노드 생성 (label 기준 유니크)
     const keywords = ['React', 'Virtual DOM', '컴포넌트', 'Hook'];
 
     for (const keyword of keywords) {
-      // 이미 존재하는지 확인 (유니크 제약 조건)
+      // 이미 존재하는지 확인 (유니크 제약 조건: user_id + type + label)
       const existing = (await queryRunner.query(
-        `SELECT id FROM graph_nodes WHERE type = 'KEYWORD' AND label = $1`,
-        [keyword],
+        `SELECT id FROM graph_nodes WHERE user_id = $1 AND type = 'KEYWORD' AND label = $2`,
+        [userId, keyword],
       )) as Array<{ id: number }>;
 
       if (existing.length === 0) {
         await queryRunner.query(
-          `INSERT INTO graph_nodes (type, label, question_id) VALUES ('KEYWORD', $1, NULL) RETURNING id`,
-          [keyword],
+          `INSERT INTO graph_nodes (user_id, type, label, question_id) VALUES ($1, 'KEYWORD', $2, NULL) RETURNING id`,
+          [userId, keyword],
         );
       }
     }
 
     // 생성된 KEYWORD 노드 조회
-    const keywordNodes = (await queryRunner.query(`
-      SELECT id, type, label FROM graph_nodes WHERE type = 'KEYWORD' ORDER BY label;
-    `)) as GraphNodeRow[];
+    const keywordNodes = (await queryRunner.query(
+      `SELECT id, type, label FROM graph_nodes WHERE user_id = $1 AND type = 'KEYWORD' ORDER BY label`,
+      [userId],
+    )) as GraphNodeRow[];
 
     // 키워드 매핑 함수
     const getKeywordId = (label: string): number | undefined =>
@@ -145,27 +162,37 @@ export class GraphSeed extends BaseSeed {
     const question2Id = questionNodes[1]?.id; // "Virtual DOM의 동작 원리는?"
     const question3Id = questionNodes[2]?.id; // "useState와 useEffect 차이점은?"
 
-    if (!question1Id || !question2Id || !question3Id) {
-      throw new Error('Failed to create question nodes');
+    if (!question1Id) {
+      throw new Error(
+        'Failed to create question nodes - at least one question is required',
+      );
     }
 
     // 엣지 생성 (방향 없는 연결)
     // 요청된 구조:
     // 1. React란 무엇인가요? <-> React
     // 2. React란 무엇인가요? <-> Virtual DOM
-    // 3. Virtual DOM의 동작 원리는? <-> Virtual DOM
+    // 3. Virtual DOM의 동작 원리는? <-> Virtual DOM (question2가 있을 때만)
     // 4. React란 무엇인가요? <-> 컴포넌트
-    // 5. useState와 useEffect 차이점은? <-> Hook
-    // 6. useState와 useEffect 차이점은? <-> React
+    // 5. useState와 useEffect 차이점은? <-> Hook (question3가 있을 때만)
+    // 6. useState와 useEffect 차이점은? <-> React (question3가 있을 때만)
 
-    const edges = [
+    const edges: Array<{ sourceId: number; targetId: number }> = [
       { sourceId: question1Id, targetId: reactKeywordId },
       { sourceId: question1Id, targetId: virtualDomKeywordId },
-      { sourceId: question2Id, targetId: virtualDomKeywordId },
       { sourceId: question1Id, targetId: componentKeywordId },
-      { sourceId: question3Id, targetId: hookKeywordId },
-      { sourceId: question3Id, targetId: reactKeywordId },
     ];
+
+    // 질문 2가 있으면 추가
+    if (question2Id) {
+      edges.push({ sourceId: question2Id, targetId: virtualDomKeywordId });
+    }
+
+    // 질문 3이 있으면 추가
+    if (question3Id) {
+      edges.push({ sourceId: question3Id, targetId: hookKeywordId });
+      edges.push({ sourceId: question3Id, targetId: reactKeywordId });
+    }
 
     // 중복 방지를 위해 기존 엣지 확인 후 삽입
     for (const edge of edges) {
@@ -176,14 +203,14 @@ export class GraphSeed extends BaseSeed {
           : [edge.targetId, edge.sourceId];
 
       const existing = (await queryRunner.query(
-        `SELECT id FROM graph_edges WHERE source_id = $1 AND target_id = $2`,
-        [sourceId, targetId],
+        `SELECT id FROM graph_edges WHERE user_id = $1 AND source_id = $2 AND target_id = $3`,
+        [userId, sourceId, targetId],
       )) as Array<{ id: number }>;
 
       if (existing.length === 0) {
         await queryRunner.query(
-          `INSERT INTO graph_edges (source_id, target_id) VALUES ($1, $2)`,
-          [sourceId, targetId],
+          `INSERT INTO graph_edges (user_id, source_id, target_id) VALUES ($1, $2, $3)`,
+          [userId, sourceId, targetId],
         );
       }
     }
