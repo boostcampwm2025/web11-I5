@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BarChart3, ExpandIcon } from "lucide-react";
+import { BarChart3, Expand } from "lucide-react";
 import GraphView from "../_components/graph-view/graph-view";
 import NodeMap from "../_components/graph-view/node-map";
 import { GraphData } from "../_types/graph-view";
@@ -40,8 +40,9 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
             size="icon"
             variant="outline"
             className="absolute right-0 top-8"
+            aria-label="그래프 확대"
           >
-            <ExpandIcon className="text-muted-foreground" />
+            <Expand className="text-muted-foreground" />
           </Button>
           <GraphView graphData={graphData} changeNodeMap={changeNodeMap} />
         </div>
