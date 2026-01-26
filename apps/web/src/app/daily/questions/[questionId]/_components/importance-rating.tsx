@@ -7,6 +7,7 @@ import {
   updateImportanceAction,
   type ActionState,
 } from "../_lib/submit-importance-action";
+import toast from "react-hot-toast";
 
 interface ImportanceRatingProps {
   open?: boolean;
@@ -26,16 +27,39 @@ function ImportanceRating({
     FormData
   >(updateImportanceAction, null);
 
+  const onSuccessRef = React.useRef(onSuccess);
   React.useEffect(() => {
-    if (!state) return;
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
+
+  const lastProcessedStateRef = React.useRef<ActionState | null>(null);
+
+  React.useEffect(() => {
+    if (!state || state === lastProcessedStateRef.current) return;
+
+    lastProcessedStateRef.current = state;
 
     if (state.success) {
-      alert(state.message);
-      if (onSuccess) onSuccess();
+      toast.success(state.message, {
+        duration: 1500,
+        className:
+          "bg-[#2dd4bf]/90 backdrop-blur-md text-white font-semibold py-4 px-6 rounded-[16px] text-base border border-white/20 shadow-xl min-w-[280px]",
+        iconTheme: {
+          primary: "#fff",
+          secondary: "#2dd4bf",
+        },
+      });
+
+      const timer = setTimeout(() => {
+        onSuccessRef.current?.();
+        setScore(0);
+      }, 1500);
+
+      return () => clearTimeout(timer);
     } else {
-      alert(state.message);
+      toast.error(state.message);
     }
-  }, [state, onSuccess]);
+  }, [state]);
 
   if (!open) return null;
 

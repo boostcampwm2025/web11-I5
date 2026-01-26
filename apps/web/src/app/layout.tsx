@@ -4,6 +4,7 @@ import { cn } from "@/lib/cn";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 
 const pretendard = localFont({
   src: "../assets/fonts/PretendardVariable.woff2",
@@ -29,6 +30,15 @@ function RootLayout({ children }: Readonly<RootLayoutProps>) {
       >
         <Header />
         {children}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              marginTop: "15vh",
+            },
+          }}
+          reverseOrder={false}
+        />
         <Footer />
       </body>
     </html>
