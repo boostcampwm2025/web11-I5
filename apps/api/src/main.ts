@@ -4,9 +4,13 @@ import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
+import { AllExceptionsFilter, HttpExceptionFilter } from './common/filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // 전역 Exception Filters (AllExceptionsFilter가 먼저)
+  app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());
 
   // ValidationPipe 전역 설정
   app.useGlobalPipes(new ValidationPipe());
