@@ -17,7 +17,7 @@ import { formatTime } from "../_lib/format-time";
 
 interface VoiceInputProps {
   maxDurationSeconds?: number;
-  onSubmitSuccess: (assetId: number, durationMs: number) => void;
+  onSubmitSuccess: (assetId: number, durationMs: number) => Promise<void>;
   onError: (message: string) => void;
   isSubmitting: boolean;
   setIsSubmitting: (value: boolean) => void;
@@ -85,9 +85,13 @@ function VoiceInput({
         durationMs,
       });
 
-      onSubmitSuccess(result.assetId, durationMs);
-    } catch {
-      onError("답변 제출에 실패했습니다. 다시 시도해주세요.");
+      await onSubmitSuccess(result.assetId, durationMs);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : String(err) || "답변 제출에 실패했습니다. 다시 시도해주세요.";
+      onError(message);
     } finally {
       setIsSubmitting(false);
     }
