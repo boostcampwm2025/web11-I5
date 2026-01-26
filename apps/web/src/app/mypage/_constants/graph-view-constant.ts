@@ -4,14 +4,17 @@ export const GRAPH_NUMBER_CONSTANT = {
   MAX_SCALE: 2.3,
   EDGE_DISTANCE: 100,
   VELOCITY_THRESHOLD: 0.05, // 기존 0.01에서 수렴 속도 빠르게 조정하기 위해 0.05 높임
+  EDGE_STROKE_WIDTH: 2,
+  MIN_EDGE_STROKE_WIDTH: 2, // 줌 아웃 시 최소 시각적 굵기 (픽셀 단위)
+  MAX_EDGE_STROKE_WIDTH: 2, // 줌 인 시 최대 시각적 굵기 (픽셀 단위)
 } as const;
 
 export const GRAPH_COLOR_CONSTANT = {
-  QUESTION_NODE: "#0d9488", // teal-600
-  KEYWORD_NODE: "#334155", // slate-700
-  EDGE: "#94a3b8", // slate-400
+  QUESTION_NODE: "#00b39e", // teal-600
+  KEYWORD_NODE: "#525252", // slate-700
+  EDGE: "#e1e1e1", // slate-400
   HOVERED: "#2dd4bf", // teal-400
-  LABEL: "#333333",
+  LABEL: "#393939",
   NOT_HOVERED_ALPHA: 0.2,
 };
 

@@ -26,7 +26,16 @@ function drawGraphView(
 
   const hoveredSet = new Set<number>();
 
-  ctx.lineWidth = 1;
+  // 줌 레벨에 따라 시각적 굵기를 min/max 범위 내로 유지
+  const minVisualWidth = GRAPH_NUMBER_CONSTANT.MIN_EDGE_STROKE_WIDTH;
+  const maxVisualWidth = GRAPH_NUMBER_CONSTANT.MAX_EDGE_STROKE_WIDTH;
+  const baseWidth = GRAPH_NUMBER_CONSTANT.EDGE_STROKE_WIDTH;
+  const clampedVisualWidth = Math.max(
+    minVisualWidth,
+    Math.min(baseWidth * scale, maxVisualWidth),
+  );
+  ctx.lineWidth = clampedVisualWidth / scale;
+
   edges.forEach((edge) => {
     const source = nodes.get(edge.sourceId);
     const target = nodes.get(edge.targetId);
@@ -54,7 +63,7 @@ function drawGraphView(
     ctx.stroke();
   });
 
-  ctx.font = "12px sans-serif";
+  ctx.font = "8px sans-serif";
   ctx.textAlign = "center";
   nodes.forEach((node) => {
     const isHovered = node.id === hoveredNode;
