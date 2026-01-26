@@ -3,9 +3,14 @@ import { AnswerSubmissionModule } from 'src/answer-submission/answer-submission.
 import { SttController } from './stt.controller';
 import { SttService } from './stt.service';
 import { AnswerEvaluationModule } from 'src/answer-evaluation/answer-evaluation.module';
+import { LlmModule } from 'src/llm/llm.module';
 
 @Module({
-  imports: [AnswerEvaluationModule, forwardRef(() => AnswerSubmissionModule)],
+  imports: [
+    AnswerEvaluationModule,
+    LlmModule,
+    forwardRef(() => AnswerSubmissionModule),
+  ],
   controllers: [SttController],
   providers: [SttService],
   exports: [SttService],
