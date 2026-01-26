@@ -88,7 +88,9 @@ async function bootstrap() {
 
   const logger = new Logger('Bootstrap');
   logger.log(`🚀 Application is running on: http://localhost:${port}`);
-  logger.log(`📚 Swagger documentation: http://localhost:${port}/api-docs`);
+  if (isSwaggerEnabled) {
+    logger.log(`📚 Swagger documentation: http://localhost:${port}/api-docs`);
+  }
   logger.log(`🌍 Environment: ${nodeEnv}`);
 }
 void bootstrap();
