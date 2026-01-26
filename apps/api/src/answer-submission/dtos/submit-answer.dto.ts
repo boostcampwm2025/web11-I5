@@ -33,7 +33,6 @@ export class SubmitAnswerDto {
     description: '오디오 에셋 ID (음성 답변 시 필수, 텍스트 답변 시 생략 가능)',
     example: 1,
   })
-  @Validate(AtLeastOneAnswerConstraint)
   @IsOptional()
   @IsInt()
   @IsPositive()
@@ -43,6 +42,7 @@ export class SubmitAnswerDto {
     description: '질문 ID',
     example: 1,
   })
+  @Validate(AtLeastOneAnswerConstraint)
   @IsDefined()
   @IsInt()
   @IsPositive()
