@@ -11,6 +11,7 @@ import {
   InputGroupInput,
 } from "@/components/input-group/input-group";
 import { Checkbox } from "@/components/checkbox/checkbox";
+import { SIGNUP_CONSTANTS } from "../_constants/input-condition";
 
 interface SignUpFormProps {
   signupAction: (
@@ -49,6 +50,10 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             required
           />
         </InputGroup>
+        <p className="text-[11px] text-red-500 mt-1.5 ml-1 font-medium">
+          * {SIGNUP_CONSTANTS.NICKNAME_MIN_LENGTH}~
+          {SIGNUP_CONSTANTS.NICKNAME_MAX_LENGTH}자 사이, 공백 없이 입력해주세요.
+        </p>
       </div>
 
       {/* 이메일 입력 섹션 */}
@@ -68,6 +73,10 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             required
           />
         </InputGroup>
+        <p className="text-[11px] text-red-500 mt-1.5 ml-1 font-medium">
+          * 올바른 이메일 형식을 입력해주세요. (최대{" "}
+          {SIGNUP_CONSTANTS.EMAIL_MAX_LENGTH}자)
+        </p>
       </div>
 
       {/* 비밀번호 입력 섹션 */}
@@ -106,6 +115,10 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             required
           />
         </InputGroup>
+        <p className="text-[11px] text-red-500 mt-1.5 ml-1 font-medium">
+          * 최소 {SIGNUP_CONSTANTS.PASSWORD_MIN_LENGTH}자 이상의 비밀번호가
+          필요합니다.
+        </p>
       </div>
 
       <div className="flex items-center gap-2 py-2 mb-4">
