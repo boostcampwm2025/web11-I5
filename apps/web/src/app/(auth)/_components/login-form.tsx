@@ -34,7 +34,7 @@ function LoginForm({ loginAction }: LoginFormProps) {
 
       {/* 이메일 입력 섹션 */}
       <div className="space-y-2 mb-4">
-        <label htmlFor="email" className="text-xs font-medium">
+        <label htmlFor="email" className="text-sm font-medium">
           이메일
         </label>
         <InputGroup className="h-11">
@@ -51,7 +51,7 @@ function LoginForm({ loginAction }: LoginFormProps) {
 
       {/* 비밀번호 입력 섹션 */}
       <div className="space-y-2 mb-6">
-        <label htmlFor="password" className="text-xs font-medium">
+        <label htmlFor="password" className="text-sm font-medium">
           비밀번호
         </label>
         <InputGroup className="h-11">

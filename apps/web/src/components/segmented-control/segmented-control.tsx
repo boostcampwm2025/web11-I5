@@ -9,9 +9,9 @@ const segmentedControlVariants = cva(
   {
     variants: {
       size: {
-        default: "h-10",
-        sm: "h-8",
-        lg: "h-12",
+        default: "h-12",
+        sm: "h-10",
+        lg: "h-14",
       },
     },
     defaultVariants: {
@@ -21,13 +21,13 @@ const segmentedControlVariants = cva(
 );
 
 const segmentedControlItemVariants = cva(
-  "relative z-10 flex items-center justify-center text-sm font-medium transition-colors duration-200 rounded-md cursor-pointer",
+  "relative z-10 flex items-center justify-center text-base font-medium transition-colors duration-200 rounded-md cursor-pointer",
   {
     variants: {
       size: {
         default: "px-4 h-8",
         sm: "px-3 h-6 text-xs",
-        lg: "px-5 h-10",
+        lg: "px-5 h-14",
       },
       selected: {
         true: "text-foreground",
