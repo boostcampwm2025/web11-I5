@@ -26,12 +26,6 @@ function LoginForm({ loginAction }: LoginFormProps) {
 
   return (
     <form action={formAction}>
-      {state?.error && (
-        <div className="text-sm text-red-500 text-center mt-4">
-          {state.error}
-        </div>
-      )}
-
       {/* 이메일 입력 섹션 */}
       <div className="space-y-2 mb-4">
         <label htmlFor="email" className="text-xs font-medium">
@@ -66,6 +60,12 @@ function LoginForm({ loginAction }: LoginFormProps) {
           />
         </InputGroup>
       </div>
+
+      {state?.error && (
+        <div className="flex items-center gap-2 mb-4 p-3 rounded-md bg-red-50 text-red-600 text-xs font-medium animate-in fade-in slide-in-from-top-1">
+          {state.error}
+        </div>
+      )}
 
       {/* 로그인 버튼 */}
       <Button

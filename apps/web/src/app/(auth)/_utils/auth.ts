@@ -64,7 +64,7 @@ async function loginAction(
   formData: FormData,
 ): Promise<LoginState | undefined> {
   const email = formData.get("email") as string;
-  const password = (formData.get("password") as string) || "test123";
+  const password = formData.get("password") as string;
 
   let error = "";
   let success = true;
@@ -79,7 +79,15 @@ async function loginAction(
     });
 
     if (!response.ok) {
-      return { success: false, error: "로그인에 실패했습니다." };
+      const errorData = await response.json().catch(() => ({}));
+
+      const backendErrorMessage = errorData.message || "로그인에 실패했습니다.";
+
+      const finalErrorMessage = Array.isArray(backendErrorMessage)
+        ? backendErrorMessage.join(", ")
+        : backendErrorMessage;
+
+      return { success: false, error: finalErrorMessage };
     }
 
     const data = await response.json();
