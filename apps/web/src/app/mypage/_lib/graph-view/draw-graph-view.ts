@@ -63,15 +63,22 @@ function drawGraphView(
     ctx.stroke();
   });
 
-  ctx.font = "8px sans-serif";
+  const fontFamily = window.getComputedStyle(document.body).fontFamily;
+  ctx.font = `8px ${fontFamily}`;
   ctx.textAlign = "center";
+  const textAlpha = Math.min(
+    1,
+    Math.max(0, (scale - textRenderScale) / textRenderScale),
+  );
   nodes.forEach((node) => {
     const isHovered = node.id === hoveredNode;
     const isHighlighted = hoveredSet.has(node.id);
     const isDimmed = hoveredNode !== null && !isHovered && !isHighlighted;
-    const radius = isHovered
-      ? GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 2
-      : GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
+    const nodeRadius =
+      node.type === NodeType.QUESTION
+        ? GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 5
+        : GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
+    const radius = isHovered ? nodeRadius + 2 : nodeRadius;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
@@ -86,14 +93,13 @@ function drawGraphView(
     }
     ctx.fill();
 
-    ctx.fillStyle = isDimmed
-      ? hexToRgba(
-          GRAPH_COLOR_CONSTANT.LABEL,
-          GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA,
-        )
-      : GRAPH_COLOR_CONSTANT.LABEL;
-    if (scale > textRenderScale)
+    if (textAlpha > 0) {
+      const labelAlpha = isDimmed
+        ? GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA * textAlpha
+        : textAlpha;
+      ctx.fillStyle = hexToRgba(GRAPH_COLOR_CONSTANT.LABEL, labelAlpha);
       ctx.fillText(node.label, node.x, node.y + radius + 14);
+    }
   });
 
   ctx.restore();
