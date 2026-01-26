@@ -1,17 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, ExpandIcon } from "lucide-react";
 import GraphView from "../_components/graph-view/graph-view";
 import NodeMap from "../_components/graph-view/node-map";
 import { GraphData } from "../_types/graph-view";
+import { Button } from "@/components/button/button";
 
 function GraphContent({ graphData }: { graphData: GraphData }) {
   const [openModalStatus, setOpenModalStatus] = React.useState(false);
   const [nodeMap, setNodeMap] = React.useState<NodeMap>();
 
-  const handleModalClose = React.useCallback(() => {
-    setOpenModalStatus(false);
+  const handleModalToggle = React.useCallback(() => {
+    setOpenModalStatus((prev) => !prev);
   }, []);
 
   const changeNodeMap = React.useCallback((map: NodeMap) => {
@@ -33,13 +34,21 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
           </p>
         </div>
       ) : (
-        <div className="w-full h-200">
+        <div className="relative w-full aspect-square">
+          <Button
+            onClick={handleModalToggle}
+            size="icon"
+            variant="outline"
+            className="absolute right-0 top-8"
+          >
+            <ExpandIcon className="text-muted-foreground" />
+          </Button>
           <GraphView graphData={graphData} changeNodeMap={changeNodeMap} />
         </div>
       )}
       {openModalStatus && (
         <div
-          onClick={handleModalClose}
+          onClick={handleModalToggle}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
           <div
