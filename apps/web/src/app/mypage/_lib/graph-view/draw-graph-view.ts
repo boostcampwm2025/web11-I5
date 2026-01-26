@@ -74,9 +74,10 @@ function drawGraphView(
     const isHovered = node.id === hoveredNode;
     const isHighlighted = hoveredSet.has(node.id);
     const isDimmed = hoveredNode !== null && !isHovered && !isHighlighted;
+    // 질문노드 -> 키워드 노드보다 반지름 +1px 정도 크게
     const nodeRadius =
       node.type === NodeType.QUESTION
-        ? GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 5
+        ? GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 1
         : GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
     const radius = isHovered ? nodeRadius + 2 : nodeRadius;
 
