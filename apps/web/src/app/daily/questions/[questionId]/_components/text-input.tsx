@@ -20,12 +20,13 @@ function TextInput({
 }: TextInputProps) {
   const [text, setText] = React.useState("");
 
+  const trimmed = text.trim();
   const charCount = text.length;
-  const canSubmit = charCount > 0 && !isSubmitting && !disabled;
+  const canSubmit = trimmed.length > 0 && !isSubmitting && !disabled;
 
   const handleSubmit = () => {
     if (canSubmit) {
-      onSubmit(text.trim());
+      onSubmit(trimmed);
     }
   };
 
