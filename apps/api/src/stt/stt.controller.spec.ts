@@ -1,17 +1,20 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException } from '@nestjs/common';
 import { SttController } from './stt.controller';
 import { AnswerSubmissionService } from '../answer-submission/answer-submission.service';
 import { AnswerEvaluationService } from '../answer-evaluation/answer-evaluation.service';
+import { LlmService } from '../llm/llm.service';
 import { SttResult } from './dtos/stt-result.dto';
 import { ProcessStatus } from '../answer-submission/answer-submission.constants';
 import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
+
+const flushPromises = () => new Promise(setImmediate);
 
 describe('SttController', () => {
   let controller: SttController;
   let answerSubmissionService: AnswerSubmissionService;
   let answerEvaluationService: AnswerEvaluationService;
+  let llmService: LlmService;
 
   const mockAnswerSubmissionService = {
     updateSttResult: jest.fn(),
@@ -19,6 +22,10 @@ describe('SttController', () => {
 
   const mockAnswerEvaluationService = {
     evaluate: jest.fn(),
+  };
+
+  const mockLlmService = {
+    callWithSchema: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -32,6 +39,10 @@ describe('SttController', () => {
         {
           provide: AnswerEvaluationService,
           useValue: mockAnswerEvaluationService,
+        },
+        {
+          provide: LlmService,
+          useValue: mockLlmService,
         },
       ],
     })
@@ -53,6 +64,7 @@ describe('SttController', () => {
     answerEvaluationService = module.get<AnswerEvaluationService>(
       AnswerEvaluationService,
     );
+    llmService = module.get<LlmService>(LlmService);
   });
 
   afterEach(() => {
@@ -99,7 +111,27 @@ describe('SttController', () => {
   });
 
   describe('sttResultCallback', () => {
-    it('성공: STT 성공 시 답변 제출을 업데이트하고 체점을 시작해야 한다', async () => {
+    it('성공: 콜백은 즉시 성공을 반환해야 한다', () => {
+      const audioAssetId = 10;
+      const sttData = createMockSttData(
+        'SUCCEEDED',
+        'This is the transcribed text',
+      ) as SttResult;
+
+      mockLlmService.callWithSchema.mockResolvedValue({
+        postProcessed: 'Processed text',
+      });
+      mockAnswerSubmissionService.updateSttResult.mockResolvedValue({
+        id: 1,
+      } as AnswerSubmission);
+      mockAnswerEvaluationService.evaluate.mockResolvedValue({});
+
+      const result = controller.sttResultCallback(audioAssetId, sttData);
+
+      expect(result).toEqual({ success: true });
+    });
+
+    it('성공: STT 성공 시 LLM 후처리 후 답변 제출을 업데이트하고 체점을 시작해야 한다', async () => {
       const audioAssetId = 10;
       const sttData = createMockSttData(
         'SUCCEEDED',
@@ -109,10 +141,13 @@ describe('SttController', () => {
       const mockSubmission = {
         id: 1,
         audioAssetId,
-        rawAnswer: sttData.text,
+        rawAnswer: 'Processed text',
         sttStatus: ProcessStatus.DONE,
       } as AnswerSubmission;
 
+      mockLlmService.callWithSchema.mockResolvedValue({
+        postProcessed: 'Processed text',
+      });
       mockAnswerSubmissionService.updateSttResult.mockResolvedValue(
         mockSubmission,
       );
@@ -120,15 +155,17 @@ describe('SttController', () => {
         evaluationId: 100,
       });
 
-      const result = await controller.sttResultCallback(audioAssetId, sttData);
+      controller.sttResultCallback(audioAssetId, sttData);
 
+      await flushPromises();
+
+      expect(llmService.callWithSchema).toHaveBeenCalled();
       expect(answerSubmissionService.updateSttResult).toHaveBeenCalledWith(
         audioAssetId,
-        'This is the transcribed text',
+        'Processed text',
         true,
       );
       expect(answerEvaluationService.evaluate).toHaveBeenCalledWith(1);
-      expect(result).toEqual({ success: true });
     });
 
     it('성공: STT 실패 시 답변 제출을 FAILED로 업데이트하고 체점을 시작하지 않아야 한다', async () => {
@@ -142,11 +179,16 @@ describe('SttController', () => {
         sttStatus: ProcessStatus.FAILED,
       } as AnswerSubmission;
 
+      mockLlmService.callWithSchema.mockResolvedValue({
+        postProcessed: '',
+      });
       mockAnswerSubmissionService.updateSttResult.mockResolvedValue(
         mockSubmission,
       );
 
-      const result = await controller.sttResultCallback(audioAssetId, sttData);
+      controller.sttResultCallback(audioAssetId, sttData);
+
+      await flushPromises();
 
       expect(answerSubmissionService.updateSttResult).toHaveBeenCalledWith(
         audioAssetId,
@@ -154,51 +196,50 @@ describe('SttController', () => {
         false,
       );
       expect(answerEvaluationService.evaluate).not.toHaveBeenCalled();
-      expect(result).toEqual({ success: true });
     });
 
-    it('성공: text가 없을 때 빈 문자열로 처리해야 한다', async () => {
+    it('성공: LLM 후처리 결과가 없으면 원본 STT 텍스트를 사용해야 한다', async () => {
       const audioAssetId = 10;
-      const sttData = createMockSttData('SUCCEEDED', undefined) as SttResult;
+      const originalText = 'Original STT text';
+      const sttData = createMockSttData('SUCCEEDED', originalText) as SttResult;
 
       const mockSubmission = {
         id: 1,
         audioAssetId,
-        rawAnswer: '',
+        rawAnswer: originalText,
         sttStatus: ProcessStatus.DONE,
       } as AnswerSubmission;
 
+      mockLlmService.callWithSchema.mockResolvedValue({
+        postProcessed: '',
+      });
       mockAnswerSubmissionService.updateSttResult.mockResolvedValue(
         mockSubmission,
       );
-      mockAnswerEvaluationService.evaluate.mockResolvedValue({
-        evaluationId: 100,
-      });
+      mockAnswerEvaluationService.evaluate.mockResolvedValue({});
 
-      const result = await controller.sttResultCallback(audioAssetId, sttData);
+      controller.sttResultCallback(audioAssetId, sttData);
+
+      await flushPromises();
 
       expect(answerSubmissionService.updateSttResult).toHaveBeenCalledWith(
         audioAssetId,
-        '',
+        originalText,
         true,
       );
-      expect(result).toEqual({ success: true });
     });
 
-    it('실패: updateSttResult 실패 시 BadRequestException을 던져야 한다', async () => {
+    it('성공: 백그라운드 처리 실패 시에도 콜백은 성공을 반환해야 한다', async () => {
       const audioAssetId = 10;
       const sttData = createMockSttData('SUCCEEDED', 'test text') as SttResult;
 
-      mockAnswerSubmissionService.updateSttResult.mockRejectedValue(
-        new Error('Database error'),
-      );
+      mockLlmService.callWithSchema.mockRejectedValue(new Error('LLM error'));
 
-      await expect(
-        controller.sttResultCallback(audioAssetId, sttData),
-      ).rejects.toThrow(BadRequestException);
-      await expect(
-        controller.sttResultCallback(audioAssetId, sttData),
-      ).rejects.toThrow('Failed to update answer submission');
+      const result = controller.sttResultCallback(audioAssetId, sttData);
+
+      await flushPromises();
+
+      expect(result).toEqual({ success: true });
     });
 
     it('성공: 체점 실패 시에도 콜백은 성공을 반환해야 한다', async () => {
@@ -208,27 +249,26 @@ describe('SttController', () => {
       const mockSubmission = {
         id: 1,
         audioAssetId,
-        rawAnswer: sttData.text,
+        rawAnswer: 'test text',
         sttStatus: ProcessStatus.DONE,
       } as AnswerSubmission;
 
+      mockLlmService.callWithSchema.mockResolvedValue({
+        postProcessed: 'test text',
+      });
       mockAnswerSubmissionService.updateSttResult.mockResolvedValue(
         mockSubmission,
       );
-      // 체점이 실패해도 콜백은 성공을 반환
       mockAnswerEvaluationService.evaluate.mockRejectedValue(
         new Error('Evaluation failed'),
       );
 
-      const result = await controller.sttResultCallback(audioAssetId, sttData);
+      const result = controller.sttResultCallback(audioAssetId, sttData);
 
-      expect(answerSubmissionService.updateSttResult).toHaveBeenCalledWith(
-        audioAssetId,
-        sttData.text,
-        true,
-      );
-      expect(answerEvaluationService.evaluate).toHaveBeenCalledWith(1);
+      await flushPromises();
+
       expect(result).toEqual({ success: true });
+      expect(answerEvaluationService.evaluate).toHaveBeenCalledWith(1);
     });
   });
 });
