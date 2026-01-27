@@ -350,10 +350,6 @@ function useRecorder(options: UseRecorderOptions = {}) {
 
       audioRef.current.addEventListener("ended", () => {
         setIsPlaying(false);
-        setPlaybackTime(0);
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0;
-        }
       });
     }
 
