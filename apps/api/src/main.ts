@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { AllExceptionsFilter, HttpExceptionFilter } from './common/filters';
 
 async function bootstrap() {
   // Logger 설정
@@ -28,7 +28,7 @@ async function bootstrap() {
 
   // 전역 인터셉터 및 필터 설정
   app.useGlobalInterceptors(new LoggingInterceptor());
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());
 
   // ValidationPipe 전역 설정
   app.useGlobalPipes(new ValidationPipe());
