@@ -23,10 +23,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request & { requestId?: string }>();
+    const request = ctx.getRequest<
+      Request & { requestId?: string; userId?: number }
+    >();
 
-    // Request ID 가져오기
+    // Request ID 및 사용자 정보 가져오기
     const requestId = request.requestId || 'unknown';
+    const userId = request.userId;
+    const { method, url, ip } = request;
 
     // 에러 타입에 따른 상태 코드와 메시지 결정
     const { statusCode, message, details } = this.mapException(exception);
@@ -35,7 +39,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const errorResponse: ErrorResponse = {
       statusCode,
       timestamp: new Date().toISOString(),
-      path: request.url,
+      path: url,
+      method,
       requestId,
       message,
     };
@@ -48,8 +53,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     // 로깅 (전체 에러 정보 포함)
+    const logMessage = `[${requestId}] ${method} ${url} ${statusCode} - ${message}${userId ? ` - UserId: ${userId}` : ''} - IP: ${ip}`;
     this.logger.error(
-      `[${requestId}] ${request.method} ${request.url} - ${statusCode} ${message}`,
+      logMessage,
       exception instanceof Error ? exception.stack : String(exception),
     );
 
