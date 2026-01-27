@@ -1,5 +1,12 @@
+interface YearlyAnswerSubmissions {
+  id: number;
+  submittedAt: string;
+  questionid: number;
+  title: string;
+}
 export interface StreakCountDto {
-  streakCount: number;
+  submittedQuestionCount: number;
+  yearlyAnswerSubmissions: YearlyAnswerSubmissions[];
 }
 
 export interface StreakSequenceDto {

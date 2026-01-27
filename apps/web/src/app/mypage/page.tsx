@@ -27,7 +27,11 @@ async function MyPage() {
     fetchStreaks(),
     fetchSolvedProblem(),
   ]);
-  const { streakCount, consecutiveDayCount } = streakData;
+  const {
+    submittedQuestionCount,
+    yearlyAnswerSubmissions: _,
+    consecutiveDayCount,
+  } = streakData;
   const { problems, totalCount } = solvedData;
 
   const imageSrc = "/starry-night.jpg";
@@ -65,7 +69,10 @@ async function MyPage() {
           className="bg-white w-full px-8 pb-8 rounded-xl border border-slate-200"
           value="streak"
         >
-          <StreakContent streakCount={streakCount} imageSrc={imageSrc} />
+          <StreakContent
+            streakCount={submittedQuestionCount}
+            imageSrc={imageSrc}
+          />
         </TabsContent>
         <TabsContent
           className="bg-white w-full px-8 pb-8 rounded-xl border border-slate-200"
