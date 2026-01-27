@@ -379,12 +379,17 @@ function useRecorder(options: UseRecorderOptions = {}) {
     return audioRef.current;
   }, []);
 
-  const playRecording = React.useCallback(() => {
+  const playRecording = React.useCallback(async () => {
     const audio = ensureAudioElement();
     if (!audio) return;
 
-    void audio.play();
-    setIsPlaying(true);
+    try {
+      await audio.play();
+      setIsPlaying(true);
+    } catch (error) {
+      setIsPlaying(false);
+      console.error("Failed to play recording:", error);
+    }
   }, [ensureAudioElement]);
 
   // 일시정지
