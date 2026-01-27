@@ -220,7 +220,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
             <TableRow>
               <TableCell
                 colSpan={5}
-                className="h-32 text-center text-muted-foreground"
+                className="h-32 text-center text-muted-foreground text-base"
               >
                 아직 제출된 답변이 없습니다.
               </TableCell>
@@ -251,7 +251,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
                 <TableCell className="text-center">
                   <Link
                     href={`/daily/questions/${questionId}/others/${submission.id}`}
-                    className="text-base text-teal-600 hover:text-teal-700 hover:underline"
+                    className="text-sm text-teal-600 hover:text-teal-700 hover:underline"
                   >
                     답변 보기
                   </Link>

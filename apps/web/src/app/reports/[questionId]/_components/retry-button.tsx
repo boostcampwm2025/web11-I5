@@ -4,6 +4,7 @@ import * as React from "react";
 import { RotateCcw } from "lucide-react";
 import QuestionModal from "@/app/daily/questions/_components/question-modal";
 import { Question } from "@/app/daily/questions/_types/types";
+import { Button } from "@/components/button/button";
 
 interface RetryButtonProps {
   question: Question;
@@ -11,23 +12,19 @@ interface RetryButtonProps {
   children?: React.ReactNode;
 }
 
-function RetryButton({ question, className, children }: RetryButtonProps) {
+function RetryButton({ question, children }: RetryButtonProps) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   return (
     <>
-      <button
-        className={className}
-        type="button"
-        onClick={() => setIsModalOpen(true)}
-      >
+      <Button className="font-semibold" onClick={() => setIsModalOpen(true)}>
         {children ?? (
           <>
             <RotateCcw className="w-4 h-4" />
             <span>다시 도전하기</span>
           </>
         )}
-      </button>
+      </Button>
 
       {isModalOpen && (
         <QuestionModal
