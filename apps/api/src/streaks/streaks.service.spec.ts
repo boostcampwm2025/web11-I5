@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
+import { AnswerSubmissionService } from 'src/answer-submission/answer-submission.service';
 import { Streaks } from './entities/streaks.entity';
 import { StreaksService } from './streaks.service';
 
@@ -13,20 +13,8 @@ describe('StreaksService', () => {
     upsert: jest.fn(),
   };
 
-  const mockQueryBuilder = {
-    distinctOn: jest.fn().mockReturnThis(),
-    innerJoin: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    addSelect: jest.fn().mockReturnThis(),
-    where: jest.fn().mockReturnThis(),
-    andWhere: jest.fn().mockReturnThis(),
-    orderBy: jest.fn().mockReturnThis(),
-    addOrderBy: jest.fn().mockReturnThis(),
-    getRawMany: jest.fn(),
-  };
-
-  const mockAnswerSubmissionRepository = {
-    createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
+  const mockAnswerSubmissionService = {
+    getDistinctQuestionsByYear: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -38,8 +26,8 @@ describe('StreaksService', () => {
           useValue: mockStreaksRepository,
         },
         {
-          provide: getRepositoryToken(AnswerSubmission),
-          useValue: mockAnswerSubmissionRepository,
+          provide: AnswerSubmissionService,
+          useValue: mockAnswerSubmissionService,
         },
       ],
     }).compile();
@@ -54,7 +42,9 @@ describe('StreaksService', () => {
 
   describe('getYearlyActivityCount', () => {
     it('데이터가 없으면 submittedQuestionCount 0과 빈 배열을 리턴한다', async () => {
-      mockQueryBuilder.getRawMany.mockResolvedValue([]);
+      mockAnswerSubmissionService.getDistinctQuestionsByYear.mockResolvedValue(
+        [],
+      );
 
       const result = await service.getYearlyActivityCount(1, 2026);
 
@@ -97,7 +87,9 @@ describe('StreaksService', () => {
           title: '문제5',
         },
       ];
-      mockQueryBuilder.getRawMany.mockResolvedValue(mockRows);
+      mockAnswerSubmissionService.getDistinctQuestionsByYear.mockResolvedValue(
+        mockRows,
+      );
 
       const result = await service.getYearlyActivityCount(1, 2026);
 
@@ -107,29 +99,32 @@ describe('StreaksService', () => {
       });
     });
 
-    it('과거 연도를 조회하면 해당 연도의 날짜 범위로 쿼리한다', async () => {
-      mockQueryBuilder.getRawMany.mockResolvedValue([]);
+    it('과거 연도를 조회하면 해당 연도의 날짜 범위로 서비스를 호출한다', async () => {
+      mockAnswerSubmissionService.getDistinctQuestionsByYear.mockResolvedValue(
+        [],
+      );
 
       await service.getYearlyActivityCount(1, 2025);
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'submission.submittedAt >= :start AND submission.submittedAt < :end',
-        {
-          start: new Date('2025-01-01T00:00:00+09:00'),
-          end: new Date('2026-01-01T00:00:00+09:00'),
-        },
+      expect(
+        mockAnswerSubmissionService.getDistinctQuestionsByYear,
+      ).toHaveBeenCalledWith(
+        1,
+        new Date('2025-01-01T00:00:00+09:00'),
+        new Date('2026-01-01T00:00:00+09:00'),
       );
     });
 
     it('userId를 필터 조건으로 사용한다', async () => {
-      mockQueryBuilder.getRawMany.mockResolvedValue([]);
+      mockAnswerSubmissionService.getDistinctQuestionsByYear.mockResolvedValue(
+        [],
+      );
 
       await service.getYearlyActivityCount(42, 2026);
 
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
-        'submission.userId = :userId',
-        { userId: 42 },
-      );
+      expect(
+        mockAnswerSubmissionService.getDistinctQuestionsByYear,
+      ).toHaveBeenCalledWith(42, expect.any(Date), expect.any(Date));
     });
   });
 

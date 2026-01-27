@@ -1,11 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
+import { AnswerSubmissionService } from 'src/answer-submission/answer-submission.service';
 import { MoreThanOrEqual, Repository } from 'typeorm';
-import {
-  GetYearlyActivityCountResponseDto,
-  YearlyAnswerSubmissionsDto,
-} from './dtos/streaks-count.dto';
+import { GetYearlyActivityCountResponseDto } from './dtos/streaks-count.dto';
 import { Streaks } from './entities/streaks.entity';
 
 @Injectable()
@@ -13,8 +10,8 @@ export class StreaksService {
   constructor(
     @InjectRepository(Streaks)
     private readonly streaksRepository: Repository<Streaks>,
-    @InjectRepository(AnswerSubmission)
-    private readonly answerSubmissionRepository: Repository<AnswerSubmission>,
+    @Inject(forwardRef(() => AnswerSubmissionService))
+    private readonly answerSubmissionService: AnswerSubmissionService,
   ) {}
 
   private getKSTNow(): Date {
@@ -37,22 +34,12 @@ export class StreaksService {
       year < kstYear
         ? new Date(`${year + 1}-01-01T00:00:00+09:00`)
         : new Date();
-    const rows = await this.answerSubmissionRepository
-      .createQueryBuilder('submission')
-      .distinctOn(['submission.questionId'])
-      .innerJoin('submission.question', 'question')
-      .select('submission.id', 'id')
-      .addSelect('submission.submittedAt', 'submittedAt')
-      .addSelect('submission.questionId', 'questionId')
-      .addSelect('question.title', 'title')
-      .where('submission.userId = :userId', { userId })
-      .andWhere(
-        'submission.submittedAt >= :start AND submission.submittedAt < :end',
-        { start, end },
-      )
-      .addOrderBy('submission.submittedAt', 'ASC')
-      .addOrderBy('submission.id', 'DESC') // 동일한 시각에 여러 제출이 있을 경우를 대비해서 혹시 모르니까 사용
-      .getRawMany<YearlyAnswerSubmissionsDto>();
+
+    const rows = await this.answerSubmissionService.getDistinctQuestionsByYear(
+      userId,
+      start,
+      end,
+    );
 
     return {
       submittedQuestionCount: rows.length,
