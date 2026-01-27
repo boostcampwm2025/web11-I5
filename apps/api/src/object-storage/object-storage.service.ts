@@ -146,6 +146,17 @@ export class ObjectStorageService {
     return `${endpoint}/${this.bucket}/${objectKey}`;
   }
 
+  async createPresignedGetUrl(objectKey: string) {
+    if (!objectKey || objectKey.trim().length === 0) {
+      throw new Error('objectKey is required');
+    }
+
+    return await this.getS3Client().getSignedUrlPromise('getObject', {
+      Bucket: this.bucket,
+      Key: objectKey,
+    });
+  }
+
   /**
    * Object Storage에서 객체 삭제
    * @param objectKey 삭제할 Object Key

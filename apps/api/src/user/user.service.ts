@@ -161,7 +161,7 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
 
     // profileImage의 objectKey를 S3 URL로 변환
     if (user.profileImage) {
-      user.profileImage = this.objectStorageService.getPublicUrl(
+      user.profileImage = await this.objectStorageService.createPresignedGetUrl(
         user.profileImage,
       );
     }
@@ -361,9 +361,10 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
 
         // profileImage를 objectKey에서 URL로 변환
         if (savedUser.profileImage) {
-          savedUser.profileImage = this.objectStorageService.getPublicUrl(
-            savedUser.profileImage,
-          );
+          savedUser.profileImage =
+            await this.objectStorageService.createPresignedGetUrl(
+              savedUser.profileImage,
+            );
         }
 
         return savedUser;
@@ -388,9 +389,10 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
 
     // profileImage를 objectKey에서 URL로 변환
     if (userInfo.profileImage) {
-      userInfo.profileImage = this.objectStorageService.getPublicUrl(
-        userInfo.profileImage,
-      );
+      userInfo.profileImage =
+        await this.objectStorageService.createPresignedGetUrl(
+          userInfo.profileImage,
+        );
     }
 
     return userInfo;

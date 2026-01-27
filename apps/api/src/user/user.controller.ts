@@ -6,7 +6,6 @@ import {
   HttpStatus,
   Patch,
   Post,
-  Query,
   Res,
   UseGuards,
   UsePipes,
@@ -26,6 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateUserRequestDto } from './dtos/request/create-user.request.dto';
 import { EditUserRequestDto } from './dtos/request/edit-user.request.dto';
 import { LoginRequestDto } from './dtos/request/login.request.dto';
+import { UserPresignedUrlRequestDto } from './dtos/request/user-presigned-url.request.dto';
 import { LoginResponseDto } from './dtos/response/login.response.dto';
 import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
 import { UserPresignedUrlResponseDto } from './dtos/response/user-presigned-url.response.dto';
@@ -191,6 +191,7 @@ export class UserController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: UserPresignedUrlRequestDto })
   @ApiResponse({
     status: 200,
     description: 'Presigned URL 생성 성공',
@@ -210,9 +211,9 @@ export class UserController {
   })
   async requestPresignedUrl(
     @UserId() userId: number,
-    @Query('contentType') contentType?: string,
+    @Body() dto: UserPresignedUrlRequestDto,
   ): Promise<UserPresignedUrlResponseDto> {
-    return await this.userService.requestPresignedUrl(userId, contentType);
+    return await this.userService.requestPresignedUrl(userId, dto.contentType);
   }
 
   @Patch('me')
