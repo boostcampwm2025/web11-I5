@@ -169,7 +169,10 @@ export class QuestionService {
         status: EvaluationStatus.COMPLETED,
       });
 
-    // 데이터 조회용 쿼리
+    // 카운트 쿼리 (select 적용 전에 clone)
+    const countQueryBuilder = baseQueryBuilder.clone();
+
+    // // 데이터 조회용 쿼리
     const dataQueryBuilder = baseQueryBuilder
       .select('submission.id', 'submissionId')
       .addSelect('user.nickname', 'nickname')
@@ -179,9 +182,6 @@ export class QuestionService {
       .addOrderBy('submission.submittedAt', 'DESC')
       .skip(skip)
       .take(size);
-
-    // 카운트 쿼리 (별도로 생성)
-    const countQueryBuilder = baseQueryBuilder.clone();
 
     const [results, totalCount] = await Promise.all([
       dataQueryBuilder.getRawMany<OtherSubmissionRaw>(),
