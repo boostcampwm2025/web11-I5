@@ -69,8 +69,7 @@ export const ServiceUnavailable: Story = {
 
 /**
  * 401 인증 에러
- * 이 경우 자동으로 /login으로 리다이렉트되므로 실제로는 UI가 표시되지 않습니다.
- * Storybook에서는 리다이렉트가 실행되지 않아 null이 반환됩니다.
+ * 로그인이 필요하다는 메시지와 함께 로그인 페이지로 이동하는 버튼을 표시합니다.
  */
 export const AuthError: Story = {
   args: {
