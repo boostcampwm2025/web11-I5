@@ -122,6 +122,26 @@ export class ApiError extends Error {
     return null;
   }
 
+  // 에러 타입 분류 (Sentry 태그용)
+  getErrorType(): string {
+    if (this.isNetworkError()) {
+      return "network";
+    }
+    if (this.isServerError()) {
+      return "server";
+    }
+    if (this.isAuthError()) {
+      return "auth";
+    }
+    if (this.isNotFound()) {
+      return "not_found";
+    }
+    if (this.isClientError()) {
+      return "client";
+    }
+    return "unknown";
+  }
+
   // 사용자에게 표시할 에러 메시지
   getUserMessage(): string {
     const serverMessage = this.getServerMessage();

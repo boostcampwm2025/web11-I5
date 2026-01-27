@@ -17,11 +17,16 @@ async function handleErrorResponse(response: Response): Promise<never> {
   const error = new ApiError(response.status, response.statusText, body);
 
   Sentry.captureException(error, {
+    tags: {
+      error_type: error.getErrorType(),
+      status_code: response.status,
+    },
     contexts: {
       response: {
         status: response.status,
         statusText: response.statusText,
         url: response.url,
+        request_id: error.getRequestId(),
       },
     },
   });
