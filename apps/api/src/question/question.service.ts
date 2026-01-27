@@ -161,10 +161,11 @@ export class QuestionService {
     // 다른 사용자들의 제출 리스트 조회 (본인 제외, 총점 내림차순)
     const baseQueryBuilder = this.answerSubmissionRepository
       .createQueryBuilder('submission')
-      .innerJoin('users', 'user', 'user.id = submission.user_id')
-      .where('submission.question_id = :questionId', { questionId })
-      .andWhere('submission.user_id != :currentUserId', { currentUserId })
-      .andWhere('submission.evaluation_status = :status', {
+      // AnswerSubmission.userId와 users.id 기준 조인
+      .innerJoin('users', 'user', 'user.id = submission.userId')
+      .where('submission.questionId = :questionId', { questionId })
+      .andWhere('submission.userId != :currentUserId', { currentUserId })
+      .andWhere('submission.evaluationStatus = :status', {
         status: EvaluationStatus.COMPLETED,
       });
 
@@ -173,9 +174,9 @@ export class QuestionService {
       .select('submission.id', 'submissionId')
       .addSelect('user.nickname', 'nickname')
       .addSelect('submission.score', 'totalScore')
-      .addSelect('submission.submitted_at', 'submittedAt')
+      .addSelect('submission.submittedAt', 'submittedAt')
       .orderBy('submission.score', 'DESC')
-      .addOrderBy('submission.submitted_at', 'DESC')
+      .addOrderBy('submission.submittedAt', 'DESC')
       .skip(skip)
       .take(size);
 
