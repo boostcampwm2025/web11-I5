@@ -67,16 +67,25 @@ function VoiceInput({
   const wasPlayingBeforeSeekRef = React.useRef(false);
 
   const handleSeekStart = () => {
+    wasPlayingBeforeSeekRef.current = isPlaying;
     if (isPlaying) {
-      wasPlayingBeforeSeekRef.current = true;
       pausePlayback();
     }
   };
 
   const handleSeekEnd = (value: number[]) => {
     seekTo(value[0]);
-    if (wasPlayingBeforeSeekRef.current) {
-      wasPlayingBeforeSeekRef.current = false;
+    const shouldResume = wasPlayingBeforeSeekRef.current;
+    wasPlayingBeforeSeekRef.current = false;
+    if (shouldResume) {
+      playRecording();
+    }
+  };
+
+  const handleSeekCancel = () => {
+    const shouldResume = wasPlayingBeforeSeekRef.current;
+    wasPlayingBeforeSeekRef.current = false;
+    if (shouldResume) {
       playRecording();
     }
   };
@@ -170,6 +179,8 @@ function VoiceInput({
                     max={duration || elapsedSeconds}
                     step={0.1}
                     onPointerDown={handleSeekStart}
+                    onPointerUp={handleSeekCancel}
+                    onPointerLeave={handleSeekCancel}
                     onValueChange={([value]) => seekTo(value)}
                     onValueCommit={handleSeekEnd}
                     disabled={isSubmitting}
@@ -287,12 +298,12 @@ function StatusMessage({
     <div className="h-20 text-center">
       {state === "recording" && (
         <div className="animate-in fade-in">
-          <p className="text-5xl font-semibold tabular-nums text-center tracking-tight">
-            {formatTime(elapsedSeconds)}{" "}
-            <span className="text-lg text-muted-foreground font-normal">
+          <div className="text-5xl font-semibold tabular-nums text-center tracking-tight flex items-end gap-1">
+            <div>{formatTime(elapsedSeconds)} </div>
+            <div className="text-lg text-muted-foreground font-normal">
               / {formatTime(maxDurationSeconds)}
-            </span>
-          </p>
+            </div>
+          </div>
           <p className="text-muted-foreground text-center mt-1">녹음 중...</p>
         </div>
       )}
