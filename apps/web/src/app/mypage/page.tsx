@@ -76,6 +76,7 @@ async function MyPage() {
           <SolvedContent solvedProblems={problems} />
         </TabsContent>
       </Tabs>
+      <div data-boostad-zone></div>
     </div>
   );
 }

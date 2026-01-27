@@ -7,7 +7,6 @@ import {
   InputGroupInput,
 } from "@/components/input-group/input-group";
 import { SegmentedControl } from "@/components/segmented-control/segmented-control";
-import { cn } from "@/lib/cn";
 import { Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
@@ -82,7 +81,7 @@ function QuestionFilters({
     <div className="bg-white p-7 border rounded-xl">
       <div className="flex gap-4 pb-7 border-b">
         <Button
-          variant={selectedCategoryId === null ? "default" : "ghost"}
+          variant={selectedCategoryId === null ? "default" : "secondary"}
           onClick={() => handleCategoryChange(null)}
         >
           All
@@ -90,7 +89,9 @@ function QuestionFilters({
         {categories.map((category) => (
           <Button
             key={category.id}
-            variant={selectedCategoryId === category.id ? "default" : "ghost"}
+            variant={
+              selectedCategoryId === category.id ? "default" : "secondary"
+            }
             onClick={() => handleCategoryChange(category.id)}
           >
             {category.name}
@@ -107,13 +108,7 @@ function QuestionFilters({
             세부 주제
           </div>
           <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              !selectedSubCategoryId
-                ? "border-teal-100 bg-teal-50 text-teal-500 hover:bg-teal-50 hover:text-teal-500"
-                : "",
-            )}
+            variant={selectedSubCategoryId === null ? "default" : "secondary"}
             onClick={() => handleSubCategoryChange(null)}
           >
             전체
@@ -121,13 +116,11 @@ function QuestionFilters({
           {subCategories.map((subCategory) => (
             <Button
               key={subCategory.id}
-              variant="outline"
-              size="sm"
-              className={cn(
-                selectedSubCategoryId === subCategory.id
-                  ? "border-teal-100 bg-teal-50 text-teal-500 hover:bg-teal-50 hover:text-teal-500"
-                  : "",
-              )}
+              variant={
+                subCategory.id === selectedSubCategoryId
+                  ? "default"
+                  : "secondary"
+              }
               onClick={() => handleSubCategoryChange(subCategory.id)}
             >
               {subCategory.name}

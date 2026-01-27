@@ -1,10 +1,12 @@
+import type { Metadata } from "next";
+import Script from "next/script";
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
 import { cn } from "@/lib/cn";
-import type { Metadata } from "next";
 import localFont from "next/font/local";
-import "./globals.css";
 import { Toaster } from "react-hot-toast";
+
+import "./globals.css";
 
 const pretendard = localFont({
   src: "../assets/fonts/PretendardVariable.woff2",
@@ -39,7 +41,14 @@ function RootLayout({ children }: Readonly<RootLayoutProps>) {
           }}
           reverseOrder={false}
         />
+
         <Footer />
+        <Script
+          src="https://kr.object.ncloudstorage.com/boostad-sdk-dev/sdk/sdk.js"
+          data-blog-key={process.env.BOOSTAD_BLOG_KEY || "test-local"}
+          data-auto="false"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

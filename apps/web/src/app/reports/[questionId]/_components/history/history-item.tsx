@@ -53,7 +53,7 @@ function HistoryItem({ item, isSelected, href, index }: HistoryItemProps) {
       <div className="flex justify-between items-center">
         <div className="flex flex-col gap-1 items-start">
           <span
-            className={`text-xs font-bold tracking-wide transition-colors ${
+            className={`text-sm font-bold tracking-wide transition-colors ${
               isSelected
                 ? "text-teal-600"
                 : "text-slate-400 group-hover:text-teal-500"
@@ -61,7 +61,7 @@ function HistoryItem({ item, isSelected, href, index }: HistoryItemProps) {
           >
             TRIAL #{index}
           </span>
-          <div className="text-xs font-medium text-slate-400">
+          <div className="text-sm font-medium text-slate-400">
             {item.date.split(" ")[0]}
           </div>
         </div>
