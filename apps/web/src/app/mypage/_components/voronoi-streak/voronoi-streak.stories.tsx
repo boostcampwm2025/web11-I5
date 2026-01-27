@@ -22,7 +22,7 @@ function generateMockSubmissions(count: number): YearlyAnswerSubmissions[] {
     return {
       id: i + 1,
       submittedAt: date.toISOString(),
-      questionid: i + 100,
+      questionId: i + 100,
       title: titles[i % titles.length],
     };
   });
