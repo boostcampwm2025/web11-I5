@@ -3,6 +3,9 @@ import { getCurrentUser, loginAction } from "../_utils/auth";
 import LoginForm from "../_components/login-form";
 import Image from "next/image";
 import Link from "next/link";
+import { cookies } from "next/headers";
+
+export const dynamic = "force-dynamic";
 
 async function LoginPage() {
   const user = await getCurrentUser();
@@ -10,6 +13,9 @@ async function LoginPage() {
   if (user) {
     redirect("/");
   }
+
+  const cookieStore = await cookies();
+  const savedEmail = cookieStore.get("saved_email")?.value || "";
 
   return (
     <div className="w-full flex min-h-screen flex-col items-center justify-center py-20 px-5">
@@ -25,7 +31,7 @@ async function LoginPage() {
           </p>
         </div>
         <div className="py-6">
-          <LoginForm loginAction={loginAction} />
+          <LoginForm loginAction={loginAction} defaultEmail={savedEmail} />
         </div>
         <div className="flex items-center justify-center gap-1">
           <span className="text-sm text-muted-foreground">

@@ -64,7 +64,7 @@ async function loginAction(
   formData: FormData,
 ): Promise<LoginState | undefined> {
   const email = formData.get("email") as string;
-  const password = (formData.get("password") as string) || "test123";
+  const password = formData.get("password") as string;
 
   let error = "";
   let success = true;
@@ -79,7 +79,15 @@ async function loginAction(
     });
 
     if (!response.ok) {
-      return { success: false, error: "로그인에 실패했습니다." };
+      const errorData = await response.json().catch(() => ({}));
+
+      const backendErrorMessage = errorData.message || "로그인에 실패했습니다.";
+
+      const finalErrorMessage = Array.isArray(backendErrorMessage)
+        ? backendErrorMessage.join(", ")
+        : backendErrorMessage;
+
+      return { success: false, error: finalErrorMessage };
     }
 
     const data = await response.json();
@@ -133,6 +141,11 @@ async function logoutAction() {
 export interface SignupState {
   success: boolean;
   error?: string;
+  errors?: {
+    nickname?: string[];
+    email?: string[];
+    password?: string[];
+  };
 }
 
 // 회원가입
@@ -143,14 +156,6 @@ async function signupAction(
   const nickname = formData.get("nickname") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const passwordConfirm = formData.get("passwordConfirm") as string;
-
-  if (password !== passwordConfirm) {
-    return { success: false, error: "비밀번호가 일치하지 않습니다." };
-  }
-
-  let success = true;
-  let error = "";
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/users/signup`, {
@@ -163,19 +168,41 @@ async function signupAction(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      success = false;
-      error = errorData.message || "회원가입에 실패했습니다.";
+      const messages = errorData.message;
+
+      const mappedErrors: Record<string, string> = {};
+
+      if (Array.isArray(messages)) {
+        messages.forEach((msg: string) => {
+          if (msg.includes("email"))
+            mappedErrors.email = "올바른 이메일 형식이 아닙니다.";
+          if (msg.includes("nickname"))
+            mappedErrors.nickname = "닉네임 형식을 확인해주세요.";
+          if (msg.includes("password"))
+            mappedErrors.password = "비밀번호가 너무 짧습니다.";
+        });
+      }
+      return {
+        success: false,
+        error:
+          typeof messages === "string" ? messages : "입력 정보를 확인해주세요.",
+        errors: mappedErrors,
+      };
     }
   } catch {
-    success = false;
-    error = "회원가입 중 오류가 발생했습니다.";
+    return { success: false, error: "회원가입 중 오류가 발생했습니다." };
   }
 
-  if (success) {
-    redirect("/login");
-  } else {
-    return { success, error };
-  }
+  const cookieStore = await cookies();
+  cookieStore.set("saved_email", email, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 10,
+    path: "/login",
+  });
+
+  redirect("/login");
 }
 
 export {
