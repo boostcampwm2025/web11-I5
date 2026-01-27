@@ -30,20 +30,23 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
 
   return (
     <main className="w-full max-w-4xl mx-auto px-8 py-15 flex gap-8">
-      <div className="flex flex-col gap-14 flex-1">
-        <ReportHeader question={question} highestScore={highestScore} />
-
-        <ReportRefresh
-          pendingSubmissionIds={history
-            .filter((h) => h.status === "PENDING")
-            .map((h) => h.submissionId)}
-        />
+      <div className="flex flex-col flex-1">
+        <div className="mb-14">
+          <ReportHeader question={question} highestScore={highestScore} />
+        </div>
 
         <ReportTabs
           selectedAttempt={selectedAttempt}
           evaluation={evaluation}
           question={question}
         />
+
+        <ReportRefresh
+          pendingSubmissionIds={history
+            .filter((h) => h.status === "PENDING")
+            .map((h) => h.submissionId)}
+        />
+        <div data-boostad-zone className="h-20"></div>
       </div>
 
       <div className="sticky top-22 self-start">

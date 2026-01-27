@@ -34,6 +34,7 @@ async function DailyQuestionPage({
         parentCategoryName={question.category?.parent?.name}
       />
       <InputSection initialInputMode={mode} questionId={question.id} />
+      <div data-boostad-zone className="h-20"></div>
     </main>
   );
 }

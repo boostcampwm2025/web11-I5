@@ -93,7 +93,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
     <form action={formAction} className="w-full">
       {/* 이름(닉네임) 입력 */}
       <div className="space-y-2 mb-4">
-        <label htmlFor="nickname" className="text-xs font-medium">
+        <label htmlFor="nickname" className="text-sm font-medium">
           이름
         </label>
         <InputGroup className="h-11">
@@ -119,7 +119,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
 
       {/* 이메일 입력 섹션 */}
       <div className="space-y-2 mb-4">
-        <label htmlFor="email" className="text-xs font-medium">
+        <label htmlFor="email" className="text-sm font-medium">
           이메일
         </label>
         <InputGroup className="h-11">
@@ -145,7 +145,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
 
       {/* 비밀번호 입력 섹션 */}
       <div className="space-y-2 mb-4">
-        <label htmlFor="password" className="text-xs font-medium">
+        <label htmlFor="password" className="text-sm font-medium">
           비밀번호
         </label>
         <InputGroup className="h-11">
@@ -171,7 +171,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
 
       {/* 비밀번호 확인 입력 */}
       <div className="space-y-2 mb-4">
-        <label htmlFor="passwordConfirm" className="text-xs font-medium">
+        <label htmlFor="passwordConfirm" className="text-sm font-medium">
           비밀번호 확인
         </label>
         <InputGroup className="h-11">
