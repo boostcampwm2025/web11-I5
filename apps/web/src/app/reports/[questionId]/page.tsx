@@ -14,17 +14,18 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
   const { questionId } = await params;
   const { attempt: submissionId } = await searchParams;
 
-  if (!submissionId) {
-    notFound();
-  }
-
   const { question, history, evaluation, highestScore } =
-    await getReportPageData(Number(questionId), Number(submissionId));
-  const selectedAttempt = history.find(
-    (h) => h.submissionId === Number(submissionId),
-  );
+    await getReportPageData(
+      Number(questionId),
+      submissionId ? Number(submissionId) : undefined,
+    );
 
-  if (!question || !history || !selectedAttempt || !evaluation) {
+  // submissionId가 없으면 최신 submission으로 fallback
+  const selectedAttempt = submissionId
+    ? history.find((h) => h.submissionId === Number(submissionId))
+    : history[history.length - 1];
+
+  if (!question || !history.length || !selectedAttempt || !evaluation) {
     notFound();
   }
 

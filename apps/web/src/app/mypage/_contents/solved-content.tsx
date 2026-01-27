@@ -59,7 +59,7 @@ async function SolvedContent({
                 </TableCell>
                 <TableCell>
                   <Link
-                    href={`/reports/${problem.reportId}`}
+                    href={`/reports/${problem.questionId}`}
                     className="text-slate-900 font-medium text-sm hover:text-teal-600 hover:cursor-pointer hover:underline"
                   >
                     {problem.title}
