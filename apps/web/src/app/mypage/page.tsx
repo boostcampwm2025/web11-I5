@@ -8,7 +8,6 @@ import { BookText, Brush, CircleCheckBig } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../(auth)/_utils/auth";
 import UserStatsCard from "./_components/user-stats-card/user-stats-card";
-import { mockGraphData } from "./_constants/graph-mock";
 import GraphContent from "./_contents/graph-content";
 import SolvedContent from "./_contents/solved-content";
 import StreakContent from "./_contents/streak-content";
@@ -22,7 +21,7 @@ async function MyPage() {
   if (!user) {
     redirect("/login");
   }
-  const [userData, _graphData, streakData, solvedData] = await Promise.all([
+  const [userData, graphData, streakData, solvedData] = await Promise.all([
     fetchUserInfo(),
     fetchGraph(),
     fetchStreaks(),
@@ -32,7 +31,6 @@ async function MyPage() {
   const { problems, totalCount } = solvedData;
 
   const imageSrc = "/starry-night.jpg";
-  const mockData = mockGraphData; // 추후 리팩토링시 해당 부분 삭제
   return (
     <div className="w-full px-8 pt-15 pb-25 max-w-4xl flex flex-col gap-10">
       <UserStatsCard
@@ -61,7 +59,7 @@ async function MyPage() {
           className="bg-white w-full px-8 pb-8 rounded-xl border border-slate-200"
           value="graph"
         >
-          <GraphContent graphData={mockData} />
+          <GraphContent graphData={graphData} />
         </TabsContent>
         <TabsContent
           className="bg-white w-full px-8 pb-8 rounded-xl border border-slate-200"
