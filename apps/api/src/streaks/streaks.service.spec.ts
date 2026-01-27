@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
 import { Streaks } from './entities/streaks.entity';
 import { StreaksService } from './streaks.service';
 
@@ -8,10 +9,24 @@ describe('StreaksService', () => {
   let service: StreaksService;
 
   const mockStreaksRepository = {
-    count: jest.fn(),
     find: jest.fn(),
-    findOneBy: jest.fn(),
-    insert: jest.fn(),
+    upsert: jest.fn(),
+  };
+
+  const mockQueryBuilder = {
+    distinctOn: jest.fn().mockReturnThis(),
+    innerJoin: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
+    getRawMany: jest.fn(),
+  };
+
+  const mockAnswerSubmissionRepository = {
+    createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
   };
 
   beforeEach(async () => {
@@ -21,6 +36,10 @@ describe('StreaksService', () => {
         {
           provide: getRepositoryToken(Streaks),
           useValue: mockStreaksRepository,
+        },
+        {
+          provide: getRepositoryToken(AnswerSubmission),
+          useValue: mockAnswerSubmissionRepository,
         },
       ],
     }).compile();
@@ -34,53 +53,83 @@ describe('StreaksService', () => {
   });
 
   describe('getYearlyActivityCount', () => {
-    it('2026년 기준으로 데이터가 없으면 0이 리턴된다', async () => {
-      mockStreaksRepository.count.mockResolvedValue(0);
+    it('데이터가 없으면 submittedQuestionCount 0과 빈 배열을 리턴한다', async () => {
+      mockQueryBuilder.getRawMany.mockResolvedValue([]);
 
       const result = await service.getYearlyActivityCount(1, 2026);
 
-      expect(result).toEqual({ streakCount: 0 });
+      expect(result).toEqual({
+        submittedQuestionCount: 0,
+        yearlyAnswerSubmissions: [],
+      });
     });
 
-    it('2026년 기준으로 데이터가 5개 있으면 5가 리턴된다', async () => {
-      mockStreaksRepository.count.mockResolvedValue(5);
+    it('고유 문제 5개가 있으면 submittedQuestionCount 5를 리턴한다', async () => {
+      const mockRows = [
+        {
+          id: 1,
+          submittedAt: new Date('2026-01-01'),
+          questionId: 1,
+          title: '문제1',
+        },
+        {
+          id: 2,
+          submittedAt: new Date('2026-01-02'),
+          questionId: 2,
+          title: '문제2',
+        },
+        {
+          id: 3,
+          submittedAt: new Date('2026-01-03'),
+          questionId: 3,
+          title: '문제3',
+        },
+        {
+          id: 4,
+          submittedAt: new Date('2026-01-04'),
+          questionId: 4,
+          title: '문제4',
+        },
+        {
+          id: 5,
+          submittedAt: new Date('2026-01-05'),
+          questionId: 5,
+          title: '문제5',
+        },
+      ];
+      mockQueryBuilder.getRawMany.mockResolvedValue(mockRows);
 
       const result = await service.getYearlyActivityCount(1, 2026);
 
-      expect(result).toEqual({ streakCount: 5 });
+      expect(result).toEqual({
+        submittedQuestionCount: 5,
+        yearlyAnswerSubmissions: mockRows,
+      });
     });
 
-    it('2025년 기준으로 데이터가 없으면 0을 리턴한다', async () => {
-      mockStreaksRepository.count.mockResolvedValue(0);
+    it('과거 연도를 조회하면 해당 연도의 날짜 범위로 쿼리한다', async () => {
+      mockQueryBuilder.getRawMany.mockResolvedValue([]);
 
-      const result = await service.getYearlyActivityCount(1, 2025);
+      await service.getYearlyActivityCount(1, 2025);
 
-      expect(result).toEqual({ streakCount: 0 });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'submission.submittedAt >= :start AND submission.submittedAt < :end',
+        {
+          start: new Date('2025-01-01T00:00:00+09:00'),
+          end: new Date('2026-01-01T00:00:00+09:00'),
+        },
+      );
     });
 
-    it('2025년 기준으로 데이터가 5개 있으면 5를 리턴한다', async () => {
-      mockStreaksRepository.count.mockResolvedValue(5);
+    it('userId를 필터 조건으로 사용한다', async () => {
+      mockQueryBuilder.getRawMany.mockResolvedValue([]);
 
-      const result = await service.getYearlyActivityCount(1, 2025);
+      await service.getYearlyActivityCount(42, 2026);
 
-      expect(result).toEqual({ streakCount: 5 });
-    });
-
-    it('2025년 3개 + 2026년 5개 혼합 시 2026년 조회하면 5를 리턴한다', async () => {
-      mockStreaksRepository.count.mockResolvedValue(5);
-
-      const result = await service.getYearlyActivityCount(1, 2026);
-
-      expect(result).toEqual({ streakCount: 5 });
-    });
-
-    it('userId별로 데이터를 구분하여 조회한다', async () => {
-      mockStreaksRepository.count.mockResolvedValue(5);
-
-      const result = await service.getYearlyActivityCount(1, 2026);
-
-      expect(mockStreaksRepository.count).toHaveBeenCalled();
-      expect(result).toEqual({ streakCount: 5 });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'submission.userId = :userId',
+        { userId: 42 },
+      );
     });
   });
 
@@ -182,42 +231,49 @@ describe('StreaksService', () => {
 
       expect(result).toEqual({ consecutiveDayCount: 1 });
     });
+
+    it('최근 365일 이내 데이터만 조회한다', async () => {
+      mockStreaksRepository.find.mockResolvedValue([]);
+
+      await service.getConsecutiveDayCount(1);
+
+      expect(mockStreaksRepository.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            userId: 1,
+            activityDate: expect.anything(),
+          }),
+          order: { activityDate: 'DESC' },
+        }),
+      );
+    });
   });
 
   describe('recordDailyActivity', () => {
-    it('스트릭 데이터가 조회되지 않으면 데이터를 추가하고 true를 리턴한다', async () => {
-      mockStreaksRepository.findOneBy.mockResolvedValue(null);
-      mockStreaksRepository.insert.mockResolvedValue({} as any);
+    it('upsert를 호출하고 success: true를 리턴한다', async () => {
+      mockStreaksRepository.upsert.mockResolvedValue({} as any);
 
       const result = await service.recordDailyActivity(1);
 
-      expect(mockStreaksRepository.findOneBy).toHaveBeenCalledWith({
-        userId: 1,
-        activityDate: expect.any(Date),
-      });
-      expect(mockStreaksRepository.insert).toHaveBeenCalledWith({
-        userId: 1,
-        activityDate: expect.any(Date),
-      });
+      expect(mockStreaksRepository.upsert).toHaveBeenCalledWith(
+        {
+          userId: 1,
+          activityDate: expect.any(Date),
+        },
+        ['userId', 'activityDate'],
+      );
       expect(result).toEqual({ success: true });
     });
 
-    it('스트릭 데이터가 이미 조회된다면 데이터를 조작하지 않고 true를 리턴한다', async () => {
-      const existingStreak = {
-        id: 1,
-        userId: 1,
-        activityDate: new Date(),
-      };
-      mockStreaksRepository.findOneBy.mockResolvedValue(existingStreak);
+    it('중복 호출 시에도 upsert로 안전하게 처리한다', async () => {
+      mockStreaksRepository.upsert.mockResolvedValue({} as any);
 
-      const result = await service.recordDailyActivity(1);
+      const result1 = await service.recordDailyActivity(1);
+      const result2 = await service.recordDailyActivity(1);
 
-      expect(mockStreaksRepository.findOneBy).toHaveBeenCalledWith({
-        userId: 1,
-        activityDate: expect.any(Date),
-      });
-      expect(mockStreaksRepository.insert).not.toHaveBeenCalled();
-      expect(result).toEqual({ success: true });
+      expect(mockStreaksRepository.upsert).toHaveBeenCalledTimes(2);
+      expect(result1).toEqual({ success: true });
+      expect(result2).toEqual({ success: true });
     });
   });
 });
