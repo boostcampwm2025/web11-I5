@@ -1,6 +1,7 @@
 import * as React from "react";
 import createAudioStreamer, { AudioStreamerHandle } from "@/lib/audio-streamer";
 import { encodePcmToWav } from "@/lib/wav-encoder";
+import useAnimationFrame from "@/hooks/use-animation-frame";
 import {
   AUDIO_CONFIG,
   WAVEFORM_CONFIG,
@@ -57,6 +58,11 @@ function useRecorder(options: UseRecorderOptions = {}) {
   const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
   const [hasRecorded, setHasRecorded] = React.useState(false);
 
+  // 재생 관련 상태
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const [playbackTime, setPlaybackTime] = React.useState(0);
+  const [duration, setDuration] = React.useState(0);
+
   // 결과 WAV Blob
   const recordedBlobRef = React.useRef<Blob | null>(null);
 
@@ -70,6 +76,10 @@ function useRecorder(options: UseRecorderOptions = {}) {
 
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
   const streamerRef = React.useRef<AudioStreamerHandle | null>(null);
+
+  // 재생 관련 Ref
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = React.useRef<string | null>(null);
 
   const accumRef = React.useRef({
     sumSq: 0,
@@ -301,6 +311,19 @@ function useRecorder(options: UseRecorderOptions = {}) {
   }, []);
 
   const retryRecording = React.useCallback(() => {
+    // 재생 정리
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    setIsPlaying(false);
+    setPlaybackTime(0);
+    setDuration(0);
+
     recordedBlobRef.current = null;
     pcmChunksRef.current = [];
     historyRef.current = Array.from(
@@ -310,6 +333,58 @@ function useRecorder(options: UseRecorderOptions = {}) {
     setHasRecorded(false);
     setElapsedSeconds(0);
     setIsRecording(false);
+  }, []);
+
+  // 재생 시작/재개
+  const playRecording = React.useCallback(() => {
+    if (!recordedBlobRef.current) return;
+
+    // Audio 엘리먼트가 없으면 생성
+    if (!audioRef.current) {
+      audioUrlRef.current = URL.createObjectURL(recordedBlobRef.current);
+      audioRef.current = new Audio(audioUrlRef.current);
+
+      audioRef.current.addEventListener("loadedmetadata", () => {
+        setDuration(audioRef.current?.duration ?? 0);
+      });
+
+      audioRef.current.addEventListener("ended", () => {
+        setIsPlaying(false);
+        setPlaybackTime(0);
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+        }
+      });
+    }
+
+    void audioRef.current.play();
+    setIsPlaying(true);
+  }, []);
+
+  // 일시정지
+  const pausePlayback = React.useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, []);
+
+  // 정지 (처음으로)
+  const stopPlayback = React.useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+      setPlaybackTime(0);
+    }
+  }, []);
+
+  // 특정 위치로 이동
+  const seekTo = React.useCallback((time: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setPlaybackTime(time);
+    }
   }, []);
 
   const getAudioBlob = React.useCallback(
@@ -351,6 +426,22 @@ function useRecorder(options: UseRecorderOptions = {}) {
     return newStatus;
   }, [checkStatus]);
 
+  // 재생 중일 때 부드럽게 playbackTime 업데이트
+  useAnimationFrame(() => {
+    if (audioRef.current) {
+      setPlaybackTime(audioRef.current.currentTime);
+    }
+  }, isPlaying);
+
+  // 컴포넌트 언마운트 시 오디오 URL 정리
+  React.useEffect(() => {
+    return () => {
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+      }
+    };
+  }, []);
+
   return {
     status,
     refreshStatus,
@@ -368,6 +459,15 @@ function useRecorder(options: UseRecorderOptions = {}) {
 
     getAudioBlob, // WAV Blob
     getAudioMimeType, // "audio/wav"
+
+    // 재생 관련
+    isPlaying,
+    playbackTime,
+    duration,
+    playRecording,
+    pausePlayback,
+    stopPlayback,
+    seekTo,
   };
 }
 

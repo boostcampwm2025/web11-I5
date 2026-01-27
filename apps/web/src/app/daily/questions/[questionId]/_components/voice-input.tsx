@@ -10,7 +10,10 @@ import {
   MicOff,
   ShieldAlert,
   AlertCircle,
+  Play,
+  Pause,
 } from "lucide-react";
+import { Slider } from "@/components/slider/slider";
 import useRecorder, { RecorderStatus } from "../_hooks/use-recorder";
 import RecordButton from "./record-button";
 import useWav from "@/hooks/use-wav";
@@ -51,9 +54,32 @@ function VoiceInput({
     stopRecording,
     retryRecording,
     getAudioBlob,
+    isPlaying,
+    playbackTime,
+    duration,
+    playRecording,
+    pausePlayback,
+    seekTo,
   } = useRecorder({ maxDurationSeconds });
 
   const { play: playDing, ready: dingWavReady } = useWav("/ui-confirm.wav", 1);
+
+  const wasPlayingBeforeSeekRef = React.useRef(false);
+
+  const handleSeekStart = () => {
+    if (isPlaying) {
+      wasPlayingBeforeSeekRef.current = true;
+      pausePlayback();
+    }
+  };
+
+  const handleSeekEnd = (value: number[]) => {
+    seekTo(value[0]);
+    if (wasPlayingBeforeSeekRef.current) {
+      wasPlayingBeforeSeekRef.current = false;
+      playRecording();
+    }
+  };
 
   const recordingState: RecordingState = isRecording
     ? "recording"
@@ -122,8 +148,42 @@ function VoiceInput({
             maxDurationSeconds={maxDurationSeconds}
           />
 
-          <div className="max-w-lg">
-            <Waveform historyRef={historyRef} />
+          <div className="max-w-lg w-full px-6">
+            {hasRecorded ? (
+              <div className="flex items-center gap-3 h-40">
+                <button
+                  type="button"
+                  onClick={isPlaying ? pausePlayback : playRecording}
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {isPlaying ? (
+                    <Pause className="w-5 h-5" />
+                  ) : (
+                    <Play className="w-5 h-5 ml-0.5" />
+                  )}
+                </button>
+                <div className="flex-1 flex items-center gap-3">
+                  <Slider
+                    value={[playbackTime]}
+                    min={0}
+                    max={duration || elapsedSeconds}
+                    step={0.1}
+                    onPointerDown={handleSeekStart}
+                    onValueChange={([value]) => seekTo(value)}
+                    onValueCommit={handleSeekEnd}
+                    disabled={isSubmitting}
+                    className="flex-1"
+                  />
+                  <span className="text-sm tabular-nums text-muted-foreground min-w-17.5 text-right">
+                    {formatTime(Math.floor(playbackTime))} /{" "}
+                    {formatTime(Math.floor(duration || elapsedSeconds))}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <Waveform historyRef={historyRef} />
+            )}
           </div>
 
           <div className="flex items-center justify-center h-24">
