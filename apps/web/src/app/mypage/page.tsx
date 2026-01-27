@@ -34,6 +34,7 @@ async function MyPage() {
   } = streakData;
   const { problems, totalCount } = solvedData;
 
+  // Refactor Todo: 365개 전부 채웠을 때 새로운 그림으로 전환하기
   const imageSrc = "/starry-night.jpg";
   return (
     <div className="w-full px-8 pt-15 pb-25 max-w-4xl flex flex-col gap-10">
