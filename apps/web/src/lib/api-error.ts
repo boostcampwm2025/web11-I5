@@ -25,9 +25,14 @@ export class ApiError extends Error {
     this.name = "ApiError";
   }
 
-  // 네트워크 에러 또는 5xx 서버 에러 여부
+  // 네트워크 에러 여부 (연결 실패)
   isNetworkError(): boolean {
-    return this.status === 0 || this.status >= 500;
+    return this.status === 0;
+  }
+
+  // 5xx 서버 에러 여부
+  isServerError(): boolean {
+    return this.status >= 500;
   }
 
   // 인증 에러 여부 (401, 403)
@@ -127,6 +132,10 @@ export class ApiError extends Error {
     // 기본 메시지
     if (this.isNetworkError()) {
       return "서버와 연결할 수 없습니다. 네트워크 연결을 확인해주세요.";
+    }
+
+    if (this.isServerError()) {
+      return "서버에서 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
     }
 
     if (this.isAuthError()) {
