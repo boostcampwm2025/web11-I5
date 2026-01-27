@@ -17,11 +17,16 @@ async function handleErrorResponse(response: Response): Promise<never> {
   const error = new ApiError(response.status, response.statusText, body);
 
   Sentry.captureException(error, {
+    tags: {
+      error_type: error.getErrorType(),
+      status_code: response.status,
+    },
     contexts: {
       response: {
         status: response.status,
         statusText: response.statusText,
         url: response.url,
+        request_id: error.getRequestId(),
       },
     },
   });
@@ -67,12 +72,25 @@ export async function apiClient(
     );
   }
 
-  return fetch(url, {
-    cache: "no-store",
-    ...options,
-    headers,
-    credentials: "include",
-  });
+  try {
+    return await fetch(url, {
+      cache: "no-store",
+      ...options,
+      headers,
+      credentials: "include",
+    });
+  } catch (error) {
+    // 네트워크 에러 처리 (연결 실패, 타임아웃 등)
+    if (process.env.NODE_ENV === "development") {
+      console.error(`[apiClient] Network error:`, error);
+    }
+
+    throw new ApiError(
+      0,
+      "Network Error",
+      error instanceof Error ? error.message : "알 수 없는 네트워크 오류",
+    );
+  }
 }
 
 /**
