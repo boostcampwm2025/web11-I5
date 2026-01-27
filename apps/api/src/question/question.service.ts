@@ -1,11 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
+import { AnswerSubmissionService } from 'src/answer-submission/answer-submission.service';
+import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
+import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { OtherSubmissionDetailDto } from './dtos/other-submission-detail.dto';
+import { PaginatedOtherSubmissionsDto } from './dtos/paginated-other-submissions.dto';
 import { PaginatedQuestionsDto } from './dtos/paginated-questions.dto';
 import { QuestionFilterDto } from './dtos/question-filter.dto';
 import { Question } from './entities/question.entity';
 import { SolvedStatus } from './question.constants';
+
+interface OtherSubmissionRaw {
+  submissionId: number;
+  nickname: string;
+  totalScore: number;
+  submittedAt: Date;
+}
 
 @Injectable()
 export class QuestionService {
@@ -16,6 +28,9 @@ export class QuestionService {
     private questionRepository: Repository<Question>,
     @InjectRepository(AnswerSubmission)
     private answerSubmissionRepository: Repository<AnswerSubmission>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private readonly answerSubmissionService: AnswerSubmissionService,
   ) {}
 
   async findByCategory(categoryId: number) {
@@ -115,6 +130,131 @@ export class QuestionService {
       pageSize: this.pageSize,
       currentPage: page,
       totalPages,
+    };
+  }
+
+  /**
+   * 특정 문제에 대한 다른 사용자들의 제출 리스트 조회 (본인 제외)
+   * @param questionId 문제 ID
+   * @param currentUserId 현재 사용자 ID (본인 제외용)
+   * @param page 페이지 번호 (기본값: 1)
+   * @param size 페이지 크기 (기본값: 10)
+   * @returns 페이징된 다른 사용자 제출 리스트
+   */
+  async findOtherSubmissions(
+    questionId: number,
+    currentUserId: number,
+    page: number = 1,
+    size: number = 10,
+  ): Promise<PaginatedOtherSubmissionsDto> {
+    const skip = (page - 1) * size;
+
+    // 문제 존재 여부 확인
+    const question = await this.questionRepository.findOne({
+      where: { id: questionId },
+    });
+
+    if (!question) {
+      throw new NotFoundException(`Question with ID ${questionId} not found`);
+    }
+
+    // 다른 사용자들의 제출 리스트 조회 (본인 제외, 총점 내림차순)
+    const baseQueryBuilder = this.answerSubmissionRepository
+      .createQueryBuilder('submission')
+      .innerJoin('users', 'user', 'user.id = submission.user_id')
+      .where('submission.question_id = :questionId', { questionId })
+      .andWhere('submission.user_id != :currentUserId', { currentUserId })
+      .andWhere('submission.evaluation_status = :status', {
+        status: EvaluationStatus.COMPLETED,
+      });
+
+    // 데이터 조회용 쿼리
+    const dataQueryBuilder = baseQueryBuilder
+      .select('submission.id', 'submissionId')
+      .addSelect('user.nickname', 'nickname')
+      .addSelect('submission.score', 'totalScore')
+      .addSelect('submission.submitted_at', 'submittedAt')
+      .orderBy('submission.score', 'DESC')
+      .addOrderBy('submission.submitted_at', 'DESC')
+      .skip(skip)
+      .take(size);
+
+    // 카운트 쿼리 (별도로 생성)
+    const countQueryBuilder = baseQueryBuilder.clone();
+
+    const [results, totalCount] = await Promise.all([
+      dataQueryBuilder.getRawMany<OtherSubmissionRaw>(),
+      countQueryBuilder.getCount(),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / size);
+
+    return {
+      submissions: results.map((result) => ({
+        submissionId: result.submissionId,
+        nickname: result.nickname,
+        totalScore: result.totalScore,
+        submittedAt: result.submittedAt,
+      })),
+      totalCount,
+      pageSize: size,
+      currentPage: page,
+      totalPages,
+    };
+  }
+
+  /**
+   * 특정 문제에 대한 타 유저 제출 상세 조회
+   * - 본인 제출이 아니어야 하고
+   * - questionId 와 submission.questionId 가 일치해야 합니다.
+   */
+  async findOtherSubmissionDetail(
+    questionId: number,
+    submissionId: number,
+    currentUserId: number,
+  ): Promise<OtherSubmissionDetailDto> {
+    // 제출 엔티티 조회 (본인 제출 제외)
+    const submission =
+      await this.answerSubmissionService.getSubmissionForOtherUser(
+        submissionId,
+        currentUserId,
+      );
+
+    // 다른 문제에 대한 제출이면 404
+    if (submission.questionId !== questionId) {
+      throw new NotFoundException(
+        `Question ${questionId} 에 대한 제출 내역을 찾을 수 없습니다.`,
+      );
+    }
+
+    // 문제 존재 여부 2차 확인 (삭제된 경우 방지)
+    const question = await this.questionRepository.findOne({
+      where: { id: questionId },
+    });
+    if (!question) {
+      throw new NotFoundException(`Question with ID ${questionId} not found`);
+    }
+
+    // 작성자 닉네임 조회
+    const user = await this.userRepository.findOne({
+      where: { id: submission.userId },
+    });
+    const nickname = user?.nickname ?? '알 수 없는 사용자';
+
+    return {
+      nickname,
+      submission: {
+        id: submission.id,
+        questionId: submission.questionId,
+        submittedAt: submission.submittedAt,
+        audioAssetId: submission.audioAssetId,
+        evaluationStatus: submission.evaluationStatus,
+        sttStatus: submission.sttStatus,
+        inputType: submission.inputType,
+        answerContent: submission.rawAnswer,
+        totalScore: submission.score,
+        duration: submission.takenTime,
+      },
     };
   }
 }
