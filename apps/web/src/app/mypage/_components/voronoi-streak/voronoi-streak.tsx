@@ -12,10 +12,12 @@ import {
 import computeCells from "../../_lib/compute-cells";
 import generateRandomPoint from "../../_lib/generate-random-point";
 import lloydRelaxation from "../../_lib/lloyd-relaxation";
+import { YearlyAnswerSubmissions } from "../../_types/streak";
 
 interface VoronoiStreakProps {
   streakCount: number;
   imageSrc: string;
+  yearlyAnswerSubmissions: YearlyAnswerSubmissions[];
 }
 
 interface CellData {
@@ -24,10 +26,21 @@ interface CellData {
   cluster: number;
 }
 
-function VoronoiStreak({ streakCount, imageSrc }: VoronoiStreakProps) {
+function VoronoiStreak({
+  streakCount,
+  imageSrc,
+  yearlyAnswerSubmissions,
+}: VoronoiStreakProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const { width, height } = useCanvas2D(canvasRef);
   const [cellData, setCellData] = React.useState<CellData[]>([]);
+  // 가까운 cell을 찾기 위한 delaunay ref 저장
+  const delaunayRef = React.useRef<Delaunay<Delaunay.Point> | null>(null);
+  const [hoveredInfo, setHoveredInfo] = React.useState<{
+    x: number;
+    y: number;
+    submission: YearlyAnswerSubmissions;
+  } | null>(null);
 
   React.useEffect(() => {
     if (!imageSrc || width === 0 || height === 0) return;
@@ -58,15 +71,6 @@ function VoronoiStreak({ streakCount, imageSrc }: VoronoiStreakProps) {
         tempVoronoi.update();
       }
 
-      /*
-      //points 정렬 순서 : x축 -> y축 기준으로 오름차순 정렬
-      points.sort((a, b) => {
-        const xDiff = a[0] - b[0];
-        if (Math.abs(xDiff) > 5) return xDiff;
-        return b[1] - a[1];
-      });
-      */
-
       // K-Means 기반 클러스터링 진행 (seed 기반 초기 centroids로 결과 고정)
       const lcg = randomLcg(VORONOI_NUMBER_CONSTANT.SEED);
       const initialCentroids: [number, number][] = [];
@@ -88,6 +92,7 @@ function VoronoiStreak({ streakCount, imageSrc }: VoronoiStreakProps) {
       const clusters = pointsWithCluster.map((p) => p.cluster);
 
       const delaunay = Delaunay.from(points);
+      delaunayRef.current = delaunay;
       const voronoi = delaunay.voronoi([0, 0, width, height]);
       const computedCells = computeCells(
         points,
@@ -135,7 +140,59 @@ function VoronoiStreak({ streakCount, imageSrc }: VoronoiStreakProps) {
       cancelAnimationFrame(animationId);
     };
   }, [cellData, streakCount, width, height]);
-  return <canvas className="w-full h-full" ref={canvasRef} />;
+
+  // 마우스가 위치한 cell이면서 색이 칠해졌을 때 -> 문제 정보 & 풀이 시간 보일 수 있게 수정
+  const handleMouseMove = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!canvasRef.current || !delaunayRef.current || cellData.length === 0)
+        return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const canvasX = e.clientX - rect.left;
+      const canvasY = e.clientY - rect.top;
+      const closeDelaunayIdx = delaunayRef.current.find(canvasX, canvasY);
+      const cluster = cellData[closeDelaunayIdx].cluster;
+      const submission = yearlyAnswerSubmissions[cluster];
+
+      if (cluster < streakCount && submission) {
+        setHoveredInfo({ x: canvasX, y: canvasY, submission });
+      } else {
+        setHoveredInfo(null);
+      }
+    },
+    [cellData, yearlyAnswerSubmissions, streakCount],
+  );
+
+  const handleMouseLeave = React.useCallback(() => {
+    setHoveredInfo(null);
+  }, []);
+
+  const convertDateString = (submittedAt: string) => {
+    const date = new Date(submittedAt);
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+  };
+
+  return (
+    <div
+      className="relative"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <canvas className="w-full h-full" ref={canvasRef} />
+      {hoveredInfo && (
+        <div
+          className="absolute z-10 bg-white rounded-lg shadow-lg border border-slate-200 px-3 py-2"
+          style={{ left: hoveredInfo.x + 5, top: hoveredInfo.y + 10 }}
+        >
+          <p className="text-sm font-semibold text-teal-500">
+            {hoveredInfo.submission.title}
+          </p>
+          <p className="text-xs text-slate-700">
+            {convertDateString(hoveredInfo.submission.submittedAt)}
+          </p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default VoronoiStreak;

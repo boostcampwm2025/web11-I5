@@ -29,7 +29,7 @@ async function MyPage() {
   ]);
   const {
     submittedQuestionCount,
-    yearlyAnswerSubmissions: _,
+    yearlyAnswerSubmissions,
     consecutiveDayCount,
   } = streakData;
   const { problems, totalCount } = solvedData;
@@ -72,6 +72,7 @@ async function MyPage() {
           <StreakContent
             streakCount={submittedQuestionCount}
             imageSrc={imageSrc}
+            yearlyAnswerSubmissions={yearlyAnswerSubmissions}
           />
         </TabsContent>
         <TabsContent

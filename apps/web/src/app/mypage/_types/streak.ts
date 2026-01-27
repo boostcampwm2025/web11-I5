@@ -1,4 +1,4 @@
-interface YearlyAnswerSubmissions {
+export interface YearlyAnswerSubmissions {
   id: number;
   submittedAt: string;
   questionid: number;
