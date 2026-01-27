@@ -189,7 +189,11 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
           />
         </InputGroup>
         <p
-          className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.passwordConfirm && !validation.passwordConfirm ? "text-red-500" : "text-slate-500"}`}
+          className={`text-[11px] mt-1.5 ml-1 font-medium text-red-500 ${
+            formData.passwordConfirm && !validation.passwordConfirm
+              ? "block"
+              : "hidden"
+          }`}
         >
           * 비밀번호가 일치하지 않습니다.
         </p>
