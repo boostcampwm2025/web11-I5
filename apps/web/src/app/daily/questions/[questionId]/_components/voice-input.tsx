@@ -54,6 +54,26 @@ function VoiceInput({
   } = useRecorder({ maxDurationSeconds });
 
   const { play: playDing, ready: dingWavReady } = useWav("/ui-confirm.wav", 1);
+  const {
+    play: playTickTock,
+    stop: stopTickTock,
+    ready: tickTockReady,
+  } = useWav("/ticking.wav", { volume: 0.5, loop: true });
+
+  const WARNING_SECONDS = 10;
+  const isInWarningZone =
+    isRecording && elapsedSeconds >= maxDurationSeconds - WARNING_SECONDS;
+  const wasInWarningZoneRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (isInWarningZone && !wasInWarningZoneRef.current && tickTockReady) {
+      wasInWarningZoneRef.current = true;
+      playTickTock();
+    } else if (!isInWarningZone && wasInWarningZoneRef.current) {
+      wasInWarningZoneRef.current = false;
+      stopTickTock();
+    }
+  }, [isInWarningZone, tickTockReady, playTickTock, stopTickTock]);
 
   const recordingState: RecordingState = isRecording
     ? "recording"
@@ -227,12 +247,12 @@ function StatusMessage({
     <div className="h-20 text-center">
       {state === "recording" && (
         <div className="animate-in fade-in">
-          <p className="text-5xl font-semibold tabular-nums text-center tracking-tight">
-            {formatTime(elapsedSeconds)}{" "}
-            <span className="text-lg text-muted-foreground font-normal">
+          <div className="text-5xl font-semibold tabular-nums text-center tracking-tight flex items-end gap-1">
+            <div>{formatTime(elapsedSeconds)} </div>
+            <div className="text-lg text-muted-foreground font-normal">
               / {formatTime(maxDurationSeconds)}
-            </span>
-          </p>
+            </div>
+          </div>
           <p className="text-muted-foreground text-center mt-1">녹음 중...</p>
         </div>
       )}
