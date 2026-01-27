@@ -27,8 +27,8 @@ import { CreateUserRequestDto } from './dtos/request/create-user.request.dto';
 import { EditUserRequestDto } from './dtos/request/edit-user.request.dto';
 import { LoginRequestDto } from './dtos/request/login.request.dto';
 import { LoginResponseDto } from './dtos/response/login.response.dto';
-import { PresignedUrlResponseDto } from './dtos/response/presigned-url.response.dto';
 import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
+import { UserPresignedUrlResponseDto } from './dtos/response/user-presigned-url.response.dto';
 import { UserPublicResponseDto } from './dtos/response/user.public.response.dto';
 import { UserService } from './user.service';
 
@@ -194,7 +194,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Presigned URL 생성 성공',
-    type: PresignedUrlResponseDto,
+    type: UserPresignedUrlResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -211,7 +211,7 @@ export class UserController {
   async requestPresignedUrl(
     @UserId() userId: number,
     @Query('contentType') contentType?: string,
-  ): Promise<PresignedUrlResponseDto> {
+  ): Promise<UserPresignedUrlResponseDto> {
     return await this.userService.requestPresignedUrl(userId, contentType);
   }
 

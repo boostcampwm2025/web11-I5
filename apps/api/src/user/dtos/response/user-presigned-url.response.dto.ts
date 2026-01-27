@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class PresignedUrlResponseDto {
+export class UserPresignedUrlResponseDto {
   @ApiProperty({ description: '업로드용 Presigned PUT URL' })
   uploadUrl: string;
 
