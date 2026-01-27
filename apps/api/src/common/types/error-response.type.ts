@@ -8,6 +8,9 @@ export interface ErrorResponse {
   /** ISO 8601 타임스탬프 */
   timestamp: string;
 
+  /** HTTP 메서드 */
+  method: string;
+
   /** 요청 경로 */
   path: string;
 
