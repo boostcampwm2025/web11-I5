@@ -1,7 +1,7 @@
 export interface YearlyAnswerSubmissions {
   id: number;
   submittedAt: string;
-  questionid: number;
+  questionId: number;
   title: string;
 }
 export interface StreakCountDto {
