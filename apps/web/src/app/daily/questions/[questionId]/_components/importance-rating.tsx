@@ -73,10 +73,10 @@ function ImportanceRating({
         <input type="hidden" name="score" value={score} />
 
         <div className="text-center space-y-1">
-          <h2 className="text-lg font-bold text-zinc-900">
+          <h2 className="text-xl font-bold text-zinc-900">
             이 문제가 얼마나 중요했나요?
           </h2>
-          <p className="text-sm text-zinc-500">
+          <p className="text-base text-zinc-500">
             문제의 중요도를 별점으로 평가해주세요
           </p>
         </div>

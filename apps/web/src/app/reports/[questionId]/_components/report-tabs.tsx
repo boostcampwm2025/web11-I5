@@ -70,7 +70,7 @@ function ReportTabs({
               {selectedAttempt.answerContent && (
                 <div className="flex items-center gap-2 px-3 py-1.5">
                   <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-                  <span className="text-xs text-slate-500">
+                  <span className="text-sm text-slate-500">
                     AI 음성 복원 완료
                   </span>
                 </div>
@@ -100,7 +100,7 @@ function ReportTabs({
                     {keywords.map((keyword, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1.5 bg-slate-100 text-slate-700 text-xs font-medium rounded-md"
+                        className="px-2 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-md"
                       >
                         <span className="text-slate-400 font-semibold">#</span>{" "}
                         {keyword}

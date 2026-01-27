@@ -28,21 +28,21 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
         <div className="p-8">
           {/* 배지 영역 */}
           <div className="flex gap-2 mb-4">
-            <span className="px-2.5 py-1 rounded-md bg-gray-100 text-gray-500 text-xs font-medium">
+            <span className="px-2.5 py-1 rounded-md bg-gray-100 text-gray-500 text-sm font-medium">
               {question.category?.name}
             </span>
             {/* 중요도 숫자 표기 */}
-            <span className="px-2.5 py-1 rounded-md bg-yellow-50 text-yellow-600 text-xs font-medium flex items-center gap-1">
+            <span className="px-2.5 py-1 rounded-md bg-yellow-50 text-yellow-600 text-sm font-medium flex items-center gap-1">
               <span>⭐️</span>
               {(question.avgImportance ?? 0).toFixed(1)}
             </span>
           </div>
 
           {/* 제목 및 내용 */}
-          <h2 className="text-xl font-bold text-gray-900 mb-4 leading-tight">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
             {question.title}
           </h2>
-          <p className="text-gray-600 text-sm leading-relaxed mb-8 whitespace-pre-wrap">
+          <p className="text-gray-600 text-base leading-relaxed mb-8 whitespace-pre-wrap">
             {question.content}
           </p>
 
@@ -65,7 +65,7 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
               variant="outline"
               size="lg"
               onClick={onClose}
-              className="flex-1 rounded-xl text-sm font-semibold border-gray-200 text-gray-600 hover:bg-gray-50"
+              className="flex-1 font-semibold border-gray-200 text-gray-600 hover:bg-gray-50"
             >
               닫기
             </Button>
@@ -73,7 +73,7 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
               asChild
               variant="default"
               size="lg"
-              className="flex-1 rounded-xl text-sm font-semibold shadow-lg shadow-gray-200"
+              className="flex-1 font-semibold"
             >
               <Link href={`/daily/questions/${question.id}?mode=${answerMode}`}>
                 시작하기
