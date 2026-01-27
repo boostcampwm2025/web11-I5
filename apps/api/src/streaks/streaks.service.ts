@@ -50,9 +50,8 @@ export class StreaksService {
         'submission.submittedAt >= :start AND submission.submittedAt < :end',
         { start, end },
       )
-      .orderBy('submission.questionId', 'ASC')
       .addOrderBy('submission.submittedAt', 'ASC')
-      .addOrderBy('submission.id', 'DESC')
+      .addOrderBy('submission.id', 'DESC') // 동일한 시각에 여러 제출이 있을 경우를 대비해서 혹시 모르니까 사용
       .getRawMany<YearlyAnswerSubmissionsDto>();
 
     return {
