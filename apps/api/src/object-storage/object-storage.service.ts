@@ -1,9 +1,9 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import AWS from 'aws-sdk';
 
 @Injectable()
-export class ObjectStorageService implements OnModuleInit {
+export class ObjectStorageService {
   private readonly logger = new Logger(ObjectStorageService.name);
   private readonly s3Client: AWS.S3 | null = null;
   private readonly bucket: string;
@@ -54,19 +54,6 @@ export class ObjectStorageService implements OnModuleInit {
     this.allowedOrigins = corsOrigins
       ? corsOrigins.split(',').map((o) => o.trim())
       : ['http://localhost:3000'];
-  }
-
-  async onModuleInit(): Promise<void> {
-    if (this.s3Client && this.allowedOrigins.length > 0) {
-      try {
-        await this.configureCors(this.allowedOrigins);
-      } catch (error) {
-        this.logger.warn(
-          'Failed to configure CORS (may already be set):',
-          error,
-        );
-      }
-    }
   }
 
   private readonly presignedUrlExpiresIn = 600; // 10분
@@ -157,36 +144,6 @@ export class ObjectStorageService implements OnModuleInit {
       'NCLOUD_OBJECT_STORAGE_ENDPOINT',
     );
     return `${endpoint}/${this.bucket}/${objectKey}`;
-  }
-
-  /**
-   * 버킷에 CORS 설정 적용
-   * @param allowedOrigins 허용할 Origin 목록 (예: ['https://example.com'])
-   */
-  async configureCors(allowedOrigins: string[]): Promise<void> {
-    if (!Array.isArray(allowedOrigins) || allowedOrigins.length === 0) {
-      throw new Error('allowedOrigins must be a non-empty array');
-    }
-
-    // 브라우저 presigned PUT/GET에서 필요한 최소 구성
-    // - PUT 시 Content-Type, x-amz-* 헤더 때문에 AllowedHeaders는 넓게(*)
-    // - ExposeHeaders는 프론트에서 ETag 등을 읽고 싶을 때
-    const params: AWS.S3.PutBucketCorsRequest = {
-      Bucket: this.bucket,
-      CORSConfiguration: {
-        CORSRules: [
-          {
-            AllowedOrigins: allowedOrigins,
-            AllowedMethods: ['GET', 'PUT', 'HEAD'],
-            AllowedHeaders: ['*'],
-            ExposeHeaders: ['ETag', 'x-amz-request-id', 'x-amz-id-2'],
-            MaxAgeSeconds: 3000,
-          },
-        ],
-      },
-    };
-
-    await this.getS3Client().putBucketCors(params).promise();
   }
 
   private isS3NotFoundError(err: unknown): boolean {

@@ -3,39 +3,54 @@ import {
   Catch,
   ArgumentsHost,
   HttpException,
+  HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { ErrorResponse } from '../types/error-response.type';
 
 /**
  * HTTP Exception Filter
- * - HttpException을 통일된 형식으로 변환
+ * - 모든 예외를 통일된 형식으로 변환
  * - ValidationPipe 에러를 details 필드로 포맷팅
- * - Request ID 포함
+ * - Request ID, userId, IP 로깅
+ * - 에러 레벨별 로깅 (4xx: warn, 5xx: error)
  * - 개발 환경에서만 추가 정보 제공
  */
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
   private readonly isDevelopment = process.env.NODE_ENV === 'development';
 
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request & { requestId?: string }>();
+    const request = ctx.getRequest<
+      Request & { requestId?: string; userId?: number }
+    >();
 
-    const statusCode = exception.getStatus();
-    const exceptionResponse = exception.getResponse();
+    // 상태 코드 및 에러 응답 추출
+    const statusCode =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    // Request ID 가져오기 (RequestIdInterceptor에서 추가)
+    const exceptionResponse =
+      exception instanceof HttpException
+        ? exception.getResponse()
+        : 'Internal server error';
+
+    // Request ID 가져오기
     const requestId = request.requestId || 'unknown';
+    const userId = request.userId;
+    const { method, url, ip } = request;
 
     // 에러 응답 구성
     const errorResponse: ErrorResponse = {
       statusCode,
       timestamp: new Date().toISOString(),
-      path: request.url,
+      path: url,
+      method,
       requestId,
       message: this.extractMessage(exceptionResponse),
     };
@@ -47,27 +62,41 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // 개발 환경에서만 추가 정보 포함
     if (this.isDevelopment) {
-      errorResponse.error = exception.name;
+      if (exception instanceof HttpException) {
+        errorResponse.error = exception.name;
+      }
 
       // exceptionResponse가 객체인 경우 error 필드 추가
       if (
         typeof exceptionResponse === 'object' &&
-        'error' in exceptionResponse
+        'error' in exceptionResponse &&
+        !this.isValidationError(exceptionResponse)
       ) {
         errorResponse.details = exceptionResponse;
       }
 
       // 스택 트레이스 추가
-      if (exception.stack) {
+      if (exception instanceof Error && exception.stack) {
         errorResponse.stack = exception.stack;
       }
     }
 
-    // 로깅
-    this.logger.error(
-      `[${requestId}] ${request.method} ${request.url} - ${statusCode} ${exception.message}`,
-    );
+    // 로그 메시지 구성
+    const logMessage = `[${requestId}] ${method} ${url} ${statusCode} - ${this.extractMessage(exceptionResponse)}${userId ? ` - UserId: ${userId}` : ''} - IP: ${ip}`;
 
+    // 에러 레벨에 따른 로깅
+    if (statusCode >= 500) {
+      // 서버 에러 (5xx)
+      this.logger.error(
+        logMessage,
+        exception instanceof Error ? exception.stack : undefined,
+      );
+    } else if (statusCode >= 400) {
+      // 클라이언트 에러 (4xx)
+      this.logger.warn(logMessage);
+    }
+
+    // 응답 전송
     response.status(statusCode).json(errorResponse);
   }
 

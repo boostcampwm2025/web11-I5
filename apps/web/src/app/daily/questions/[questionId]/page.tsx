@@ -1,17 +1,25 @@
 import { notFound } from "next/navigation";
 import QuestionCard from "./_components/question-card";
-import RecordingSection from "./_components/recording-section";
 import { getQuestion } from "./_lib/question-api";
+import InputSection from "./_components/input-section";
 
 interface DailyQuestionPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
   params: Promise<{
     questionId: string;
   }>;
 }
 
-async function DailyQuestionPage({ params }: DailyQuestionPageProps) {
+async function DailyQuestionPage({
+  params,
+  searchParams,
+}: DailyQuestionPageProps) {
   const { questionId } = await params;
+  const { mode: modeParam } = await searchParams;
   const question = await getQuestion(questionId);
+
+  const mode =
+    modeParam === "voice" || modeParam === "text" ? modeParam : "voice";
 
   if (!question) {
     notFound();
@@ -25,7 +33,7 @@ async function DailyQuestionPage({ params }: DailyQuestionPageProps) {
         categoryName={question.category?.name}
         parentCategoryName={question.category?.parent?.name}
       />
-      <RecordingSection questionId={question.id} />
+      <InputSection initialInputMode={mode} questionId={question.id} />
     </main>
   );
 }

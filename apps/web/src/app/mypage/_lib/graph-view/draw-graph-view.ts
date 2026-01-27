@@ -26,7 +26,16 @@ function drawGraphView(
 
   const hoveredSet = new Set<number>();
 
-  ctx.lineWidth = 1;
+  // 줌 레벨에 따라 시각적 굵기를 min/max 범위 내로 유지
+  const minVisualWidth = GRAPH_NUMBER_CONSTANT.MIN_EDGE_STROKE_WIDTH;
+  const maxVisualWidth = GRAPH_NUMBER_CONSTANT.MAX_EDGE_STROKE_WIDTH;
+  const baseWidth = GRAPH_NUMBER_CONSTANT.EDGE_STROKE_WIDTH;
+  const clampedVisualWidth = Math.max(
+    minVisualWidth,
+    Math.min(baseWidth * scale, maxVisualWidth),
+  );
+  ctx.lineWidth = clampedVisualWidth / scale;
+
   edges.forEach((edge) => {
     const source = nodes.get(edge.sourceId);
     const target = nodes.get(edge.targetId);
@@ -54,15 +63,23 @@ function drawGraphView(
     ctx.stroke();
   });
 
-  ctx.font = "12px sans-serif";
+  const fontFamily = window.getComputedStyle(document.body).fontFamily;
+  ctx.font = `8px ${fontFamily}`;
   ctx.textAlign = "center";
+  const textAlpha = Math.min(
+    1,
+    Math.max(0, (scale - textRenderScale) / textRenderScale),
+  );
   nodes.forEach((node) => {
     const isHovered = node.id === hoveredNode;
     const isHighlighted = hoveredSet.has(node.id);
     const isDimmed = hoveredNode !== null && !isHovered && !isHighlighted;
-    const radius = isHovered
-      ? GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 2
-      : GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
+    // 질문노드 -> 키워드 노드보다 반지름 +1px 정도 크게
+    const nodeRadius =
+      node.type === NodeType.QUESTION
+        ? GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 1
+        : GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
+    const radius = isHovered ? nodeRadius + 2 : nodeRadius;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
@@ -77,14 +94,13 @@ function drawGraphView(
     }
     ctx.fill();
 
-    ctx.fillStyle = isDimmed
-      ? hexToRgba(
-          GRAPH_COLOR_CONSTANT.LABEL,
-          GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA,
-        )
-      : GRAPH_COLOR_CONSTANT.LABEL;
-    if (scale > textRenderScale)
+    if (textAlpha > 0) {
+      const labelAlpha = isDimmed
+        ? GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA * textAlpha
+        : textAlpha;
+      ctx.fillStyle = hexToRgba(GRAPH_COLOR_CONSTANT.LABEL, labelAlpha);
       ctx.fillText(node.label, node.x, node.y + radius + 14);
+    }
   });
 
   ctx.restore();

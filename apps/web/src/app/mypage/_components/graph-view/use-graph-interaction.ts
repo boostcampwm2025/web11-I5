@@ -74,8 +74,8 @@ function useGraphInteraction(
         const dx = graphX - node.x;
         const dy = graphY - node.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        //노드 반지름 + 5해서 노드 보다 조금 넓은 범위 클릭하면 선택할 수 있게
-        if (distance <= GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 5) {
+        //노드 반지름 +10해서 노드 보다 조금 넓은 범위 클릭하면 선택할 수 있게
+        if (distance <= GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 10) {
           return node;
         }
       }

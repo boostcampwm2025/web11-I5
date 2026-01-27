@@ -104,7 +104,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   return (
     <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-screen">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">문제 리스트</h1>
+        <h1 className="text-3xl font-bold mb-1">문제 리스트</h1>
         <p className="text-muted-foreground">
           총 <span className="font-semibold text-teal-600">{totalCount}</span>
           개의 문제가 준비되어 있습니다.

@@ -29,7 +29,7 @@ export default function QuestionCard({
       </button>
 
       {(parentCategoryName || categoryName) && (
-        <p className="text-gray-500 text-xs mb-3">
+        <p className="text-gray-500 text-sm mb-3">
           {[parentCategoryName, categoryName].filter(Boolean).join(" | ")}
         </p>
       )}
@@ -40,7 +40,7 @@ export default function QuestionCard({
           <p className="text-zinc-600 leading-relaxed">{content}</p>
         </>
       ) : (
-        <p className="text-gray-400 text-sm">문제가 숨겨져 있습니다</p>
+        <p className="text-gray-400 text-base">문제가 숨겨져 있습니다</p>
       )}
     </section>
   );

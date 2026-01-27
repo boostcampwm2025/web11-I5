@@ -2,18 +2,25 @@
 
 import { apiPost } from "@/lib/api-client";
 
-export interface SubmitAnswerState {
+interface SubmitAnswerState {
   success: boolean;
   message: string;
   submissionId?: number;
   error?: string;
 }
 
-export async function submitAnswerAction(
-  audioAssetId: number,
-  questionId: number,
-): Promise<SubmitAnswerState> {
-  if (!audioAssetId || !questionId) {
+interface SubmitAnswerParams {
+  questionId: number;
+  audioAssetId?: number;
+  rawAnswer?: string;
+}
+
+async function submitAnswerAction({
+  audioAssetId,
+  questionId,
+  rawAnswer,
+}: SubmitAnswerParams): Promise<SubmitAnswerState> {
+  if (!questionId || !(audioAssetId || rawAnswer)) {
     return {
       success: false,
       message: "",
@@ -23,8 +30,9 @@ export async function submitAnswerAction(
 
   try {
     const data = await apiPost<{ id: number }>("/answer-submissions", {
-      audioAssetId: Number(audioAssetId),
+      audioAssetId: audioAssetId,
       questionId: Number(questionId),
+      rawAnswer,
     });
 
     return {
@@ -41,3 +49,5 @@ export async function submitAnswerAction(
     };
   }
 }
+
+export { submitAnswerAction };

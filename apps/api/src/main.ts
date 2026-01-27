@@ -1,15 +1,33 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AllExceptionsFilter, HttpExceptionFilter } from './common/filters';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Logger 설정
+  const nodeEnv = process.env.NODE_ENV || 'development';
+  const loggerOptions: (
+    | 'debug'
+    | 'verbose'
+    | 'error'
+    | 'warn'
+    | 'log'
+    | 'fatal'
+  )[] =
+    nodeEnv === 'production'
+      ? ['error', 'warn', 'log'] // 프로덕션: DEBUG 제외
+      : ['error', 'warn', 'log', 'debug', 'verbose']; // 개발: 모든 레벨
 
-  // 전역 Exception Filters (AllExceptionsFilter가 먼저)
+  const app = await NestFactory.create(AppModule, {
+    logger: loggerOptions,
+  });
+
+  // 전역 인터셉터 및 필터 설정
+  app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());
 
   // ValidationPipe 전역 설정
@@ -27,7 +45,6 @@ async function bootstrap() {
   }
 
   // Swagger 설정 (로컬/개발 환경에서만 노출)
-  const nodeEnv = process.env.NODE_ENV || 'development';
   const isSwaggerEnabled = nodeEnv === 'development' || nodeEnv === 'local';
 
   if (isSwaggerEnabled) {
@@ -66,6 +83,14 @@ async function bootstrap() {
       });
   }
 
-  await app.listen(process.env.PORT ?? 8000);
+  const port = process.env.PORT ?? 8000;
+  await app.listen(port);
+
+  const logger = new Logger('Bootstrap');
+  logger.log(`🚀 Application is running on: http://localhost:${port}`);
+  if (isSwaggerEnabled) {
+    logger.log(`📚 Swagger documentation: http://localhost:${port}/api-docs`);
+  }
+  logger.log(`🌍 Environment: ${nodeEnv}`);
 }
 void bootstrap();

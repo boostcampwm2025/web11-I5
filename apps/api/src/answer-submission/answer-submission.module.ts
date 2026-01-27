@@ -8,11 +8,13 @@ import { AnswerSubmissionController } from './answer-submission.controller';
 import { AnswerSubmissionService } from './answer-submission.service';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 import { AuthModule } from '../auth/auth.module';
+import { AnswerEvaluationModule } from '../answer-evaluation/answer-evaluation.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AnswerSubmission, AudioAsset, Question]),
     forwardRef(() => SttModule),
+    forwardRef(() => AnswerEvaluationModule),
     StreaksModule,
     AuthModule,
   ],

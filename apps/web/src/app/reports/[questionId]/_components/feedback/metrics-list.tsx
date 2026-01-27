@@ -57,10 +57,8 @@ function MetricsList({ feedback, isPending }: MetricsListProps) {
   return (
     <div className="space-y-6">
       <div className="mb-4">
-        <h3 className="font-extrabold text-slate-900 mb-0.5">
-          성취도 상세 분석
-        </h3>
-        <span className="text-xs text-slate-400">
+        <h3 className="font-bold text-xl mb-0.5">성취도 상세 분석</h3>
+        <span className="text-base text-muted-foreground">
           항목별 평가 상세 내역입니다
         </span>
       </div>
