@@ -354,10 +354,10 @@ function useRecorder(options: UseRecorderOptions = {}) {
   }, []);
 
   // 재생 시작/재개
-  const playRecording = React.useCallback(() => {
-    if (!recordedBlobRef.current) return;
+  // Audio 엘리먼트 생성 (재생 또는 seek 시 lazy 생성)
+  const ensureAudioElement = React.useCallback(() => {
+    if (!recordedBlobRef.current) return null;
 
-    // Audio 엘리먼트가 없으면 생성
     if (!audioRef.current) {
       audioUrlRef.current = URL.createObjectURL(recordedBlobRef.current);
       audioRef.current = new Audio(audioUrlRef.current);
@@ -376,9 +376,16 @@ function useRecorder(options: UseRecorderOptions = {}) {
       audioRef.current.addEventListener("ended", handleEnded);
     }
 
-    void audioRef.current.play();
-    setIsPlaying(true);
+    return audioRef.current;
   }, []);
+
+  const playRecording = React.useCallback(() => {
+    const audio = ensureAudioElement();
+    if (!audio) return;
+
+    void audio.play();
+    setIsPlaying(true);
+  }, [ensureAudioElement]);
 
   // 일시정지
   const pausePlayback = React.useCallback(() => {
@@ -399,12 +406,16 @@ function useRecorder(options: UseRecorderOptions = {}) {
   }, []);
 
   // 특정 위치로 이동
-  const seekTo = React.useCallback((time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setPlaybackTime(time);
-    }
-  }, []);
+  const seekTo = React.useCallback(
+    (time: number) => {
+      const audio = ensureAudioElement();
+      if (audio) {
+        audio.currentTime = time;
+        setPlaybackTime(time);
+      }
+    },
+    [ensureAudioElement],
+  );
 
   const getAudioBlob = React.useCallback(
     () => recordedBlobRef.current ?? null,
