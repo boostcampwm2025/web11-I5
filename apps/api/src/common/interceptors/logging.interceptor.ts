@@ -19,12 +19,7 @@ export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name);
 
   // 로그에서 제외할 경로 목록
-  private readonly excludedPaths = [
-    '/health',
-    '/api-docs',
-    '/api-docs-json',
-    '/favicon.ico',
-  ];
+  private readonly excludedPaths = ['/health', '/api-docs', '/api-docs-json'];
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<Request>();
