@@ -148,7 +148,7 @@ function VoiceInput({
             maxDurationSeconds={maxDurationSeconds}
           />
 
-          <div className="max-w-lg w-full px-6">
+          <div className="max-w-sm w-full px-6">
             {hasRecorded ? (
               <div className="flex items-center gap-3 h-40">
                 <button
