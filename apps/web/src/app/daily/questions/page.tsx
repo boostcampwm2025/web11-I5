@@ -102,7 +102,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   };
 
   return (
-    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-screen">
+    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-main">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-1">문제 리스트</h1>
         <p className="text-muted-foreground">
@@ -186,6 +186,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
                       />
                     ) : (
                       <PaginationPrevious
+                        href={buildPaginationUrl(currentPage)}
                         className="pointer-events-none opacity-50"
                         aria-disabled="true"
                       />
@@ -203,6 +204,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
                       />
                     ) : (
                       <PaginationNext
+                        href={buildPaginationUrl(currentPage)}
                         className="pointer-events-none opacity-50"
                         aria-disabled="true"
                       />

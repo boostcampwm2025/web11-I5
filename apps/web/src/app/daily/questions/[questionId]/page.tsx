@@ -26,7 +26,7 @@ async function DailyQuestionPage({
   }
 
   return (
-    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-screen">
+    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-main">
       <QuestionCard
         title={question.title}
         content={question.content}

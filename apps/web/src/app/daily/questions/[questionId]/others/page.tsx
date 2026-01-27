@@ -189,7 +189,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
   };
 
   return (
-    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-screen">
+    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-main">
       <div className="mb-8">
         <div className="flex items-center gap-2 text-base text-muted-foreground mb-2">
           <span className="font-medium">{question.category.parent.name}</span>
@@ -277,6 +277,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
                       />
                     ) : (
                       <PaginationPrevious
+                        href={buildPaginationUrl(currentPage)}
                         className="pointer-events-none opacity-50"
                         aria-disabled="true"
                       />
@@ -294,6 +295,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
                       />
                     ) : (
                       <PaginationNext
+                        href={buildPaginationUrl(currentPage)}
                         className="pointer-events-none opacity-50"
                         aria-disabled="true"
                       />

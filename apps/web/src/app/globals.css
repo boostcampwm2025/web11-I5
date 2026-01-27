@@ -125,3 +125,8 @@
     font-synthesis: none;
   }
 }
+
+@utility min-h-main {
+  min-height: calc(100vh - 19rem);
+}
+

@@ -93,7 +93,7 @@ function ReportTabs({
               evaluation.totalScore &&
               evaluation.totalScore >= 30 && (
                 <div className="mt-6">
-                  <h4 className="font-bold text-slate-400 uppercase tracking-wider mb-3">
+                  <h4 className="font-semibold text-sm text-slate-400 uppercase tracking-wider mb-3">
                     CORE KEYWORDS
                   </h4>
                   <div className="flex flex-wrap items-center gap-2">
