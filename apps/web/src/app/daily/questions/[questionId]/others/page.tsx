@@ -208,10 +208,9 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-16"></TableHead>
             <TableHead>사용자</TableHead>
-            <TableHead className="w-32">제출 시각</TableHead>
-            <TableHead className="w-24 text-center">점수</TableHead>
+            <TableHead>제출 시각</TableHead>
+            <TableHead className="text-center">점수</TableHead>
             <TableHead className="w-24 text-center">상세</TableHead>
           </TableRow>
         </TableHeader>
@@ -229,16 +228,14 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
             submissions.map((submission) => (
               <TableRow key={submission.id}>
                 <TableCell>
-                  <div className="flex justify-center">
+                  <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
                       <User className="w-5 h-5 text-slate-400" />
                     </div>
+                    <div className="font-medium text-base">
+                      {submission.user.nickname}
+                    </div>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <span className="font-medium text-base">
-                    {submission.user.nickname}
-                  </span>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
                   {formatSubmittedAt(submission.submittedAt)}
