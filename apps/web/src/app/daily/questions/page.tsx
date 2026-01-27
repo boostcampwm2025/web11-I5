@@ -214,6 +214,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
           </TableRow>
         </TableFooter>
       </Table>
+      <div data-boostad-zone></div>
     </main>
   );
 }
