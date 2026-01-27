@@ -158,6 +158,14 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
     if (!user) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
+
+    // profileImage의 objectKey를 S3 URL로 변환
+    if (user.profileImage) {
+      user.profileImage = this.objectStorageService.getPublicUrl(
+        user.profileImage,
+      );
+    }
+
     return user;
   }
 
@@ -290,7 +298,10 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
     userId: number,
     editUserRequestDto: EditUserRequestDto,
   ): Promise<User> {
-    if (!editUserRequestDto.nickname && !editUserRequestDto.objectKey) {
+    if (
+      !editUserRequestDto.nickname &&
+      editUserRequestDto.objectKey === undefined
+    ) {
       throw new BadRequestException('수정할 정보를 입력해주세요.');
     }
 
@@ -300,47 +311,25 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
     }
 
     let hasChanges = false;
+    const oldProfileImageKey = userInfo.profileImage;
 
-    if (editUserRequestDto.objectKey) {
-      const session = this.uploadSessions.get(editUserRequestDto.objectKey);
+    // 이미지 변경시
+    if (editUserRequestDto.objectKey !== undefined) {
+      if (editUserRequestDto.objectKey === null) {
+        // 삭제 처리 -> DB의 profileImage ObjectKey = null
+        userInfo.profileImage = null;
+        hasChanges = true;
+      } else {
+        // 새로운 이미지 -> 업로드 확인
+        await this.verifyNewProfileImage(editUserRequestDto.objectKey, userId);
 
-      if (
-        !session ||
-        session.userId !== userId ||
-        session.expiresAt <= new Date()
-      ) {
-        throw new BadRequestException(
-          '유효하지 않은 프로필 이미지 업로드 세션입니다.',
-        );
+        userInfo.profileImage = editUserRequestDto.objectKey;
+        this.uploadSessions.delete(editUserRequestDto.objectKey);
+        hasChanges = true;
       }
-
-      try {
-        const { exists } = await this.objectStorageService.verifyFileExists(
-          editUserRequestDto.objectKey,
-        );
-        if (!exists) {
-          throw new BadRequestException('이미지가 업로드되지 않았습니다.');
-        }
-      } catch (error) {
-        if (error instanceof BadRequestException) {
-          throw error;
-        }
-        this.logger.error(
-          `Failed to verify file: ${editUserRequestDto.objectKey}`,
-          error,
-        );
-        throw new InternalServerErrorException('이미지 검증에 실패했습니다.');
-      }
-
-      const profileImageUrl = this.objectStorageService.getPublicUrl(
-        editUserRequestDto.objectKey,
-      );
-
-      userInfo.profileImage = profileImageUrl;
-      this.uploadSessions.delete(editUserRequestDto.objectKey);
-      hasChanges = true;
     }
 
+    // 닉네임 변경시
     if (
       editUserRequestDto.nickname &&
       editUserRequestDto.nickname !== userInfo.nickname
@@ -359,7 +348,25 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
 
     if (hasChanges) {
       try {
-        return await this.userRepository.save(userInfo);
+        const savedUser = await this.userRepository.save(userInfo);
+
+        // DB 저장 성공 후 오래된 이미지 cleanup
+        if (
+          editUserRequestDto.objectKey !== undefined &&
+          oldProfileImageKey &&
+          oldProfileImageKey !== savedUser.profileImage
+        ) {
+          this.cleanupOldProfileImage(oldProfileImageKey);
+        }
+
+        // profileImage를 objectKey에서 URL로 변환
+        if (savedUser.profileImage) {
+          savedUser.profileImage = this.objectStorageService.getPublicUrl(
+            savedUser.profileImage,
+          );
+        }
+
+        return savedUser;
       } catch (error) {
         // 레이스 컨디션 처리
         if (error instanceof QueryFailedError) {
@@ -379,6 +386,55 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
       }
     }
 
+    // profileImage를 objectKey에서 URL로 변환
+    if (userInfo.profileImage) {
+      userInfo.profileImage = this.objectStorageService.getPublicUrl(
+        userInfo.profileImage,
+      );
+    }
+
     return userInfo;
+  }
+
+  /**
+   * presigned URL로 이미지가 업로드 되었는지 확인
+   */
+  private async verifyNewProfileImage(objectKey: string, userId: number) {
+    const session = this.uploadSessions.get(objectKey);
+
+    if (
+      !session ||
+      session.userId !== userId ||
+      session.expiresAt <= new Date()
+    ) {
+      throw new BadRequestException('유효하지 않은 이미지 세션입니다.');
+    }
+
+    try {
+      const { exists } =
+        await this.objectStorageService.verifyFileExists(objectKey);
+      if (!exists) {
+        throw new BadRequestException('이미지가 업로드되지 않았습니다.');
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(`Failed to verify file: ${objectKey}`, error);
+      throw new InternalServerErrorException('이미지 검증에 실패하였습니다.');
+    }
+  }
+
+  /**
+   * 오래된 프로필 이미지를 S3에서 삭제
+   */
+  private cleanupOldProfileImage(oldImageKey: string): void {
+    // await 하지 않고 사용자 요청은 빠르게 처리될 수 있게 하기
+    void this.objectStorageService.deleteObject(oldImageKey).catch((err) => {
+      this.logger.error(
+        `Failed to delete old profile image: ${oldImageKey}`,
+        err,
+      );
+    });
   }
 }

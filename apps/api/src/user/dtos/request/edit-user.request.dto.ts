@@ -5,6 +5,7 @@ import {
   MinLength,
   MaxLength,
   Matches,
+  ValidateIf,
 } from 'class-validator';
 
 const NICKNAME_MIN_LENGTH = 1;
@@ -30,11 +31,15 @@ export class EditUserRequestDto {
   nickname?: string;
 
   @ApiProperty({
-    description: 'Object Storage 키',
+    description:
+      'Object Storage 키. null을 보내면 프로필 이미지 삭제, 문자열을 보내면 이미지 변경, 보내지 않으면 변경 없음',
     example: 'profile-images/uuid-here',
     required: false,
+    nullable: true,
+    type: String,
   })
   @IsOptional()
+  @ValidateIf((o: EditUserRequestDto) => o.objectKey !== null)
   @IsString({ message: 'objectKey는 문자열이어야 합니다.' })
-  objectKey?: string;
+  objectKey?: string | null;
 }

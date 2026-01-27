@@ -216,11 +216,34 @@ export class UserController {
   }
 
   @Patch('me')
-  @ApiOperation({ summary: '사용자 정보 수정 (닉네임, 프로필 이미지)' })
+  @ApiOperation({
+    summary: '사용자 정보 수정 (닉네임, 프로필 이미지)',
+    description: 'objectKey에 null을 보내면 프로필 이미지가 삭제됩니다.',
+  })
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiBody({ type: EditUserRequestDto })
+  @ApiBody({
+    type: EditUserRequestDto,
+    examples: {
+      updateNickname: {
+        summary: '닉네임만 변경',
+        value: { nickname: '새닉네임' },
+      },
+      updateImage: {
+        summary: '프로필 이미지 변경',
+        value: { objectKey: 'profile-images/uuid-here' },
+      },
+      deleteImage: {
+        summary: '프로필 이미지 삭제',
+        value: { objectKey: null },
+      },
+      updateBoth: {
+        summary: '닉네임과 이미지 동시 변경',
+        value: { nickname: '새닉네임', objectKey: 'profile-images/uuid-here' },
+      },
+    },
+  })
   @ApiResponse({
     status: 200,
     description: '사용자 정보 수정 성공',
