@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
 import { AnswerSubmissionService } from 'src/answer-submission/answer-submission.service';
@@ -147,6 +151,9 @@ export class QuestionService {
     page: number = 1,
     size: number = 10,
   ): Promise<PaginatedOtherSubmissionsDto> {
+    if (page < 1 || size < 1) {
+      throw new BadRequestException('page 와 size는 1 이상이어야 합니다.');
+    }
     const skip = (page - 1) * size;
 
     // 문제 존재 여부 확인
