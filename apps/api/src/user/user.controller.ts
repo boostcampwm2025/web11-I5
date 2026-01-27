@@ -1,32 +1,36 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Res,
   HttpCode,
   HttpStatus,
+  Patch,
+  Post,
+  Query,
+  Res,
   UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import {
-  ApiTags,
+  ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiResponse,
-  ApiBody,
-  ApiBearerAuth,
+  ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { UserService } from './user.service';
-import { LoginResponseDto } from './dtos/response/login.response.dto';
-import { LoginRequestDto } from './dtos/request/login.request.dto';
 import { AuthService } from '../auth/auth.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserId } from '../auth/decorators/user-id.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateUserRequestDto } from './dtos/request/create-user.request.dto';
-import { UserPublicResponseDto } from './dtos/response/user.public.response.dto';
+import { EditUserRequestDto } from './dtos/request/edit-user.request.dto';
+import { LoginRequestDto } from './dtos/request/login.request.dto';
+import { LoginResponseDto } from './dtos/response/login.response.dto';
+import { PresignedUrlResponseDto } from './dtos/response/presigned-url.response.dto';
 import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
+import { UserPublicResponseDto } from './dtos/response/user.public.response.dto';
+import { UserService } from './user.service';
 
 const USER_CONTROLLER_VALIDATION_PIPE = new ValidationPipe({
   transform: true,
@@ -155,6 +159,7 @@ export class UserController {
       id: user.id,
       email: user.email,
       nickname: user.nickname,
+      profileImage: user.profileImage ?? null,
       totalPoint: user.totalPoint ?? 0,
       totalScore: user.totalScore ?? 0,
       createdAt: user.createdAt.toISOString(),
@@ -179,5 +184,83 @@ export class UserController {
     @UserId() userId: number,
   ): Promise<SolvedProblemsListResponseDto> {
     return await this.userService.getSolvedProblems(userId);
+  }
+
+  @Post('presigned-url')
+  @ApiOperation({ summary: '프로필 이미지 업로드용 Presigned URL 요청' })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 200,
+    description: 'Presigned URL 생성 성공',
+    type: PresignedUrlResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: '지원하지 않는 Content-Type',
+  })
+  @ApiResponse({
+    status: 401,
+    description: '로그인이 필요합니다',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Presigned URL 생성 실패',
+  })
+  async requestPresignedUrl(
+    @UserId() userId: number,
+    @Query('contentType') contentType?: string,
+  ): Promise<PresignedUrlResponseDto> {
+    return await this.userService.requestPresignedUrl(userId, contentType);
+  }
+
+  @Patch('me')
+  @ApiOperation({ summary: '사용자 정보 수정 (닉네임, 프로필 이미지)' })
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: EditUserRequestDto })
+  @ApiResponse({
+    status: 200,
+    description: '사용자 정보 수정 성공',
+    type: EditUserRequestDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      '잘못된 요청 (유효성 검증 실패, 유효하지 않은 objectKey, 수정할 정보 없음)',
+  })
+  @ApiResponse({
+    status: 401,
+    description: '로그인이 필요합니다',
+  })
+  @ApiResponse({
+    status: 404,
+    description: '사용자를 찾을 수 없습니다',
+  })
+  @ApiResponse({
+    status: 409,
+    description: '이미 사용 중인 닉네임입니다',
+  })
+  @ApiResponse({
+    status: 500,
+    description: '이미지 검증 실패',
+  })
+  @UsePipes(USER_CONTROLLER_VALIDATION_PIPE)
+  async editUser(
+    @UserId() userId: number,
+    @Body() editUserRequestDto: EditUserRequestDto,
+  ): Promise<UserPublicResponseDto> {
+    const user = await this.userService.editUser(userId, editUserRequestDto);
+    return {
+      id: user.id,
+      email: user.email,
+      nickname: user.nickname,
+      profileImage: user.profileImage || null,
+      totalPoint: user.totalPoint ?? 0,
+      totalScore: user.totalScore ?? 0,
+      createdAt: user.createdAt.toISOString(),
+    };
   }
 }

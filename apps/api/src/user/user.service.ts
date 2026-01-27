@@ -1,32 +1,81 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   NotFoundException,
+  OnModuleDestroy,
+  OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { randomUUID } from 'crypto';
+import { ObjectStorageService } from 'src/object-storage/object-storage.service';
+import { QueryFailedError, Repository } from 'typeorm';
+import { EvaluationStatus } from '../answer-evaluation/answer-evaluation.constants';
+import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
+import { EditUserRequestDto } from './dtos/request/edit-user.request.dto';
+import { SolvedProblemDto } from './dtos/response/solved-problem.dto';
+import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
 import { UserRole } from './entities/user-role.enum';
+import { User } from './entities/user.entity';
 import { UserRepository } from './user.repository';
 import {
   hashPassword,
   isHashedPassword,
   verifyPassword,
 } from './utils/password.util';
-import { QueryFailedError } from 'typeorm';
-import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
-import { EvaluationStatus } from '../answer-evaluation/answer-evaluation.constants';
-import { SolvedProblemDto } from './dtos/response/solved-problem.dto';
-import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
 
 @Injectable()
-export class UserService {
+export class UserService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(UserService.name);
+  private cleanupInterval: NodeJS.Timeout;
+
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly objectStorageService: ObjectStorageService,
     @InjectRepository(AnswerSubmission)
     private readonly answerSubmissionRepository: Repository<AnswerSubmission>,
   ) {}
+
+  // 메시지큐 대신 사용할 맵
+  private uploadSessions = new Map<
+    string,
+    { userId: number; expiresAt: Date }
+  >();
+
+  // 5분마다 uploadSession 초기화
+  onModuleInit() {
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupExpiredSessions();
+      },
+      5 * 60 * 1000,
+    );
+  }
+
+  onModuleDestroy() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+  }
+
+  private cleanupExpiredSessions() {
+    const now = new Date();
+    let cleanedCount = 0;
+
+    for (const [key, session] of this.uploadSessions.entries()) {
+      if (session.expiresAt <= now) {
+        this.uploadSessions.delete(key);
+        cleanedCount++;
+      }
+    }
+
+    if (cleanedCount > 0) {
+      this.logger.log(`Cleaned up ${cleanedCount} expired upload sessions`);
+    }
+  }
 
   async findOneById(id: number): Promise<User | null> {
     return this.userRepository.findOneById(id);
@@ -188,5 +237,148 @@ export class UserService {
       problems,
       totalCount: problems.length,
     };
+  }
+
+  async requestPresignedUrl(userId: number, contentType?: string) {
+    // Content-Type 허용 리스트
+    const allowedContentTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+    ];
+    const finalContentType = contentType || 'image/jpeg';
+
+    if (!allowedContentTypes.includes(finalContentType)) {
+      throw new BadRequestException(
+        `지원하지 않는 Content-Type입니다. 허용: ${allowedContentTypes.join(', ')}`,
+      );
+    }
+
+    const sessionId = randomUUID();
+    const objectKey = `profile-images/${sessionId}`;
+
+    this.uploadSessions.set(objectKey, {
+      userId,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    });
+
+    try {
+      const { uploadUrl, expiresIn } =
+        await this.objectStorageService.createPresignedPutUrl(
+          objectKey,
+          finalContentType,
+        );
+
+      return {
+        uploadUrl,
+        objectKey,
+        expiresIn,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to create presigned URL for user ${userId}`,
+        error,
+      );
+      throw new InternalServerErrorException(
+        '프로필 이미지 업로드 URL 생성에 실패했습니다.',
+      );
+    }
+  }
+
+  async editUser(
+    userId: number,
+    editUserRequestDto: EditUserRequestDto,
+  ): Promise<User> {
+    if (!editUserRequestDto.nickname && !editUserRequestDto.objectKey) {
+      throw new BadRequestException('수정할 정보를 입력해주세요.');
+    }
+
+    const userInfo = await this.findOneById(userId);
+    if (!userInfo) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    let hasChanges = false;
+
+    if (editUserRequestDto.objectKey) {
+      const session = this.uploadSessions.get(editUserRequestDto.objectKey);
+
+      if (
+        !session ||
+        session.userId !== userId ||
+        session.expiresAt <= new Date()
+      ) {
+        throw new BadRequestException(
+          '유효하지 않은 프로필 이미지 업로드 세션입니다.',
+        );
+      }
+
+      try {
+        const { exists } = await this.objectStorageService.verifyFileExists(
+          editUserRequestDto.objectKey,
+        );
+        if (!exists) {
+          throw new BadRequestException('이미지가 업로드되지 않았습니다.');
+        }
+      } catch (error) {
+        if (error instanceof BadRequestException) {
+          throw error;
+        }
+        this.logger.error(
+          `Failed to verify file: ${editUserRequestDto.objectKey}`,
+          error,
+        );
+        throw new InternalServerErrorException('이미지 검증에 실패했습니다.');
+      }
+
+      const profileImageUrl = this.objectStorageService.getPublicUrl(
+        editUserRequestDto.objectKey,
+      );
+
+      userInfo.profileImage = profileImageUrl;
+      this.uploadSessions.delete(editUserRequestDto.objectKey);
+      hasChanges = true;
+    }
+
+    if (
+      editUserRequestDto.nickname &&
+      editUserRequestDto.nickname !== userInfo.nickname
+    ) {
+      const existingUser = await this.userRepository.findOneByNickname(
+        editUserRequestDto.nickname,
+      );
+
+      if (existingUser) {
+        throw new ConflictException('이미 사용 중인 닉네임입니다.');
+      }
+
+      userInfo.nickname = editUserRequestDto.nickname;
+      hasChanges = true;
+    }
+
+    if (hasChanges) {
+      try {
+        return await this.userRepository.save(userInfo);
+      } catch (error) {
+        // 레이스 컨디션 처리
+        if (error instanceof QueryFailedError) {
+          const driverError = error.driverError as {
+            code?: unknown;
+            detail?: unknown;
+          };
+          if (driverError?.code === '23505') {
+            const detail =
+              typeof driverError.detail === 'string' ? driverError.detail : '';
+            if (detail.includes('(nickname)')) {
+              throw new ConflictException('이미 사용 중인 닉네임입니다.');
+            }
+          }
+        }
+        throw error;
+      }
+    }
+
+    return userInfo;
   }
 }

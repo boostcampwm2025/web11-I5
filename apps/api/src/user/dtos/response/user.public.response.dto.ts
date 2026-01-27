@@ -10,6 +10,13 @@ export class UserPublicResponseDto {
   @ApiProperty({ description: '닉네임', example: 'user123' })
   nickname: string;
 
+  @ApiProperty({
+    description: '프로필 이미지 URL',
+    example: 'https://endpoint/bucket/profile-images/uuid',
+    nullable: true,
+  })
+  profileImage: string | null;
+
   @ApiProperty({ description: '총 포인트', example: 0 })
   totalPoint: number;
 
