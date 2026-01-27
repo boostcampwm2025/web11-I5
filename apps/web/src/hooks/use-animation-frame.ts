@@ -2,7 +2,7 @@ import * as React from "react";
 
 type AnimationCallback = (deltaTime: number) => void;
 
-function useAnimationFrame(callback: AnimationCallback) {
+function useAnimationFrame(callback: AnimationCallback, enabled = true) {
   const callbackRef = React.useRef<AnimationCallback>(callback);
   const rafIdRef = React.useRef<number | null>(null);
   const lastTimeRef = React.useRef<number | null>(null);
@@ -12,6 +12,15 @@ function useAnimationFrame(callback: AnimationCallback) {
   }, [callback]);
 
   React.useEffect(() => {
+    if (!enabled) {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+      lastTimeRef.current = null;
+      return;
+    }
+
     const loop = (time: number) => {
       const last = lastTimeRef.current;
       const deltaTime = last === null ? 0 : time - last;
@@ -29,7 +38,7 @@ function useAnimationFrame(callback: AnimationCallback) {
       rafIdRef.current = null;
       lastTimeRef.current = null;
     };
-  }, []);
+  }, [enabled]);
 }
 
 export default useAnimationFrame;

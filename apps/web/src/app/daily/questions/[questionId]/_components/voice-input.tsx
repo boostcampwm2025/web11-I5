@@ -10,7 +10,10 @@ import {
   MicOff,
   ShieldAlert,
   AlertCircle,
+  Play,
+  Pause,
 } from "lucide-react";
+import { Slider } from "@/components/slider/slider";
 import useRecorder, { RecorderStatus } from "../_hooks/use-recorder";
 import RecordButton from "./record-button";
 import useWav from "@/hooks/use-wav";
@@ -51,9 +54,41 @@ function VoiceInput({
     stopRecording,
     retryRecording,
     getAudioBlob,
+    isPlaying,
+    playbackTime,
+    duration,
+    playRecording,
+    pausePlayback,
+    seekTo,
   } = useRecorder({ maxDurationSeconds });
 
   const { play: playDing, ready: dingWavReady } = useWav("/ui-confirm.wav", 1);
+
+  const wasPlayingBeforeSeekRef = React.useRef(false);
+
+  const handleSeekStart = () => {
+    wasPlayingBeforeSeekRef.current = isPlaying;
+    if (isPlaying) {
+      pausePlayback();
+    }
+  };
+
+  const handleSeekEnd = (value: number[]) => {
+    seekTo(value[0]);
+    const shouldResume = wasPlayingBeforeSeekRef.current;
+    wasPlayingBeforeSeekRef.current = false;
+    if (shouldResume) {
+      playRecording();
+    }
+  };
+
+  const handleSeekCancel = () => {
+    const shouldResume = wasPlayingBeforeSeekRef.current;
+    wasPlayingBeforeSeekRef.current = false;
+    if (shouldResume) {
+      playRecording();
+    }
+  };
 
   const recordingState: RecordingState = isRecording
     ? "recording"
@@ -122,8 +157,48 @@ function VoiceInput({
             maxDurationSeconds={maxDurationSeconds}
           />
 
-          <div className="max-w-lg">
-            <Waveform historyRef={historyRef} />
+          <div className="max-w-sm w-full px-6">
+            {hasRecorded ? (
+              <div className="flex items-center gap-3 h-40">
+                <button
+                  type="button"
+                  onClick={isPlaying ? pausePlayback : playRecording}
+                  disabled={isSubmitting}
+                  aria-label={isPlaying ? "일시정지" : "재생"}
+                  aria-pressed={isPlaying}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {isPlaying ? (
+                    <Pause className="w-5 h-5" />
+                  ) : (
+                    <Play className="w-5 h-5 ml-0.5" />
+                  )}
+                </button>
+                <div className="flex-1 flex items-center gap-3">
+                  <Slider
+                    value={[playbackTime]}
+                    min={0}
+                    max={duration || elapsedSeconds}
+                    step={0.1}
+                    onPointerDown={handleSeekStart}
+                    onPointerUp={handleSeekCancel}
+                    onPointerLeave={handleSeekCancel}
+                    onValueChange={([value]) => seekTo(value)}
+                    onValueCommit={handleSeekEnd}
+                    disabled={isSubmitting}
+                    className="flex-1"
+                    aria-label="녹음 재생 위치"
+                    aria-valuetext={`${formatTime(Math.floor(playbackTime))} / ${formatTime(Math.floor(duration || elapsedSeconds))}`}
+                  />
+                  <span className="text-sm tabular-nums text-muted-foreground min-w-17.5 text-right">
+                    {formatTime(Math.floor(playbackTime))} /{" "}
+                    {formatTime(Math.floor(duration || elapsedSeconds))}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <Waveform historyRef={historyRef} />
+            )}
           </div>
 
           <div className="flex items-center justify-center h-24">
@@ -227,12 +302,12 @@ function StatusMessage({
     <div className="h-20 text-center">
       {state === "recording" && (
         <div className="animate-in fade-in">
-          <p className="text-5xl font-semibold tabular-nums text-center tracking-tight">
-            {formatTime(elapsedSeconds)}{" "}
-            <span className="text-lg text-muted-foreground font-normal">
+          <div className="text-5xl font-semibold tabular-nums text-center tracking-tight flex items-end gap-1">
+            <div>{formatTime(elapsedSeconds)} </div>
+            <div className="text-lg text-muted-foreground font-normal">
               / {formatTime(maxDurationSeconds)}
-            </span>
-          </p>
+            </div>
+          </div>
           <p className="text-muted-foreground text-center mt-1">녹음 중...</p>
         </div>
       )}
