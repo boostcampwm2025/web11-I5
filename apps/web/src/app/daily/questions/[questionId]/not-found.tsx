@@ -20,7 +20,7 @@ function NotFound() {
     };
 
     if (process.env.NODE_ENV === "production") {
-      logger.warn("404 Not Found - Question Deatil Page", context);
+      logger.warn("404 Not Found - Question Detail Page", context);
     }
   }, [pathname, searchParams, params]);
 
