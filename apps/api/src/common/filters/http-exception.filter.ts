@@ -17,7 +17,7 @@ import { ErrorResponse } from '../types/error-response.type';
  * - 에러 레벨별 로깅 (4xx: warn, 5xx: error)
  * - 개발 환경에서만 추가 정보 제공
  */
-@Catch()
+@Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
   private readonly isDevelopment = process.env.NODE_ENV === 'development';
