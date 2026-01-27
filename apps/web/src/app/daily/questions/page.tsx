@@ -133,8 +133,8 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
           {questions.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={4}
-                className="h-32 text-center text-muted-foreground"
+                colSpan={5}
+                className="h-32 text-center text-muted-foreground text-base"
               >
                 검색 결과가 없습니다.
               </TableCell>
@@ -153,12 +153,12 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
                 <TableCell>
                   <QuestionLinkButton question={question} />
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center text-base">
                   {(question.avgImportance ?? 0).toFixed(1)}
                 </TableCell>
                 <TableCell className="text-center">
                   {question.score !== null ? (
-                    <span className="text-teal-600 font-medium text-sm bg-teal-50 px-2 py-1 rounded-sm">
+                    <span className="text-teal-600 font-medium text-base bg-teal-50 px-2 py-1 rounded-sm">
                       {question.score}점
                     </span>
                   ) : (
