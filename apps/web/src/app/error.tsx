@@ -16,8 +16,33 @@ function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
   if (error instanceof ApiError) {
     // 401/403 인증 에러
     if (error.isAuthError()) {
-      router.push("/login");
-      return null;
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[90vh] gap-6 px-4">
+          <div className="p-8 w-full text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="w-25 h-25 bg-orange-50 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-15 h-15 text-orange-500" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold text-slate-900">
+                로그인이 필요합니다
+              </h2>
+              <p className="text-slate-600 text-lg">
+                인증이 만료되었거나 권한이 없습니다. 다시 로그인해주세요.
+              </p>
+            </div>
+            <div className="flex gap-4 justify-center">
+              <button
+                className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition font-bold cursor-pointer"
+                onClick={() => router.push("/login")}
+              >
+                로그인 페이지로 이동
+              </button>
+            </div>
+          </div>
+        </div>
+      );
     }
 
     const userMessage = error.getUserMessage();
