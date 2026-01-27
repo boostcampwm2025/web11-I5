@@ -80,6 +80,10 @@ function useRecorder(options: UseRecorderOptions = {}) {
   // 재생 관련 Ref
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = React.useRef<string | null>(null);
+  const audioHandlersRef = React.useRef<{
+    loadedmetadata: (() => void) | null;
+    ended: (() => void) | null;
+  }>({ loadedmetadata: null, ended: null });
 
   const accumRef = React.useRef({
     sumSq: 0,
@@ -311,11 +315,25 @@ function useRecorder(options: UseRecorderOptions = {}) {
   }, []);
 
   const retryRecording = React.useCallback(() => {
-    // 재생 정리
+    // 재생 정리 - 이벤트 리스너 제거
     if (audioRef.current) {
+      if (audioHandlersRef.current.loadedmetadata) {
+        audioRef.current.removeEventListener(
+          "loadedmetadata",
+          audioHandlersRef.current.loadedmetadata,
+        );
+      }
+      if (audioHandlersRef.current.ended) {
+        audioRef.current.removeEventListener(
+          "ended",
+          audioHandlersRef.current.ended,
+        );
+      }
       audioRef.current.pause();
       audioRef.current = null;
     }
+    audioHandlersRef.current = { loadedmetadata: null, ended: null };
+
     if (audioUrlRef.current) {
       URL.revokeObjectURL(audioUrlRef.current);
       audioUrlRef.current = null;
@@ -344,13 +362,18 @@ function useRecorder(options: UseRecorderOptions = {}) {
       audioUrlRef.current = URL.createObjectURL(recordedBlobRef.current);
       audioRef.current = new Audio(audioUrlRef.current);
 
-      audioRef.current.addEventListener("loadedmetadata", () => {
+      const handleLoadedMetadata = () => {
         setDuration(audioRef.current?.duration ?? 0);
-      });
-
-      audioRef.current.addEventListener("ended", () => {
+      };
+      const handleEnded = () => {
         setIsPlaying(false);
-      });
+      };
+
+      audioHandlersRef.current.loadedmetadata = handleLoadedMetadata;
+      audioHandlersRef.current.ended = handleEnded;
+
+      audioRef.current.addEventListener("loadedmetadata", handleLoadedMetadata);
+      audioRef.current.addEventListener("ended", handleEnded);
     }
 
     void audioRef.current.play();
@@ -429,9 +452,24 @@ function useRecorder(options: UseRecorderOptions = {}) {
     }
   }, isPlaying);
 
-  // 컴포넌트 언마운트 시 오디오 URL 정리
+  // 컴포넌트 언마운트 시 오디오 리소스 정리
   React.useEffect(() => {
     return () => {
+      if (audioRef.current) {
+        if (audioHandlersRef.current.loadedmetadata) {
+          audioRef.current.removeEventListener(
+            "loadedmetadata",
+            audioHandlersRef.current.loadedmetadata,
+          );
+        }
+        if (audioHandlersRef.current.ended) {
+          audioRef.current.removeEventListener(
+            "ended",
+            audioHandlersRef.current.ended,
+          );
+        }
+        audioRef.current.pause();
+      }
       if (audioUrlRef.current) {
         URL.revokeObjectURL(audioUrlRef.current);
       }
