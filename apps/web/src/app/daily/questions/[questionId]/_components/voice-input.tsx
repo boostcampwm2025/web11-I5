@@ -164,6 +164,8 @@ function VoiceInput({
                   type="button"
                   onClick={isPlaying ? pausePlayback : playRecording}
                   disabled={isSubmitting}
+                  aria-label={isPlaying ? "일시정지" : "재생"}
+                  aria-pressed={isPlaying}
                   className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   {isPlaying ? (
@@ -185,6 +187,8 @@ function VoiceInput({
                     onValueCommit={handleSeekEnd}
                     disabled={isSubmitting}
                     className="flex-1"
+                    aria-label="녹음 재생 위치"
+                    aria-valuetext={`${formatTime(Math.floor(playbackTime))} / ${formatTime(Math.floor(duration || elapsedSeconds))}`}
                   />
                   <span className="text-sm tabular-nums text-muted-foreground min-w-17.5 text-right">
                     {formatTime(Math.floor(playbackTime))} /{" "}
