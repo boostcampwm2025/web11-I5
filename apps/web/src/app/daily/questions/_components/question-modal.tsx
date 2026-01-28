@@ -73,7 +73,7 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
               className={cn(
                 "flex items-center justify-center gap-2 py-4 rounded-xl border transition-all duration-200",
                 answerMode === "text"
-                  ? "bg-white border-emerald-400 ring-1 ring-emerald-400 text-emerald-600 shadow-sm"
+                  ? "bg-white border-teal-400 ring-1 ring-teal-400 text-teal-600 shadow-sm"
                   : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100",
               )}
             >

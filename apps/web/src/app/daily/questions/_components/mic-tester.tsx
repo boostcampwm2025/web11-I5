@@ -208,8 +208,8 @@ export default function MicrophoneTester() {
 
       <div className="flex items-center justify-between w-full bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center shrink-0 animate-pulse">
-            <Mic className="w-5 h-5 text-emerald-500" />
+          <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center shrink-0 animate-pulse">
+            <Mic className="w-5 h-5 text-teal-500" />
           </div>
           <div className="text-left">
             <p className="text-sm font-semibold text-gray-900">녹음 중...</p>
