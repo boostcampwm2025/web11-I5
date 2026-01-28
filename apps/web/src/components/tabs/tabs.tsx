@@ -13,7 +13,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "ml-5 inline-flex h-12.5 items-center justify-center rounded-lg gap-2 text-zinc-500",
+      "ml-5 inline-flex h-12 items-center justify-center rounded-lg gap-1 text-zinc-500",
       className,
     )}
     {...props}
@@ -28,7 +28,22 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-t-xl px-5 py-3 text-base font-semibold ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-slate-100 text-slate-400  data-[state=active]:border-t-slate-200 data-[state=active]:border-x-slate-200 data-[state=active]:border-b-white data-[state=active]:shadow-[0px_1px_0px_0px_#FFFFFFFF] border-slate-100  data-[state=active]:bg-white border data-[state=active]:text-teal-500 data-[state=inactive]:hover:bg-slate-100/70",
+      "relative overflow-visible inline-flex items-center justify-center whitespace-nowrap rounded-t-xl px-5 pt-1 text-base font-semibold ring-offset-white h-full",
+      "transition-[transform,background-color,color,border-color] duration-200 ease-out",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+
+      "bg-slate-100 text-slate-400 border border-slate-100",
+      "data-[state=active]:bg-white data-[state=active]:text-teal-500",
+      "data-[state=active]:border-t-slate-200 data-[state=active]:border-x-slate-200 data-[state=active]:border-b-transparent",
+
+      "data-[state=inactive]:hover:bg-slate-100/70",
+      "data-[state=inactive]:scale-95 transition-transform",
+
+      // 🔽 핵심
+      "after:absolute after:-left-px after:-right-px after:-bottom-0.5 after:h-px",
+      "after:bg-white after:opacity-0 after:pointer-events-none",
+      "data-[state=active]:after:opacity-100",
+
       className,
     )}
     {...props}
