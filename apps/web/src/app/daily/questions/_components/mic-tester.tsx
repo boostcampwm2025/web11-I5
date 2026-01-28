@@ -42,12 +42,10 @@ export default function MicrophoneTester() {
   const wasPlayingBeforeSeekRef = React.useRef(false);
 
   useEffect(() => {
-    startRecording();
-
     return () => {
       stopRecording();
     };
-  }, [startRecording, stopRecording]);
+  }, [stopRecording]);
 
   const handleSeekStart = () => {
     wasPlayingBeforeSeekRef.current = isPlaying;
@@ -124,27 +122,6 @@ export default function MicrophoneTester() {
     );
   }
 
-  if (!isRecording && !hasRecorded) {
-    return (
-      <div className="h-75 w-full bg-slate-50 border border-slate-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in">
-        <div className="w-12 h-12 bg-white border border-slate-200 rounded-full flex items-center justify-center mb-4 shadow-sm">
-          <Mic className="w-6 h-6 text-slate-400" />
-        </div>
-        <h3 className="text-gray-900 font-bold text-lg mb-2">마이크 테스트</h3>
-        <p className="text-gray-500 text-sm mb-6">
-          버튼을 눌러 마이크가 잘 작동하는지 확인하세요.
-        </p>
-        <Button
-          onClick={() => startRecording()}
-          className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-6"
-        >
-          <Play className="w-4 h-4 mr-2 fill-current" />
-          테스트 녹음 시작
-        </Button>
-      </div>
-    );
-  }
-
   if (hasRecorded && !isRecording) {
     return (
       <div className="flex flex-col items-center justify-center h-75 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
@@ -198,31 +175,61 @@ export default function MicrophoneTester() {
 
   return (
     <div className="flex flex-col items-center justify-center h-75 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
+      {/* 파형 영역 */}
       <div className="h-24 flex items-center justify-center mb-6 relative w-full">
-        <div className="w-full max-w-xs opacity-70">
+        {/* 녹음 중이 아니더라도 파형 UI 틀은 유지 (opacity 등으로 시각적 구분 가능) */}
+        <div
+          className={`w-full max-w-xs transition-opacity duration-300 ${isRecording ? "opacity-100" : "opacity-50"}`}
+        >
           <Waveform historyRef={historyRef} />
         </div>
       </div>
 
+      {/* 하단 컨트롤 바 */}
       <div className="flex items-center justify-between w-full bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center shrink-0 animate-pulse">
-            <Mic className="w-5 h-5 text-teal-500" />
+          {/* 상태 아이콘: 녹음 중일 때만 pulse 애니메이션 */}
+          <div
+            className={`w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center shrink-0 ${isRecording ? "animate-pulse" : ""}`}
+          >
+            <Mic
+              className={`w-5 h-5 ${isRecording ? "text-teal-500" : "text-slate-400"}`}
+            />
           </div>
+
+          {/* 상태 텍스트 변경 */}
           <div className="text-left">
-            <p className="text-sm font-semibold text-gray-900">녹음 중...</p>
-            <p className="text-xs text-gray-500">마이크 테스트 원 투 쓰리</p>
+            <p className="text-sm font-semibold text-gray-900">
+              {isRecording ? "마이크 테스트 녹음 중..." : "마이크 테스트"}
+            </p>
+            <p className="text-xs text-gray-500">
+              {isRecording
+                ? "마이크 테스트 원 투 쓰리"
+                : "마이크 정상 작동을 확인합니다."}
+            </p>
           </div>
         </div>
 
-        <Button
-          size="sm"
-          onClick={() => stopRecording()}
-          className="bg-red-500 hover:bg-red-600 text-white font-medium px-4 h-9 gap-2"
-        >
-          <Square className="w-3 h-3 fill-current" />
-          중지
-        </Button>
+        {/* ✅ 버튼 변경 로직: 녹음 중이면 [중지], 아니면 [녹음 시작] */}
+        {isRecording ? (
+          <Button
+            size="sm"
+            onClick={() => stopRecording()}
+            className="bg-red-500 hover:bg-red-600 text-white font-medium px-4 h-9 gap-2"
+          >
+            <Square className="w-3 h-3 fill-current" />
+            중지
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            onClick={() => startRecording()}
+            className="bg-teal-500 hover:bg-teal-600 text-white font-medium px-4 h-9 gap-2"
+          >
+            <Mic className="w-4 h-4" /> {/* 또는 Play 아이콘 */}
+            녹음 시작
+          </Button>
+        )}
       </div>
     </div>
   );
