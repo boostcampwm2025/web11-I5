@@ -11,10 +11,10 @@ async function fetchOthersSubmissions(
   params: FetchOthersSubmissionsParams,
 ): Promise<PaginatedSubmissionDTO> {
   const searchParams = new URLSearchParams();
-  if (params.page) {
+  if (params.page !== undefined) {
     searchParams.set("page", params.page.toString());
   }
-  if (params.size) {
+  if (params.size !== undefined) {
     searchParams.set("size", params.size.toString());
   }
 
