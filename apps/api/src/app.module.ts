@@ -16,6 +16,7 @@ import { AnswerSubmissionModule } from './answer-submission/answer-submission.mo
 import { GraphModule } from './graph/graph.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { BatchModule } from './batch/batch.module';
 import { RequestIdMiddleware } from './common/middlewares';
 
 @Module({
@@ -37,6 +38,7 @@ import { RequestIdMiddleware } from './common/middlewares';
     ObjectStorageModule,
     AnswerSubmissionModule,
     UploadsModule,
+    BatchModule,
   ],
   controllers: [AppController],
   providers: [AppService],
