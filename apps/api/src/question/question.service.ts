@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
 import { AnswerSubmissionService } from 'src/answer-submission/answer-submission.service';
+import { AnswerEvaluation } from 'src/answer-evaluation/entities/answer-evaluation.entity';
 import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -34,6 +35,8 @@ export class QuestionService {
     private answerSubmissionRepository: Repository<AnswerSubmission>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(AnswerEvaluation)
+    private answerEvaluationRepository: Repository<AnswerEvaluation>,
     private readonly answerSubmissionService: AnswerSubmissionService,
   ) {}
 
@@ -156,9 +159,10 @@ export class QuestionService {
     }
     const skip = (page - 1) * size;
 
-    // 문제 존재 여부 확인
+    // 문제 존재 여부 확인 및 카테고리 정보 포함
     const question = await this.questionRepository.findOne({
       where: { id: questionId },
+      relations: ['category', 'category.parent'],
     });
 
     if (!question) {
@@ -198,6 +202,20 @@ export class QuestionService {
     const totalPages = Math.ceil(totalCount / size);
 
     return {
+      question: {
+        id: question.id,
+        title: question.title,
+        category: {
+          id: question.category?.id ?? 0,
+          name: question.category?.name ?? '',
+          parent: question.category?.parent
+            ? {
+                id: question.category.parent.id,
+                name: question.category.parent.name,
+              }
+            : null,
+        },
+      },
       submissions: results.map((result) => ({
         submissionId: result.submissionId,
         nickname: result.nickname,
@@ -235,9 +253,10 @@ export class QuestionService {
       );
     }
 
-    // 문제 존재 여부 2차 확인 (삭제된 경우 방지)
+    // 문제 존재 여부 2차 확인 및 카테고리 정보 포함
     const question = await this.questionRepository.findOne({
       where: { id: questionId },
+      relations: ['category', 'category.parent'],
     });
     if (!question) {
       throw new NotFoundException(`Question with ID ${questionId} not found`);
@@ -249,8 +268,33 @@ export class QuestionService {
     });
     const nickname = user?.nickname ?? '알 수 없는 사용자';
 
+    // 핵심 키워드 조회 (평가 결과에서)
+    let keywords: string[] = [];
+    const evaluation = await this.answerEvaluationRepository.findOne({
+      where: { submissionId: submission.id },
+      select: ['extractedKeywords'],
+    });
+    if (evaluation?.extractedKeywords) {
+      keywords = evaluation.extractedKeywords;
+    }
+
     return {
       nickname,
+      question: {
+        id: question.id,
+        title: question.title,
+        content: question.content,
+        category: {
+          id: question.category?.id ?? 0,
+          name: question.category?.name ?? '',
+          parent: question.category?.parent
+            ? {
+                id: question.category.parent.id,
+                name: question.category.parent.name,
+              }
+            : null,
+        },
+      },
       submission: {
         id: submission.id,
         questionId: submission.questionId,
@@ -263,6 +307,7 @@ export class QuestionService {
         totalScore: submission.score,
         duration: submission.takenTime,
       },
+      keywords,
     };
   }
 }
