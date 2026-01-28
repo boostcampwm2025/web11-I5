@@ -41,7 +41,7 @@ function ImportanceRating({
 
     if (state.success) {
       toast.success(state.message, {
-        duration: 1500,
+        duration: 800,
         className:
           "bg-[#2dd4bf]/90 backdrop-blur-md text-white font-semibold py-4 px-6 rounded-[16px] text-base border border-white/20 shadow-xl min-w-[280px]",
         iconTheme: {
@@ -53,7 +53,7 @@ function ImportanceRating({
       const timer = setTimeout(() => {
         onSuccessRef.current?.();
         setScore(0);
-      }, 1500);
+      }, 800);
 
       return () => clearTimeout(timer);
     } else {
