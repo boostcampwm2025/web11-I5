@@ -31,7 +31,7 @@ function TextInput({
   };
 
   return (
-    <div className="bg-white border rounded-xl p-6 flex flex-col gap-4">
+    <div className="p-6 flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <TextAlignStart className="w-4 h-4 text-teal-400" />
         <span className="text-sm text-muted-foreground font-medium">

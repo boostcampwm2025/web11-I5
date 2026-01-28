@@ -30,17 +30,17 @@ export const Default: Story = {
         <TabsTrigger value="tab3">Tab 3</TabsTrigger>
       </TabsList>
       <TabsContent value="tab1">
-        <div className="p-4 bg-white border border-slate-200 rounded-b-lg">
+        <div className="p-4">
           <p>Tab 1 content</p>
         </div>
       </TabsContent>
       <TabsContent value="tab2">
-        <div className="p-4 bg-white border border-slate-200 rounded-b-lg">
+        <div className="p-4">
           <p>Tab 2 content</p>
         </div>
       </TabsContent>
       <TabsContent value="tab3">
-        <div className="p-4 bg-white border border-slate-200 rounded-b-lg">
+        <div className="p-4">
           <p>Tab 3 content</p>
         </div>
       </TabsContent>
@@ -56,7 +56,7 @@ export const TwoTabs: Story = {
         <TabsTrigger value="answer">답변 스크립트</TabsTrigger>
       </TabsList>
       <TabsContent value="feedback">
-        <div className="p-6 bg-white border border-slate-200 rounded-b-lg">
+        <div className="p-6">
           <h3 className="font-bold mb-2">분석 리포트</h3>
           <p className="text-slate-600">
             답변에 대한 AI 분석 결과가 여기에 표시됩니다.
@@ -64,7 +64,7 @@ export const TwoTabs: Story = {
         </div>
       </TabsContent>
       <TabsContent value="answer">
-        <div className="p-6 bg-white border border-slate-200 rounded-b-lg">
+        <div className="p-6">
           <h3 className="font-bold mb-2">답변 스크립트</h3>
           <p className="text-slate-600">
             사용자의 답변 원문이 여기에 표시됩니다.
@@ -86,12 +86,12 @@ export const WithDisabled: Story = {
         <TabsTrigger value="tab3">활성화</TabsTrigger>
       </TabsList>
       <TabsContent value="tab1">
-        <div className="p-4 bg-white border border-slate-200 rounded-b-lg">
+        <div className="p-4">
           <p>첫 번째 탭 콘텐츠</p>
         </div>
       </TabsContent>
       <TabsContent value="tab3">
-        <div className="p-4 bg-white border border-slate-200 rounded-b-lg">
+        <div className="p-4">
           <p>세 번째 탭 콘텐츠</p>
         </div>
       </TabsContent>

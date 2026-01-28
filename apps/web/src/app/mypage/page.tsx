@@ -57,22 +57,13 @@ async function MyPage() {
             내가 푼 문제
           </TabsTrigger>
         </TabsList>
-        <TabsContent
-          className="bg-white w-full px-8 pb-8 rounded-xl border border-slate-200"
-          value="graph"
-        >
+        <TabsContent className="w-full px-8 pb-8 " value="graph">
           <GraphContent graphData={mockData} />
         </TabsContent>
-        <TabsContent
-          className="bg-white w-full px-8 pb-8 rounded-xl border border-slate-200"
-          value="streak"
-        >
+        <TabsContent className="w-full px-8 pb-8" value="streak">
           <StreakContent streakCount={streakCount} imageSrc={imageSrc} />
         </TabsContent>
-        <TabsContent
-          className="bg-white w-full px-8 pb-8 rounded-xl border border-slate-200"
-          value="solvedList"
-        >
+        <TabsContent className="w-full px-8 pb-8" value="solvedList">
           <SolvedContent solvedProblems={problems} />
         </TabsContent>
       </Tabs>
