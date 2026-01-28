@@ -63,11 +63,9 @@ export class LoggingInterceptor implements NestInterceptor {
           const duration = Date.now() - startTime;
           const statusCode: number = response.statusCode;
           const durationSeconds = duration / 1000;
-          // request.route는 타입이 명확하지 않으므로 path를 우선 사용
-          const path: string =
-            request.path ||
-            (request.route as { path?: string })?.path ||
-            url.split('?')[0];
+
+          const routePath = (request.route as { path?: string })?.path;
+          const path: string = routePath || request.path || url.split('?')[0];
 
           // 응답 로그
           const logMessage = `[${requestId}] ${method} ${url} ${statusCode} - ${duration}ms`;
@@ -93,11 +91,9 @@ export class LoggingInterceptor implements NestInterceptor {
             error,
             response.statusCode,
           );
-          // request.route는 타입이 명확하지 않으므로 path를 우선 사용
-          const path: string =
-            request.path ||
-            (request.route as { path?: string })?.path ||
-            url.split('?')[0];
+
+          const routePath = (request.route as { path?: string })?.path;
+          const path: string = routePath || request.path || url.split('?')[0];
           const errorMessage =
             error instanceof Error ? error.message : String(error);
           const errorStack = error instanceof Error ? error.stack : undefined;
