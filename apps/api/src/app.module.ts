@@ -32,11 +32,8 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     }),
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot(typeOrmModuleOptions),
-    PrometheusModule.register({
-      defaultMetrics: {
-        enabled: true,
-      },
-    }),
+    // Prometheus 기본 설정 사용 (기본 메트릭 자동 수집)
+    PrometheusModule.register(),
     AuthModule,
     UserModule,
     AnswerEvaluationModule,
