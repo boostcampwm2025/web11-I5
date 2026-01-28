@@ -14,7 +14,7 @@ interface StarRatingProps {
 }
 
 export function StarRating(props: StarRatingProps) {
-  const { max = 5, readOnly = false, className } = props;
+  const { max = 5, readOnly = false, className, onChange } = props;
 
   const { containerRef, displayValue, eventHandlers } = useStarRating({
     ...props,
@@ -22,7 +22,44 @@ export function StarRating(props: StarRatingProps) {
     readOnly,
   });
 
-  const fillWidthPercent = (displayValue / max) * 100;
+  const [inputValue, setInputValue] = React.useState<string>(
+    displayValue.toString(),
+  );
+
+  const [isFocused, setIsFocused] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isFocused) {
+      setInputValue(displayValue.toFixed(1));
+    }
+  }, [displayValue, isFocused]);
+
+  const isOverLimit = parseFloat(inputValue) > max;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (readOnly) return;
+
+    const newValue = e.target.value;
+
+    if (newValue.length > 3) return;
+    setInputValue(newValue);
+
+    const parsedValue = parseFloat(newValue);
+    if (!isNaN(parsedValue)) {
+      const clampedValue = Math.min(Math.max(parsedValue, 0), max);
+      onChange?.(clampedValue);
+    }
+  };
+
+  const handleBlur = () => {
+    if (readOnly) return;
+    setIsFocused(false);
+    setInputValue(displayValue.toFixed(1));
+  };
+
+  const currentVisualValue = parseFloat(inputValue);
+  const safeValue = isNaN(currentVisualValue) ? 0 : currentVisualValue;
+  const fillWidthPercent = (Math.min(safeValue, max) / max) * 100;
 
   return (
     <div className={cn("inline-flex items-center gap-3", className)}>
@@ -68,13 +105,36 @@ export function StarRating(props: StarRatingProps) {
         </div>
       </div>
 
-      {/* 점수 텍스트 표시 */}
-      <div className="flex items-baseline gap-1 ml-1 select-none">
-        <span className="text-2xl font-bold text-zinc-900 tabular-nums">
-          {displayValue.toFixed(1)}
+      <div className="flex items-baseline gap-1 ml-1">
+        <input
+          type="number"
+          inputMode="decimal"
+          min={0}
+          max={max}
+          step="0.1"
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          disabled={readOnly}
+          className={cn(
+            "w-12 bg-transparent text-2xl font-bold text-zinc-900 tabular-nums text-right outline-none p-0 border-none focus:ring-0 focus:border-none",
+            "appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none", // 스피너 제거
+            readOnly && "cursor-default text-zinc-500",
+            isOverLimit && "text-red-500",
+          )}
+        />
+        <span className="text-lg font-medium text-zinc-400 select-none">
+          / {max}
         </span>
-        <span className="text-lg font-medium text-zinc-400">/ {max}</span>
       </div>
+
+      {isOverLimit && (
+        <div className="absolute top-full left-0 mt-1 w-full text-center md:text-right md:pr-12">
+          <span className="text-xs font-medium text-red-500 whitespace-nowrap">
+            최대 {max}점까지 가능합니다.
+          </span>
+        </div>
+      )}
     </div>
   );
 }
