@@ -1,7 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { OtherSubmissionItemDto } from './other-submission-item.dto';
+import { QuestionInfoDto } from './question-info.dto';
 
 export class PaginatedOtherSubmissionsDto {
+  @ApiProperty({
+    description: '문제 정보',
+    type: QuestionInfoDto,
+  })
+  question: QuestionInfoDto;
+
   @ApiProperty({
     type: [OtherSubmissionItemDto],
     description: '다른 사용자들의 제출 목록',
