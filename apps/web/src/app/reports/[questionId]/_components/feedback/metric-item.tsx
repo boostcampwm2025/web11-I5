@@ -77,7 +77,7 @@ function MetricItem({ label, score, max, reason, value }: MetricItemProps) {
 
       <Accordion.Content className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
         <div className="px-4 pb-4 pt-2">
-          <p className="text-base leading-relaxed text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             {reason}
           </p>
         </div>

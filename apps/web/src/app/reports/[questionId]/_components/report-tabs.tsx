@@ -60,7 +60,7 @@ function ReportTabs({
 
       <TabsContent value="answer">
         <div className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden">
-          <div className="p-9 bg-slate-50/30">
+          <div className="p-9 bg-white">
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h3 className="text-[1.125rem] font-bold text-slate-900">
@@ -93,7 +93,7 @@ function ReportTabs({
               evaluation.totalScore &&
               evaluation.totalScore >= 30 && (
                 <div className="mt-6">
-                  <h4 className="font-bold text-slate-400 uppercase tracking-wider mb-3">
+                  <h4 className="font-semibold text-sm text-slate-400 uppercase tracking-wider mb-3">
                     CORE KEYWORDS
                   </h4>
                   <div className="flex flex-wrap items-center gap-2">

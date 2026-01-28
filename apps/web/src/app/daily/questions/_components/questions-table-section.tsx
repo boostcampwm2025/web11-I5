@@ -90,7 +90,7 @@ async function QuestionsTableBodySection({
                 {question.category?.parent?.name ?? "-"}
               </TableCell>
               <TableCell className="text-muted-foreground">
-                <span className="text-sm py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
+                <span className="text-xs py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
                   {question.category?.name ?? "-"}
                 </span>
               </TableCell>
@@ -130,6 +130,7 @@ async function QuestionsTableBodySection({
                     />
                   ) : (
                     <PaginationPrevious
+                      href={buildPaginationUrl(currentPage)}
                       className="pointer-events-none opacity-50"
                       aria-disabled="true"
                     />
@@ -147,6 +148,7 @@ async function QuestionsTableBodySection({
                     />
                   ) : (
                     <PaginationNext
+                      href={buildPaginationUrl(currentPage)}
                       className="pointer-events-none opacity-50"
                       aria-disabled="true"
                     />

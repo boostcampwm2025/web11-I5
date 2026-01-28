@@ -73,7 +73,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   const subCategories = selectedCategoryTree?.children ?? [];
 
   return (
-    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-screen">
+    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-main">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-1">문제 리스트</h1>
         <Suspense fallback={<TotalCountLoadingFallback />}>

@@ -16,7 +16,7 @@ function QuestionLinkButton({ question }: QuestionLinkButtonProps) {
     <>
       <Button
         variant="link"
-        className="text-slate-900 text-base hover:text-teal-600 hover:underline hover:cursor-pointer px-0"
+        className="text-slate-900 hover:text-teal-600 hover:underline hover:cursor-pointer px-0"
         onClick={() => setIsModalOpen(true)}
       >
         {question.title}
