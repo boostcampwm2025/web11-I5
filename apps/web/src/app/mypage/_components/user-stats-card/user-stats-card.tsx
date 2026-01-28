@@ -1,5 +1,5 @@
 "use client";
-import { User, X } from "lucide-react";
+import { Pencil, User, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import toast from "react-hot-toast";
@@ -118,6 +118,11 @@ function UserStatsCard({
       reader.onloadend = () => {
         setProfileImagePreview(reader.result as string);
       };
+      reader.onerror = () => {
+        toast.error("이미지를 읽는데 실패하였습니다.");
+        setSelectedFile(null);
+      };
+
       reader.readAsDataURL(file);
     }
   };
@@ -152,7 +157,7 @@ function UserStatsCard({
                   src={profileImagePreview}
                   alt="profileImage"
                   fill={true}
-                  className="rounded-full object-cover"
+                  className="rounded-full object-cover "
                 />
               ) : (
                 <User className="w-8 h-8" stroke="#CBD5E1" />
@@ -168,6 +173,19 @@ function UserStatsCard({
                   aria-label="이미지 제거"
                 >
                   <X className="w-3 h-3 text-slate-600" />
+                </button>
+              )}
+              {isEditing && !profileImagePreview && !selectedFile && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className="absolute -bottom-1 -right-2  rounded-full p-1 shadow-md transition-colors"
+                  aria-label="이미지 추가"
+                >
+                  <Pencil className="w-3 h-3 text-slate-600" />
                 </button>
               )}
             </div>
