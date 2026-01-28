@@ -37,7 +37,7 @@ const TabsTrigger = React.forwardRef<
       "data-[state=active]:border-t-slate-200 data-[state=active]:border-x-slate-200 data-[state=active]:border-b-transparent",
 
       "data-[state=inactive]:hover:bg-slate-100/70",
-      "data-[state=inactive]:scale-95 transition-transform",
+      "data-[state=inactive]:scale-95",
 
       // 🔽 핵심
       "after:absolute after:-left-px after:-right-px after:-bottom-0.5 after:h-px",

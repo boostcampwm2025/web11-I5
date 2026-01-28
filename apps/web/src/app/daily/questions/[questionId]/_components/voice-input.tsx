@@ -181,6 +181,7 @@ function VoiceInput({
             {hasRecorded ? (
               <div className="flex items-center gap-3 h-40">
                 <Button
+                  type="button"
                   size="icon-lg"
                   onClick={isPlaying ? pausePlayback : playRecording}
                   disabled={isSubmitting}
