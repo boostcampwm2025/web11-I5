@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsOptional,
   IsString,
-  MinLength,
-  MaxLength,
   Matches,
+  MaxLength,
+  MinLength,
   ValidateIf,
 } from 'class-validator';
 
@@ -41,5 +41,6 @@ export class EditUserRequestDto {
   @IsOptional()
   @ValidateIf((o: EditUserRequestDto) => o.objectKey !== null)
   @IsString({ message: 'objectKey는 문자열이어야 합니다.' })
+  @MinLength(1, { message: 'objectKey는 비어있을 수 없습니다.' })
   objectKey?: string | null;
 }
