@@ -4,38 +4,12 @@ import {
   GRAPH_NUMBER_CONSTANT,
 } from "../../_constants/graph-view-constant";
 import { GraphEdge, NodeMapType, NodeType } from "../../_types/graph-view";
+import lerpColorWithAlpha from "@/lib/lerp-color-with-alpha";
 
 function getNodeColor(type: NodeType) {
   return type === NodeType.QUESTION
     ? GRAPH_COLOR_CONSTANT.QUESTION_NODE
     : GRAPH_COLOR_CONSTANT.KEYWORD_NODE;
-}
-
-// hex 색상을 RGB로 파싱
-function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
-    : { r: 0, g: 0, b: 0 };
-}
-
-// 두 색상을 t(0~1) 비율로 선형 보간하고 alpha 적용
-function lerpColorWithAlpha(
-  color1: string,
-  color2: string,
-  t: number,
-  alpha: number,
-): string {
-  const c1 = hexToRgb(color1);
-  const c2 = hexToRgb(color2);
-  const r = Math.round(c1.r + (c2.r - c1.r) * t);
-  const g = Math.round(c1.g + (c2.g - c1.g) * t);
-  const b = Math.round(c1.b + (c2.b - c1.b) * t);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 function drawGraphView(
@@ -123,12 +97,14 @@ function drawGraphView(
     const nodeColor = isHovered
       ? GRAPH_COLOR_CONSTANT.HOVERED
       : getNodeColor(node.type);
-    ctx.fillStyle = hexToRgba(nodeColor, node.displayAlpha);
+    const nodeRgba = hexToRgba(nodeColor, node.displayAlpha);
+    ctx.fillStyle = `rgba(${nodeRgba.r}, ${nodeRgba.g}, ${nodeRgba.b}, ${nodeRgba.a})`;
     ctx.fill();
 
     if (textAlpha > 0) {
       const labelAlpha = node.displayAlpha * textAlpha;
-      ctx.fillStyle = hexToRgba(GRAPH_COLOR_CONSTANT.LABEL, labelAlpha);
+      const labelRgba = hexToRgba(GRAPH_COLOR_CONSTANT.LABEL, labelAlpha);
+      ctx.fillStyle = `rgba(${labelRgba.r}, ${labelRgba.g}, ${labelRgba.b}, ${labelRgba.a})`;
       ctx.fillText(node.label, node.x, node.y + radius + 10);
     }
   });
