@@ -94,6 +94,8 @@ services:
       - "3100:3100"
     command: ["-config.file=/etc/loki/local-config.yaml"]
     volumes:
+      - loki-data:/loki
+      - loki-wal:/wal
       - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
     networks:
       - app-network
@@ -132,3 +134,5 @@ networks:
 
 volumes:
   pgdata:
+  loki-data:
+  loki-wal:

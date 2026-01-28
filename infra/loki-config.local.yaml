@@ -1,10 +1,13 @@
-auth_enabled: true
+auth_enabled: false
 
 server:
   http_listen_port: 3100
   grpc_listen_port: 9095
 
 ingester:
+  # WAL 기능 비활성화해서 /wal 권한 문제 회피
+  wal:
+    enabled: false
   lifecycler:
     ring:
       kvstore:

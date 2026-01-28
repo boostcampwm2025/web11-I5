@@ -68,7 +68,7 @@ services:
       - "3100:3100"
     command: ["-config.file=/etc/loki/local-config.yaml"]
     volumes:
-      - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - ./loki-config.local.yaml:/etc/loki/local-config.yaml:ro
     networks:
       - malmanhae-network
 
