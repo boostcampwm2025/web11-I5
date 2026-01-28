@@ -67,7 +67,10 @@ async function OthersDetailPage({ params }: OthersSubmissionDetailPageProps) {
               </div>
             </div>
             <div className="px-4 py-2 rounded-md bg-teal-50 border border-teal-100 text-teal-500 font-semibold gap-1 text-2xl">
-              <span className="font-extrabold">60</span>점
+              <span className="font-extrabold">
+                {othersSubmissionData.submission.totalScore}
+              </span>
+              점
             </div>
           </div>
           <div className="flex justify-between items-center mb-6">
