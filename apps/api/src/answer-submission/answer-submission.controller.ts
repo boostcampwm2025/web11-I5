@@ -8,7 +8,6 @@ import {
   Param,
   Patch,
   UseGuards,
-  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -139,11 +138,10 @@ export class AnswerSubmissionController {
   @ApiBody({ type: UpdateImportanceDto })
   @ApiResponse({ status: 200, description: '업데이트 성공' })
   async updateImportance(
-    @Req() req: Request,
+    @UserId() userId: number,
     @Body() updateDto: UpdateImportanceDto,
   ) {
     // TODO: 실제 프로젝트의 인증 방식에 맞춰 userId를 가져오세요.
-    const userId = 1;
 
     return await this.answerSubmissionService.updateImportance(
       userId,
