@@ -11,10 +11,20 @@ interface StarRatingProps {
   readOnly?: boolean;
   className?: string;
   max?: number;
+  label?: string;
 }
 
 export function StarRating(props: StarRatingProps) {
-  const { max = 5, readOnly = false, className, onChange } = props;
+  const {
+    max = 5,
+    readOnly = false,
+    className,
+    onChange,
+    label = "중요도 평가 입력",
+  } = props;
+
+  const errorId = React.useId();
+  const inputId = React.useId();
 
   const { containerRef, displayValue, eventHandlers } = useStarRating({
     ...props,
@@ -51,6 +61,11 @@ export function StarRating(props: StarRatingProps) {
     }
   };
 
+  const handleFocus = () => {
+    if (readOnly) return;
+    setIsFocused(true);
+  };
+
   const handleBlur = () => {
     if (readOnly) return;
     setIsFocused(false);
@@ -62,7 +77,7 @@ export function StarRating(props: StarRatingProps) {
   const fillWidthPercent = (Math.min(safeValue, max) / max) * 100;
 
   return (
-    <div className={cn("inline-flex items-center gap-3", className)}>
+    <div className={cn("relative inline-flex items-center gap-3", className)}>
       <div
         ref={containerRef}
         style={{ width: "160px", height: "32px" }}
@@ -107,15 +122,19 @@ export function StarRating(props: StarRatingProps) {
 
       <div className="flex items-baseline gap-1 ml-1">
         <input
+          id={inputId}
           type="number"
           inputMode="decimal"
           min={0}
-          max={max}
           step="0.1"
           value={inputValue}
           onChange={handleInputChange}
+          onFocus={handleFocus}
           onBlur={handleBlur}
           disabled={readOnly}
+          aria-label={`${label}, 총점 ${max}점 중`}
+          aria-invalid={isOverLimit}
+          aria-errormessage={isOverLimit ? errorId : undefined}
           className={cn(
             "w-12 bg-transparent text-2xl font-bold text-zinc-900 tabular-nums text-right outline-none p-0 border-none focus:ring-0 focus:border-none",
             "appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none", // 스피너 제거
@@ -129,7 +148,11 @@ export function StarRating(props: StarRatingProps) {
       </div>
 
       {isOverLimit && (
-        <div className="absolute top-full left-0 mt-1 w-full text-center md:text-right md:pr-12">
+        <div
+          id={errorId}
+          role="alert"
+          className="absolute top-full left-0 mt-1 w-full text-center md:text-right md:pr-12"
+        >
           <span className="text-xs font-medium text-red-500 whitespace-nowrap">
             최대 {max}점까지 가능합니다.
           </span>
