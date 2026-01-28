@@ -141,8 +141,6 @@ export class AnswerSubmissionController {
     @UserId() userId: number,
     @Body() updateDto: UpdateImportanceDto,
   ) {
-    // TODO: 실제 프로젝트의 인증 방식에 맞춰 userId를 가져오세요.
-
     return await this.answerSubmissionService.updateImportance(
       userId,
       updateDto,
