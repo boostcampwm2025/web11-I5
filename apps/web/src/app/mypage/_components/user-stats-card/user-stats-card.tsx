@@ -79,6 +79,7 @@ function UserStatsCard({
         formData.delete("profileImage");
       } catch (error) {
         console.error(error);
+        toast.error("이미지 업로드에 실패하였습니다.");
         return;
       }
     }
