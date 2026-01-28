@@ -1,5 +1,6 @@
 "use server";
 
+import { ApiError } from "@/lib/api-error";
 import { revalidatePath } from "next/cache";
 import { editUserInfo } from "../fetch/fetch-user-info";
 
@@ -80,6 +81,12 @@ async function editUserAction(
     };
   } catch (error) {
     console.error("Edit user action error:", error);
+    if (error instanceof ApiError) {
+      return {
+        success: false,
+        message: error.getUserMessage(),
+      };
+    }
 
     return {
       success: false,
