@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import {
   AudioAsset,
   AudioUploadStatus,
@@ -26,30 +26,32 @@ export class BatchService {
   @Cron(TIMEOUT_CLEANUP_CRON)
   async handleTimeoutCleanup() {
     this.logger.log('타임아웃 정리 배치 작업 시작');
+    const timeoutDate = new Date(Date.now() - TIMEOUT_THRESHOLD_MS);
 
+    // 각 작업의 실패가 서로에게 영향을 주지 않도록 독립적으로 실행
+    await this.safeExecute('업로드', () =>
+      this.cleanupTimedOutUploads(timeoutDate),
+    );
+    await this.safeExecute('STT', () => this.cleanupTimedOutStt(timeoutDate));
+    await this.safeExecute('채점', () =>
+      this.cleanupTimedOutEvaluations(timeoutDate),
+    );
+
+    this.logger.log('타임아웃 정리 배치 작업 완료');
+  }
+
+  // 개별 작업의 에러를 캡처하여 전체 배치가 중단되지 않도록 보장하는 헬퍼 메서드
+  private async safeExecute(label: string, task: () => Promise<UpdateResult>) {
     try {
-      const timeoutDate = new Date(Date.now() - TIMEOUT_THRESHOLD_MS);
-
-      // AudioAsset uploadStatus 타임아웃 처리
-      const uploadResult = await this.cleanupTimedOutUploads(timeoutDate);
+      const result = await task();
       this.logger.log(
-        `타임아웃된 업로드 ${uploadResult.affected || 0}건 정리 완료`,
+        `타임아웃된 ${label} ${result.affected || 0}건 정리 완료`,
       );
-
-      // AnswerSubmission sttStatus 타임아웃 처리
-      const sttResult = await this.cleanupTimedOutStt(timeoutDate);
-      this.logger.log(`타임아웃된 STT ${sttResult.affected || 0}건 정리 완료`);
-
-      // AnswerSubmission evaluationStatus 타임아웃 처리
-      const evaluationResult =
-        await this.cleanupTimedOutEvaluations(timeoutDate);
-      this.logger.log(
-        `타임아웃된 채점 ${evaluationResult.affected || 0}건 정리 완료`,
-      );
-
-      this.logger.log('타임아웃 정리 배치 작업 완료');
     } catch (error) {
-      this.logger.error('타임아웃 정리 배치 작업 중 오류 발생', error);
+      this.logger.error(
+        `${label} 타임아웃 정리 중 오류 발생`,
+        error instanceof Error ? error.stack : error,
+      );
     }
   }
 
