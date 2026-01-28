@@ -31,6 +31,35 @@ services:
     networks:
       - malmanhae-network
 
+  prometheus:
+    container_name: malmanhae-prometheus
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - api
+    networks:
+      - malmanhae-network
+
+  grafana:
+    container_name: malmanhae-grafana
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    networks:
+      - malmanhae-network
+
   web:
     container_name: malmanhae-web
     build:
