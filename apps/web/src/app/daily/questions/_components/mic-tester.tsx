@@ -141,7 +141,7 @@ export default function MicrophoneTester() {
           className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-6"
         >
           <Play className="w-4 h-4 mr-2 fill-current" />
-          테스트 시작
+          테스트 녹음 시작
         </Button>
       </div>
     );
