@@ -1,8 +1,8 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserRole } from './user-role.enum';
 
@@ -16,6 +16,9 @@ export class User {
 
   @Column({ type: 'varchar', unique: true })
   nickname: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  profileImage: string | null;
 
   @Column({ type: 'varchar' })
   password: string;

@@ -5,6 +5,14 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   output: "standalone",
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "kr.object.ncloudstorage.com",
+      },
+    ],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

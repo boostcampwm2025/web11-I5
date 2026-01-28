@@ -42,7 +42,7 @@ async function MyPage() {
         nickname={userData.nickname}
         email={userData.email || "@test123"} // 추후 작업에서 해당 부분 email 리턴하도록 수정 필요.
         totalPoint={totalCount}
-        role={userData.role}
+        profileImage={userData.profileImage}
         consecutiveDayCount={consecutiveDayCount}
       />
       <Tabs className="w-full" defaultValue="graph">
