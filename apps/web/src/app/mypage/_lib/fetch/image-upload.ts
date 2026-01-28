@@ -4,12 +4,7 @@ import { PresignedUrlDto } from "../../_types/presigned-url-dto";
 async function requestPresignedUrl(
   imageType: string,
 ): Promise<PresignedUrlDto> {
-  const allowedContentTypes = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/webp",
-  ];
+  const allowedContentTypes = ["image/jpeg", "image/png", "image/webp"];
   if (!allowedContentTypes.includes(imageType))
     throw new Error("허용되지 않는 데이터타입입니다.");
 

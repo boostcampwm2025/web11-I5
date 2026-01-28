@@ -249,12 +249,7 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
 
   async requestPresignedUrl(userId: number, contentType?: string) {
     // Content-Type 허용 리스트
-    const allowedContentTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/webp',
-    ];
+    const allowedContentTypes = ['image/jpeg', 'image/png', 'image/webp'];
     const finalContentType = contentType || 'image/jpeg';
 
     if (!allowedContentTypes.includes(finalContentType)) {

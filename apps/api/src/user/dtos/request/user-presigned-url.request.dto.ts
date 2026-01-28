@@ -1,12 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsIn, IsString } from 'class-validator';
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 export class UserPresignedUrlRequestDto {
   @ApiProperty({
     description: '이미지 Content-Type',
     example: 'image/jpeg',
-    enum: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+    enum: ALLOWED_IMAGE_TYPES,
   })
   @IsString()
+  @IsIn(ALLOWED_IMAGE_TYPES)
   contentType: string;
 }
