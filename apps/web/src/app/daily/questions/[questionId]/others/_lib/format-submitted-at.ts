@@ -1,7 +1,17 @@
 function formatSubmittedAt(dateString: string) {
   const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) {
+    return "알 수 없음";
+  }
+
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
+
+  if (diffMs < 0) {
+    return "방금 전";
+  }
+
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
