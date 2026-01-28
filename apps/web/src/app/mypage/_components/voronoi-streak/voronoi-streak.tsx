@@ -32,7 +32,6 @@ function VoronoiStreak({
   yearlyAnswerSubmissions,
 }: VoronoiStreakProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
-  const canvasRectRef = React.useRef<DOMRect | null>(null);
   const tooltipRef = React.useRef<HTMLDivElement>(null);
   const { width, height } = useCanvas2D(canvasRef);
   const [cellData, setCellData] = React.useState<CellData[]>([]);
@@ -148,10 +147,8 @@ function VoronoiStreak({
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!canvasRef.current || !delaunayRef.current || cellData.length === 0)
         return;
-      if (!canvasRectRef.current) {
-        canvasRectRef.current = canvasRef.current.getBoundingClientRect();
-      }
-      const rect = canvasRectRef.current;
+
+      const rect = canvasRef.current.getBoundingClientRect();
       const canvasX = e.clientX - rect.left;
       const canvasY = e.clientY - rect.top;
       const closeDelaunayIdx = delaunayRef.current.find(canvasX, canvasY);
