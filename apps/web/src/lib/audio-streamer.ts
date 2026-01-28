@@ -83,12 +83,14 @@ function createAudioStreamer(config: AudioStreamerConfig): AudioStreamerHandle {
     }
 
     // AudioContext
-    if (audioContext) {
+    if (audioContext && audioContext.state !== "closed") {
       try {
         await audioContext.close();
       } finally {
         audioContext = null;
       }
+    } else {
+      audioContext = null;
     }
 
     // MediaStream

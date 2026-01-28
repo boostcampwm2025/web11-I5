@@ -63,6 +63,26 @@ function VoiceInput({
   } = useRecorder({ maxDurationSeconds });
 
   const { play: playDing, ready: dingWavReady } = useWav("/ui-confirm.wav", 1);
+  const {
+    play: playTickTock,
+    stop: stopTickTock,
+    ready: tickTockReady,
+  } = useWav("/ticking.wav", { volume: 0.5, loop: true });
+
+  const WARNING_SECONDS = 10;
+  const isInWarningZone =
+    isRecording && elapsedSeconds >= maxDurationSeconds - WARNING_SECONDS;
+  const wasInWarningZoneRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (isInWarningZone && !wasInWarningZoneRef.current && tickTockReady) {
+      wasInWarningZoneRef.current = true;
+      playTickTock();
+    } else if (!isInWarningZone && wasInWarningZoneRef.current) {
+      wasInWarningZoneRef.current = false;
+      stopTickTock();
+    }
+  }, [isInWarningZone, tickTockReady, playTickTock, stopTickTock]);
 
   const wasPlayingBeforeSeekRef = React.useRef(false);
 
