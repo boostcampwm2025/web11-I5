@@ -43,6 +43,30 @@ function VoronoiStreak({
     submission: YearlyAnswerSubmissions;
   } | null>(null);
 
+  const canvasRectRef = React.useRef<DOMRect | null>(null);
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const updateRect = () => {
+      canvasRectRef.current = canvas.getBoundingClientRect();
+    };
+
+    updateRect();
+
+    const resizeObserver = new ResizeObserver(updateRect);
+    resizeObserver.observe(canvas);
+
+    window.addEventListener("scroll", updateRect, {
+      passive: true,
+      capture: true,
+    });
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("scroll", updateRect);
+    };
+  }, []);
   React.useEffect(() => {
     if (!imageSrc || width === 0 || height === 0) return;
 
@@ -147,8 +171,8 @@ function VoronoiStreak({
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!canvasRef.current || !delaunayRef.current || cellData.length === 0)
         return;
-
-      const rect = canvasRef.current.getBoundingClientRect();
+      if (!canvasRectRef.current) return;
+      const rect = canvasRectRef.current;
       const canvasX = e.clientX - rect.left;
       const canvasY = e.clientY - rect.top;
       const closeDelaunayIdx = delaunayRef.current.find(canvasX, canvasY);
