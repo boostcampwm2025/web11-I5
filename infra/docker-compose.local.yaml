@@ -33,7 +33,7 @@ services:
 
   prometheus:
     container_name: malmanhae-prometheus
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.8.1
     restart: unless-stopped
     ports:
       - "9090:9090"
@@ -45,6 +45,8 @@ services:
       - api
     networks:
       - malmanhae-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   grafana:
     container_name: malmanhae-grafana
