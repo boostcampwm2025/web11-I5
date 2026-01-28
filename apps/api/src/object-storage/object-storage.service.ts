@@ -146,6 +146,45 @@ export class ObjectStorageService {
     return `${endpoint}/${this.bucket}/${objectKey}`;
   }
 
+  async createPresignedGetUrl(objectKey: string) {
+    if (!objectKey || objectKey.trim().length === 0) {
+      throw new Error('objectKey is required');
+    }
+
+    return await this.getS3Client().getSignedUrlPromise('getObject', {
+      Bucket: this.bucket,
+      Key: objectKey,
+    });
+  }
+
+  /**
+   * Object Storage에서 객체 삭제
+   * @param objectKey 삭제할 Object Key
+   */
+  async deleteObject(objectKey: string): Promise<void> {
+    if (!objectKey || objectKey.trim().length === 0) {
+      throw new Error('objectKey is required');
+    }
+
+    try {
+      await this.getS3Client()
+        .deleteObject({
+          Bucket: this.bucket,
+          Key: objectKey,
+        })
+        .promise();
+
+      this.logger.log(`Deleted object: ${objectKey}`);
+    } catch (err: unknown) {
+      // 404 NotFound는 존재하지 않기 때문에 성공으로 처리
+      if (this.isS3NotFoundError(err)) {
+        this.logger.log(`Object already deleted: ${objectKey}`);
+        return;
+      }
+      throw err;
+    }
+  }
+
   private isS3NotFoundError(err: unknown): boolean {
     if (typeof err !== 'object' || err === null) return false;
 

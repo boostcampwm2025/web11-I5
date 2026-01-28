@@ -34,7 +34,7 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
           </p>
         </div>
       ) : (
-        <div className="relative w-full aspect-square">
+        <div className="relative w-full h-120">
           <Button
             onClick={handleModalToggle}
             size="icon"

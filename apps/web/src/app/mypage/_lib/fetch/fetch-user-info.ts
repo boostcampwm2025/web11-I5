@@ -1,5 +1,5 @@
-import { apiGet } from "@/lib/api-client";
-import { UserInfoDTO } from "../../_types/user-info-dto";
+import { apiGet, apiPatch } from "@/lib/api-client";
+import { EditUserRequestDTO, UserInfoDTO } from "../../_types/user-info-dto";
 
 async function fetchUserInfo(): Promise<UserInfoDTO> {
   try {
@@ -10,4 +10,22 @@ async function fetchUserInfo(): Promise<UserInfoDTO> {
   }
 }
 
-export { fetchUserInfo };
+async function editUserInfo({
+  nickname,
+  objectKey,
+}: EditUserRequestDTO): Promise<UserInfoDTO | void> {
+  if (!nickname && objectKey === undefined) return;
+
+  try {
+    const body: Partial<EditUserRequestDTO> = {};
+    if (nickname !== undefined) body.nickname = nickname;
+    if (objectKey !== undefined) body.objectKey = objectKey;
+
+    return await apiPatch<UserInfoDTO>("/api/users/me", body);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export { editUserInfo, fetchUserInfo };

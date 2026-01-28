@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { AnswerSubmissionService } from 'src/answer-submission/answer-submission.service';
+import { MoreThanOrEqual, Repository } from 'typeorm';
+import { GetYearlyActivityCountResponseDto } from './dtos/streaks-count.dto';
 import { Streaks } from './entities/streaks.entity';
 
 @Injectable()
@@ -8,33 +10,59 @@ export class StreaksService {
   constructor(
     @InjectRepository(Streaks)
     private readonly streaksRepository: Repository<Streaks>,
+    @Inject(forwardRef(() => AnswerSubmissionService))
+    private readonly answerSubmissionService: AnswerSubmissionService,
   ) {}
+
+  private getKSTNow(): Date {
+    return new Date(Date.now() + 9 * 60 * 60 * 1000);
+  }
+
+  private getKSTDateString(date?: Date): string {
+    const d = date ?? this.getKSTNow();
+    return d.toISOString().split('T')[0];
+  }
 
   async getYearlyActivityCount(
     userId: number,
     year: number,
-  ): Promise<{ streakCount: number }> {
-    const today = new Date();
-    const start = new Date(`${year}-01-01`);
+  ): Promise<GetYearlyActivityCountResponseDto> {
+    const kstNow = this.getKSTNow();
+    const kstYear = kstNow.getUTCFullYear();
+    const start = new Date(`${year}-01-01T00:00:00+09:00`);
     const end =
-      today.getFullYear() < year ? new Date(`${year}-12-31`) : new Date();
-    const streakCount = await this.streaksRepository.count({
-      where: {
-        userId: userId,
-        activityDate: Between(start, end),
-      },
-    });
-    return { streakCount };
+      year < kstYear
+        ? new Date(`${year + 1}-01-01T00:00:00+09:00`)
+        : new Date();
+
+    const rows = await this.answerSubmissionService.getDistinctQuestionsByYear(
+      userId,
+      start,
+      end,
+    );
+
+    return {
+      submittedQuestionCount: rows.length,
+      yearlyAnswerSubmissions: rows,
+    };
   }
 
   async getConsecutiveDayCount(
     userId: number,
   ): Promise<{ consecutiveDayCount: number }> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); //시간으로 인해 이틀 뒤로 날짜가 밀리는것을 방지하기 위한 정규화
+    const kstNow = this.getKSTNow();
+    const todayString = this.getKSTDateString(kstNow);
+    const today = new Date(todayString);
+    today.setHours(0, 0, 0, 0);
+
+    const oneYearAgo = new Date(today);
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
     const userStreaks = await this.streaksRepository.find({
-      where: { userId },
+      where: {
+        userId,
+        activityDate: MoreThanOrEqual(oneYearAgo),
+      },
       order: { activityDate: 'DESC' },
     });
 
@@ -65,20 +93,11 @@ export class StreaksService {
   }
 
   async recordDailyActivity(userId: number): Promise<{ success: boolean }> {
-    // 한국 시간으로 submittedAt 구하기 -> UTC + 9시간
-    const utcDate = new Date();
-    const submittedAt = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
-    const checkDay = await this.streaksRepository.findOneBy({
-      userId: userId,
-      activityDate: submittedAt,
-    });
-    if (checkDay) {
-      return { success: true };
-    }
-    await this.streaksRepository.insert({
-      userId: userId,
-      activityDate: submittedAt,
-    });
+    const kstDateString = this.getKSTDateString();
+    await this.streaksRepository.upsert(
+      { userId, activityDate: new Date(kstDateString) },
+      ['userId', 'activityDate'],
+    );
     return { success: true };
   }
 }

@@ -6,27 +6,28 @@ import {
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
 import { AnswerEvaluationService } from 'src/answer-evaluation/answer-evaluation.service';
 import { StreaksService } from 'src/streaks/streaks.service';
 import { Repository } from 'typeorm';
-import { OnEvent } from '@nestjs/event-emitter';
+import { Question } from '../question/entities/question.entity';
+import { SttService } from '../stt/stt.service';
 import {
   AudioAsset,
   AudioUploadStatus,
 } from '../uploads/entities/audio-asset.entity';
-import { Question } from '../question/entities/question.entity';
-import { SttService } from '../stt/stt.service';
 import { UpdateImportanceDto } from './dtos/update-importance-rating.dto';
 
+import { YearlyAnswerSubmissionsDto } from 'src/streaks/dtos/streaks-count.dto';
+import { AudioUploadCompletedEvent } from '../uploads/events/audio-upload-completed.event';
 import {
   InputType,
   ProcessStatus,
   QuizMode,
 } from './answer-submission.constants';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
-import { AudioUploadCompletedEvent } from '../uploads/events/audio-upload-completed.event';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 
@@ -342,6 +343,7 @@ export class AnswerSubmissionService {
    * 오디오 업로드 완료 이벤트 핸들러
    * 업로드 완료 시 해당 audioAssetId로 제출된 답변이 있고 STT가 아직 PENDING이면 STT 요청
    */
+
   @OnEvent('audio.upload.completed')
   async handleAudioUploadCompleted(
     event: AudioUploadCompletedEvent,
@@ -413,5 +415,30 @@ export class AnswerSubmissionService {
         );
       }
     }
+  }
+
+  // 스트릭 계산을 위해 연간 문제 풀이 목록 출력
+  async getDistinctQuestionsByYear(
+    userId: number,
+    start: Date,
+    end: Date,
+  ): Promise<YearlyAnswerSubmissionsDto[]> {
+    return this.answerSubmissionRepository
+      .createQueryBuilder('submission')
+      .distinctOn(['submission.questionId'])
+      .innerJoin('submission.question', 'question')
+      .select('submission.id', 'id')
+      .addSelect('submission.submittedAt', 'submittedAt')
+      .addSelect('submission.questionId', 'questionId')
+      .addSelect('question.title', 'title')
+      .where('submission.userId = :userId', { userId })
+      .andWhere(
+        'submission.submittedAt >= :start AND submission.submittedAt < :end',
+        { start, end },
+      )
+      .orderBy('submission.questionId', 'ASC')
+      .addOrderBy('submission.submittedAt', 'ASC')
+      .addOrderBy('submission.id', 'DESC')
+      .getRawMany<YearlyAnswerSubmissionsDto>();
   }
 }
