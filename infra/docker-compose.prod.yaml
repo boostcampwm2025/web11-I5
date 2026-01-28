@@ -86,6 +86,31 @@ services:
     networks:
       - app-network
 
+  loki:
+    container_name: malmanhae-loki
+    image: grafana/loki:2.9.4
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
+    networks:
+      - app-network
+
+  promtail:
+    container_name: malmanhae-promtail
+    image: grafana/promtail:2.9.4
+    restart: unless-stopped
+    command: ["-config.file=/etc/promtail/config.yaml"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./promtail-config.yaml:/etc/promtail/config.yaml:ro
+    depends_on:
+      - loki
+    networks:
+      - app-network
+
   web:
     container_name: malmanhae-web
     image: ${DOCKERHUB_USERNAME}/malmanhae-web:latest
