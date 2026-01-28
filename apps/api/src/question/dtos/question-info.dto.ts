@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 class ParentCategoryInfoDto {
   @ApiProperty({ description: '상위 카테고리 ID', example: 1 })
@@ -15,7 +15,7 @@ class CategoryInfoDto {
   @ApiProperty({ description: '카테고리 이름', example: 'API 설계' })
   name: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: '상위 카테고리 정보',
     type: ParentCategoryInfoDto,
     nullable: true,
