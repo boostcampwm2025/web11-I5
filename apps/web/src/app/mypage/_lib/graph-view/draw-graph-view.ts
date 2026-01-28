@@ -129,7 +129,7 @@ function drawGraphView(
     if (textAlpha > 0) {
       const labelAlpha = node.displayAlpha * textAlpha;
       ctx.fillStyle = hexToRgba(GRAPH_COLOR_CONSTANT.LABEL, labelAlpha);
-      ctx.fillText(node.label, node.x, node.y + radius + 14);
+      ctx.fillText(node.label, node.x, node.y + radius + 10);
     }
   });
 
