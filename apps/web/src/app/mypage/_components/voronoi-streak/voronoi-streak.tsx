@@ -32,6 +32,8 @@ function VoronoiStreak({
   yearlyAnswerSubmissions,
 }: VoronoiStreakProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const canvasRectRef = React.useRef<DOMRect | null>(null);
+  const tooltipRef = React.useRef<HTMLDivElement>(null);
   const { width, height } = useCanvas2D(canvasRef);
   const [cellData, setCellData] = React.useState<CellData[]>([]);
   // 가까운 cell을 찾기 위한 delaunay ref 저장
@@ -146,7 +148,10 @@ function VoronoiStreak({
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!canvasRef.current || !delaunayRef.current || cellData.length === 0)
         return;
-      const rect = canvasRef.current.getBoundingClientRect();
+      if (!canvasRectRef.current) {
+        canvasRectRef.current = canvasRef.current.getBoundingClientRect();
+      }
+      const rect = canvasRectRef.current;
       const canvasX = e.clientX - rect.left;
       const canvasY = e.clientY - rect.top;
       const closeDelaunayIdx = delaunayRef.current.find(canvasX, canvasY);
@@ -166,6 +171,31 @@ function VoronoiStreak({
     setHoveredInfo(null);
   }, []);
 
+  React.useLayoutEffect(() => {
+    const tooltipEl = tooltipRef.current;
+    if (!hoveredInfo || !tooltipEl) return;
+
+    // 우측 하단에서 tooltip 넓이에 따라 위치가 계속 바뀌기 때문에 줄바꿈x
+    tooltipEl.style.textWrap = "nowrap";
+    const offsetX = 5;
+    const offsetY = 10;
+    let left = hoveredInfo.x + offsetX;
+    let top = hoveredInfo.y + offsetY;
+
+    const tooltipWidth = tooltipEl.offsetWidth;
+    const tooltipHeight = tooltipEl.offsetHeight;
+
+    if (left + tooltipWidth > width) {
+      left = hoveredInfo.x - tooltipWidth - offsetX;
+    }
+    if (top + tooltipHeight > height) {
+      top = hoveredInfo.y - tooltipHeight - offsetY;
+    }
+
+    tooltipEl.style.left = `${Math.max(0, left)}px`;
+    tooltipEl.style.top = `${Math.max(0, top)}px`;
+  }, [hoveredInfo, width, height]);
+
   const convertDateString = (submittedAt: string) => {
     const date = new Date(submittedAt);
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
@@ -180,6 +210,7 @@ function VoronoiStreak({
       <canvas className="w-full h-full" ref={canvasRef} />
       {hoveredInfo && (
         <div
+          ref={tooltipRef}
           className="absolute z-10 bg-white rounded-lg shadow-lg border border-slate-200 px-3 py-2"
           style={{ left: hoveredInfo.x + 5, top: hoveredInfo.y + 10 }}
         >
