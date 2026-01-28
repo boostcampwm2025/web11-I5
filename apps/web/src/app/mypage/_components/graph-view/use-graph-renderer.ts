@@ -225,11 +225,17 @@ function useGraphRenderer({
   // drawGraph 함수
   const drawGraph = React.useCallback(
     (_deltaTime: number) => {
-      if (!ctx || !nodeMapRef.current) return;
+      if (!ctx) return;
 
       const width = getWidth();
       const height = getHeight();
       if (width === 0 || height === 0) return;
+
+      // NodeMap 초기화 (캔버스 크기가 0에서 non-zero로 변경된 경우)
+      if (!nodeMapRef.current && !externalNodeMap) {
+        nodeMapRef.current = new NodeMap(graphData.nodes, width, height);
+      }
+      if (!nodeMapRef.current) return;
 
       // 물리 시뮬레이션 한 스텝
       nodeMapRef.current.applyPhysics(graphData.edges, width / 2, height / 2);
@@ -269,7 +275,9 @@ function useGraphRenderer({
       ctx,
       getWidth,
       getHeight,
+      graphData.nodes,
       graphData.edges,
+      externalNodeMap,
       textRenderScale,
       onNodeMapChange,
     ],
