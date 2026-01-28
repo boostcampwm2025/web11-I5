@@ -4,9 +4,11 @@ import { fetchOthersSubmission } from "../_lib/fetch-others-submission";
 import formatSubmittedAt from "../_lib/format-submitted-at";
 
 const parseIntOrNull = (value: string | undefined): number | null => {
-  if (!value) return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  if (value === undefined) return null;
+  const trimmed = value.trim();
+  if (!/^-?\d+$/.test(trimmed)) return null;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) && Number.isInteger(parsed) ? parsed : null;
 };
 
 interface OthersSubmissionDetailPageProps {
@@ -19,7 +21,7 @@ async function OthersDetailPage({ params }: OthersSubmissionDetailPageProps) {
   const parsedQuestionId = parseIntOrNull(questionId);
   const parsedSubmissionId = parseIntOrNull(submissionId);
 
-  if (!parsedQuestionId || !parsedSubmissionId) {
+  if (parsedQuestionId === null || parsedSubmissionId === null) {
     return notFound();
   }
 
