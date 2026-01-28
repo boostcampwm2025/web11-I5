@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
 import { AnswerSubmissionService } from 'src/answer-submission/answer-submission.service';
+import { AnswerEvaluation } from 'src/answer-evaluation/entities/answer-evaluation.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Question } from './entities/question.entity';
 import { SolvedStatus } from './question.constants';
@@ -43,6 +44,10 @@ describe('QuestionService', () => {
     findOne: jest.fn(),
   };
 
+  const mockAnswerEvaluationRepository = {
+    findOne: jest.fn(),
+  };
+
   const mockAnswerSubmissionService = {
     getSubmissionForOtherUser: jest.fn(),
   };
@@ -62,6 +67,10 @@ describe('QuestionService', () => {
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
+        },
+        {
+          provide: getRepositoryToken(AnswerEvaluation),
+          useValue: mockAnswerEvaluationRepository,
         },
         {
           provide: AnswerSubmissionService,
