@@ -1,7 +1,9 @@
-export enum NodeType {
-  "QUESTION",
-  "KEYWORD",
-}
+export const NodeType = {
+  QUESTION: "QUESTION",
+  KEYWORD: "KEYWORD",
+} as const;
+
+export type NodeType = (typeof NodeType)[keyof typeof NodeType];
 
 export interface GraphNode {
   id: number;

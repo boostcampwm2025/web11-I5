@@ -12,19 +12,24 @@ interface ReportPageProps {
 
 async function ReportPage({ params, searchParams }: ReportPageProps) {
   const { questionId } = await params;
-  const { attempt: submissionId } = await searchParams;
+  const { attempt: submissionIdParam } = await searchParams;
 
-  if (!submissionId) {
-    notFound();
-  }
+  const parsedSubmissionId = submissionIdParam
+    ? Number(submissionIdParam)
+    : undefined;
+  const validSubmissionId = Number.isFinite(parsedSubmissionId)
+    ? parsedSubmissionId
+    : undefined;
 
   const { question, history, evaluation, highestScore } =
-    await getReportPageData(Number(questionId), Number(submissionId));
-  const selectedAttempt = history.find(
-    (h) => h.submissionId === Number(submissionId),
-  );
+    await getReportPageData(Number(questionId), validSubmissionId);
 
-  if (!question || !history || !selectedAttempt || !evaluation) {
+  // submissionId가 없거나 유효하지 않으면 최신 submission으로 fallback
+  const selectedAttempt = validSubmissionId
+    ? history.find((h) => h.submissionId === validSubmissionId)
+    : history[history.length - 1];
+
+  if (!question || !history.length || !selectedAttempt || !evaluation) {
     notFound();
   }
 

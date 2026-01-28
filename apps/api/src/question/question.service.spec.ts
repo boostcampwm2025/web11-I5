@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AnswerSubmission } from 'src/answer-submission/entities/answer-submission.entity';
+import { AnswerSubmissionService } from 'src/answer-submission/answer-submission.service';
+import { AnswerEvaluation } from 'src/answer-evaluation/entities/answer-evaluation.entity';
+import { User } from 'src/user/entities/user.entity';
 import { Question } from './entities/question.entity';
 import { SolvedStatus } from './question.constants';
 import { QuestionService } from './question.service';
@@ -37,6 +40,18 @@ describe('QuestionService', () => {
     createQueryBuilder: jest.fn(() => mockSubmissionQueryBuilder),
   };
 
+  const mockUserRepository = {
+    findOne: jest.fn(),
+  };
+
+  const mockAnswerEvaluationRepository = {
+    findOne: jest.fn(),
+  };
+
+  const mockAnswerSubmissionService = {
+    getSubmissionForOtherUser: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -48,6 +63,18 @@ describe('QuestionService', () => {
         {
           provide: getRepositoryToken(AnswerSubmission),
           useValue: mockAnswerSubmissionRepository,
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: mockUserRepository,
+        },
+        {
+          provide: getRepositoryToken(AnswerEvaluation),
+          useValue: mockAnswerEvaluationRepository,
+        },
+        {
+          provide: AnswerSubmissionService,
+          useValue: mockAnswerSubmissionService,
         },
       ],
     }).compile();

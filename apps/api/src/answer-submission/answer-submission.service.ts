@@ -6,27 +6,28 @@ import {
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
 import { AnswerEvaluationService } from 'src/answer-evaluation/answer-evaluation.service';
 import { StreaksService } from 'src/streaks/streaks.service';
 import { Repository } from 'typeorm';
-import { OnEvent } from '@nestjs/event-emitter';
+import { Question } from '../question/entities/question.entity';
+import { SttService } from '../stt/stt.service';
 import {
   AudioAsset,
   AudioUploadStatus,
 } from '../uploads/entities/audio-asset.entity';
-import { Question } from '../question/entities/question.entity';
-import { SttService } from '../stt/stt.service';
 import { UpdateImportanceDto } from './dtos/update-importance-rating.dto';
 
+import { YearlyAnswerSubmissionsDto } from 'src/streaks/dtos/streaks-count.dto';
+import { AudioUploadCompletedEvent } from '../uploads/events/audio-upload-completed.event';
 import {
   InputType,
   ProcessStatus,
   QuizMode,
 } from './answer-submission.constants';
 import { AnswerSubmissionResponseDto } from './dtos/answer-submission-response.dto';
-import { AudioUploadCompletedEvent } from '../uploads/events/audio-upload-completed.event';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerSubmission } from './entities/answer-submission.entity';
 
@@ -294,6 +295,36 @@ export class AnswerSubmissionService {
     };
   }
 
+  /**
+   * 타 유저 답변 상세 조회용 제출 엔티티 조회
+   * - 존재하지 않는 제출 ID 이거나
+   * - 현재 사용자 본인의 제출인 경우
+   *   NotFoundException 을 던집니다.
+   */
+  async getSubmissionForOtherUser(
+    submissionId: number,
+    currentUserId: number,
+  ): Promise<AnswerSubmission> {
+    const submission = await this.answerSubmissionRepository.findOne({
+      where: { id: submissionId },
+    });
+
+    if (!submission) {
+      throw new NotFoundException(
+        `ID가 ${submissionId}인 제출 내역을 찾을 수 없습니다.`,
+      );
+    }
+
+    // 본인 제출은 다른 사람 답변 상세에서 조회 불가
+    if (submission.userId === currentUserId) {
+      throw new NotFoundException(
+        `ID가 ${submissionId}인 제출 내역을 찾을 수 없습니다.`,
+      );
+    }
+
+    return submission;
+  }
+
   async updateImportance(
     userId: number,
     updateDto: UpdateImportanceDto,
@@ -342,6 +373,7 @@ export class AnswerSubmissionService {
    * 오디오 업로드 완료 이벤트 핸들러
    * 업로드 완료 시 해당 audioAssetId로 제출된 답변이 있고 STT가 아직 PENDING이면 STT 요청
    */
+
   @OnEvent('audio.upload.completed')
   async handleAudioUploadCompleted(
     event: AudioUploadCompletedEvent,
@@ -413,5 +445,30 @@ export class AnswerSubmissionService {
         );
       }
     }
+  }
+
+  // 스트릭 계산을 위해 연간 문제 풀이 목록 출력
+  async getDistinctQuestionsByYear(
+    userId: number,
+    start: Date,
+    end: Date,
+  ): Promise<YearlyAnswerSubmissionsDto[]> {
+    return this.answerSubmissionRepository
+      .createQueryBuilder('submission')
+      .distinctOn(['submission.questionId'])
+      .innerJoin('submission.question', 'question')
+      .select('submission.id', 'id')
+      .addSelect('submission.submittedAt', 'submittedAt')
+      .addSelect('submission.questionId', 'questionId')
+      .addSelect('question.title', 'title')
+      .where('submission.userId = :userId', { userId })
+      .andWhere(
+        'submission.submittedAt >= :start AND submission.submittedAt < :end',
+        { start, end },
+      )
+      .orderBy('submission.questionId', 'ASC')
+      .addOrderBy('submission.submittedAt', 'ASC')
+      .addOrderBy('submission.id', 'DESC')
+      .getRawMany<YearlyAnswerSubmissionsDto>();
   }
 }

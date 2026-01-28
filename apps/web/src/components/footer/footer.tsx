@@ -2,7 +2,7 @@ import Image from "next/image";
 
 async function Footer() {
   return (
-    <div className="w-full bg-white flex flex-col justify-center items-center py-16 gap-6 border-t border-slate-200">
+    <div className="w-full bg-white flex flex-col justify-center items-center h-60 gap-6 border-t border-slate-200">
       <div className="flex flex-col">
         <div className="flex gap-2 items-center">
           <Image width={32} height={32} src={"/mmh-logo.svg"} alt="logo" />

@@ -142,6 +142,26 @@ export async function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
 }
 
 /**
+ * PATCH 요청 헬퍼
+ */
+export async function apiPatch<T>(
+  endpoint: string,
+  body?: unknown,
+): Promise<T> {
+  logger.info(`PATCH ${endpoint} API 호출`);
+  const response = await apiClient(endpoint, {
+    method: "PATCH",
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    await handleErrorResponse(response);
+  }
+
+  return response.json();
+}
+
+/**
  * DELETE 요청 헬퍼
  */
 export async function apiDelete<T>(endpoint: string): Promise<T> {

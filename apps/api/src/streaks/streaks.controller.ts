@@ -37,7 +37,7 @@ export class StreaksController {
     required: false,
     type: Number,
     description: '조회할 연도 (기본값: 현재 연도)',
-    example: 2024,
+    example: 2026,
   })
   @ApiResponse({
     status: 200,

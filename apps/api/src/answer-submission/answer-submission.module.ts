@@ -15,7 +15,7 @@ import { AnswerEvaluationModule } from '../answer-evaluation/answer-evaluation.m
     TypeOrmModule.forFeature([AnswerSubmission, AudioAsset, Question]),
     forwardRef(() => SttModule),
     forwardRef(() => AnswerEvaluationModule),
-    StreaksModule,
+    forwardRef(() => StreaksModule),
     AuthModule,
   ],
   controllers: [AnswerSubmissionController],
