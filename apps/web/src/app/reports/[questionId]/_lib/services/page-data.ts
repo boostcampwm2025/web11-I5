@@ -8,7 +8,7 @@ async function getReportPageData(questionId: number, submissionId?: number) {
     getReportHistory(questionId),
   ]);
 
-  const selectedSubmissionId = submissionId ?? history[0]?.submissionId;
+  const selectedSubmissionId = submissionId ?? history.at(-1)?.submissionId;
 
   const evaluation = selectedSubmissionId
     ? await getReportEvaluation(selectedSubmissionId)
