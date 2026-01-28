@@ -22,7 +22,9 @@ export class LoggingInterceptor implements NestInterceptor {
   private readonly excludedPaths = ['/health', '/api-docs', '/api-docs-json'];
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { requestId?: string; userId?: number }>();
     const response = context.switchToHttp().getResponse<Response>();
 
     // 제외된 경로는 로깅하지 않음
@@ -35,8 +37,8 @@ export class LoggingInterceptor implements NestInterceptor {
     const startTime = Date.now();
 
     // 요청 정보 추출
-    const userId = (request as Request & { userId?: number }).userId;
-    const requestId = this.generateRequestId();
+    const userId = request.userId;
+    const requestId = request.requestId || 'unknown';
 
     // 요청 로그
     this.logger.log(
@@ -74,13 +76,6 @@ export class LoggingInterceptor implements NestInterceptor {
         },
       }),
     );
-  }
-
-  /**
-   * 요청 추적을 위한 고유 ID 생성
-   */
-  private generateRequestId(): string {
-    return `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
   private extractStatusCode(

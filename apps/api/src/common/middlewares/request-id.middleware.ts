@@ -1,6 +1,5 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { randomUUID } from 'crypto';
 
 /**
  * Request ID Middleware
@@ -18,7 +17,7 @@ export class RequestIdMiddleware implements NestMiddleware {
   ) {
     // 요청 헤더에서 X-Request-ID 읽기 (없으면 생성)
     const requestId =
-      (req.headers['x-request-id'] as string) || `req-${randomUUID()}`;
+      (req.headers['x-request-id'] as string) || this.generateRequestId();
 
     // Request 객체에 requestId 추가 (필터에서 사용)
     req.requestId = requestId;
@@ -27,5 +26,12 @@ export class RequestIdMiddleware implements NestMiddleware {
     res.setHeader('X-Request-ID', requestId);
 
     next();
+  }
+
+  /**
+   * 요청 추적을 위한 고유 ID 생성
+   */
+  private generateRequestId(): string {
+    return `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 }
