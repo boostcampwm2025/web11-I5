@@ -63,7 +63,9 @@ export class AnswerEvaluationService {
       LLM_MODELS.EVALUATION;
   }
 
-  async evaluate(submissionId: number): Promise<{ evaluationId: number }> {
+  async evaluate(
+    submissionId: number,
+  ): Promise<{ evaluationId: number } | null> {
     const submission = await this.answerSubmissionRepository.findOne({
       where: { id: submissionId },
     });
@@ -77,40 +79,52 @@ export class AnswerEvaluationService {
       throw new ConflictException('이미 채점이 완료된 답안입니다.');
     }
 
-    await this.answerSubmissionRepository.update(submissionId, {
-      evaluationStatus: EvaluationStatus.PENDING,
-    });
-
-    // 기존 evaluation 찾기
-    let evaluation = await this.answerEvaluationRepository.findOne({
-      where: { submissionId },
-    });
-
-    if (evaluation) {
-      // 재채점: 기존 데이터 초기화
-      await this.answerEvaluationRepository.update(evaluation.id, {
-        feedbackMessage: null,
-        detailAnalysis: null,
-        scoreDetails: null,
-        coreConceptEval: null,
-        coverageEval: null,
-        logicEval: null,
-        depthEval: null,
-        hasApplication: false,
-        isCompleteSentence: false,
-        extractedKeywords: [],
+    try {
+      await this.answerSubmissionRepository.update(submissionId, {
+        evaluationStatus: EvaluationStatus.PENDING,
       });
-    } else {
-      // 첫 채점: 새로 생성
-      evaluation = this.answerEvaluationRepository.create({
-        submissionId,
+
+      // 기존 evaluation 찾기
+      let evaluation = await this.answerEvaluationRepository.findOne({
+        where: { submissionId },
       });
-      evaluation = await this.answerEvaluationRepository.save(evaluation);
+
+      if (evaluation) {
+        // 재채점: 기존 데이터 초기화
+        await this.answerEvaluationRepository.update(evaluation.id, {
+          feedbackMessage: null,
+          detailAnalysis: null,
+          scoreDetails: null,
+          coreConceptEval: null,
+          coverageEval: null,
+          logicEval: null,
+          depthEval: null,
+          hasApplication: false,
+          isCompleteSentence: false,
+          extractedKeywords: [],
+        });
+      } else {
+        // 첫 채점: 새로 생성
+        evaluation = this.answerEvaluationRepository.create({
+          submissionId,
+        });
+        evaluation = await this.answerEvaluationRepository.save(evaluation);
+      }
+
+      void this.aiEvaluate(evaluation.id, submission);
+
+      return { evaluationId: evaluation.id };
+    } catch (error) {
+      // evaluation 준비 중 에러 발생 시 FAILED 처리
+      this.logger.error(
+        `Failed to prepare evaluation for submissionId: ${submissionId}`,
+        error,
+      );
+      await this.answerSubmissionRepository.update(submissionId, {
+        evaluationStatus: EvaluationStatus.FAILED,
+      });
+      return null;
     }
-
-    void this.aiEvaluate(evaluation.id, submission);
-
-    return { evaluationId: evaluation.id };
   }
 
   /**
