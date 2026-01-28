@@ -78,11 +78,7 @@ export class LoggingInterceptor implements NestInterceptor {
             this.logger.log(logMessage);
           }
 
-          // Prometheus 메트릭 기록
-          this.httpRequestsTotal.labels(method, path, String(statusCode)).inc();
-          this.httpRequestDurationSeconds
-            .labels(method, path, String(statusCode))
-            .observe(durationSeconds);
+          this.recordMetrics(method, path, statusCode, durationSeconds);
         },
         error: (error: unknown) => {
           const duration = Date.now() - startTime;
@@ -104,10 +100,7 @@ export class LoggingInterceptor implements NestInterceptor {
           );
 
           // 에러 응답에 대한 Prometheus 메트릭 기록
-          this.httpRequestsTotal.labels(method, path, String(statusCode)).inc();
-          this.httpRequestDurationSeconds
-            .labels(method, path, String(statusCode))
-            .observe(durationSeconds);
+          this.recordMetrics(method, path, statusCode, durationSeconds);
         },
       }),
     );
@@ -133,5 +126,21 @@ export class LoggingInterceptor implements NestInterceptor {
     }
 
     return 500;
+  }
+
+  private recordMetrics(
+    method: string,
+    path: string,
+    statusCode: number,
+    durationSeconds: number,
+  ) {
+    if (!this.httpRequestsTotal || !this.httpRequestDurationSeconds) {
+      this.logger.warn('Prometheus metrics not initialized; skipping metrics');
+      return;
+    }
+    this.httpRequestsTotal.labels(method, path, String(statusCode)).inc();
+    this.httpRequestDurationSeconds
+      .labels(method, path, String(statusCode))
+      .observe(durationSeconds);
   }
 }
