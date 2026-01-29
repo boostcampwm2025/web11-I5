@@ -141,8 +141,8 @@ function QuestionFilters({
         </InputGroup>
       </div>
       <div className="mt-4 md:mt-7 flex flex-col md:flex-row gap-4 md:gap-12">
-        <div className="flex gap-3 items-center">
-          <div className="text-muted-foreground text-sm font-medium shrink-0">
+        <div className="flex items-center">
+          <div className="w-16 text-muted-foreground text-sm font-medium shrink-0">
             풀이 상태
           </div>
           <SegmentedControl
@@ -159,8 +159,8 @@ function QuestionFilters({
             }
           />
         </div>
-        <div className="flex gap-3 items-center">
-          <div className="text-muted-foreground text-sm font-medium shrink-0">
+        <div className="flex items-center">
+          <div className="w-16 text-muted-foreground text-sm font-medium shrink-0">
             중요도
           </div>
           <SegmentedControl

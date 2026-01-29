@@ -11,6 +11,8 @@ import {
   requestPresignedUrl,
   uploadToStorage,
 } from "../../_lib/fetch/image-upload";
+import { Button } from "@/components/button/button";
+import { Input } from "@/components/input/input";
 
 interface UserStatsCardProps {
   nickname: string;
@@ -143,10 +145,10 @@ function UserStatsCard({
   return (
     <form
       action={handleFormAction}
-      className="p-8 border border-slate-200 bg-white rounded-[12px] flex flex-col gap-4"
+      className="p-8 border border-slate-200 bg-white rounded-[12px] flex flex-col md:flex-row gap-4"
     >
-      <div className="flex justify-between items-center">
-        <div className="flex justify-between gap-6 h-16">
+      <div className="flex flex-1 justify-between items-center">
+        <div className="flex w-full gap-6 h-16">
           <div className="flex flex-col gap-1">
             <div
               className={`relative rounded-full ${profileImagePreview ? "bg-none border-none" : "bg-slate-50 border-neutral-200 border inset-shadow-2xs "}   w-16 h-16 flex items-center justify-center ${isEditing ? "cursor-pointer hover:bg-slate-100" : ""} ${profileImagePreview ? "p-0" : "p-4"}`}
@@ -199,45 +201,38 @@ function UserStatsCard({
             name="profileImage"
           />
 
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-1 flex-col min-w-0 gap-1">
             {isEditing ? (
               <>
                 <section className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
                       name="nickname"
                       placeholder="닉네임 입력"
                       value={nicknameValue}
                       onChange={(e) => setNicknameValue(e.target.value)}
-                      className="text-slate-900 font-bold text-2xl w-auto border pl-1 border-teal-500 focus:border-teal-600 focus:outline-none rounded"
                       autoFocus
                       maxLength={20}
+                      className="h-9 w-40"
                     />
-                    <button
-                      type="submit"
-                      disabled={isPending}
-                      className="bg-white border border-slate-200 px-2 h-6 flex items-center justify-center rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span className="text-sm text-slate-500 font-medium">
-                        {isPending ? "수정 중..." : "수정 완료"}
-                      </span>
-                    </button>
-                    <button
+                    <Button type="submit" size="sm" disabled={isPending}>
+                      {isPending ? "저장 중..." : "저장"}
+                    </Button>
+                    <Button
                       type="button"
+                      size="sm"
+                      variant="outline"
                       onClick={handleCancel}
                       aria-label="취소"
-                      className="bg-white border border-slate-200 px-2 h-6 flex items-center justify-center rounded-sm"
                     >
-                      <span className="text-sm text-slate-500 font-medium">
-                        취소
-                      </span>
-                    </button>
+                      취소
+                    </Button>
                   </div>
                 </section>
 
                 <section>
                   <div className="flex gap-4 items-center">
-                    <div className="text-slate-900 font-semibold text-base">
+                    <div className="text-muted-foreground font-medium text-sm">
                       {email}
                     </div>
                   </div>
@@ -245,25 +240,24 @@ function UserStatsCard({
               </>
             ) : (
               <>
-                <section className="flex items-center gap-2">
-                  <div className="text-slate-900 font-bold text-2xl">
+                <section className="flex min-w-0 items-center gap-2">
+                  <div className="text-slate-900 flex-1 font-bold text-2xl leading-9 truncate w-0">
                     {nicknameValue}
                   </div>
-                  <button
+                  <Button
                     type="button"
+                    size="icon"
+                    variant="ghost"
                     onClick={onEditToggle}
-                    aria-label="닉네임 편집"
-                    className="bg-white border border-slate-200 px-2 h-6 flex items-center justify-center rounded-sm"
+                    aria-label="프로필 편집"
                   >
-                    <span className="text-sm text-slate-500 font-medium">
-                      수정
-                    </span>
-                  </button>
+                    <Pencil className="text-muted-foreground" />
+                  </Button>
                 </section>
 
                 <section>
                   <div className="flex gap-4 items-center">
-                    <div className="text-slate-900 font-semibold text-base">
+                    <div className="text-muted-foreground font-medium text-sm">
                       {email}
                     </div>
                   </div>
@@ -272,12 +266,13 @@ function UserStatsCard({
             )}
           </div>
         </div>
-
-        <div className="flex px-4 py-2 bg-teal-50 rounded-xl items-center gap-3">
-          <div className="flex flex-col items-center p-3">
-            <span className="text-sm text-slate-500 font-semibold">
-              연속 학습일
-            </span>
+      </div>
+      <div className="flex px-3 md:px-4 py-2 bg-teal-50 rounded-xl items-center gap-2 md:gap-3 w-full sm:w-auto justify-center md:justify-start">
+        <div className="flex flex-col items-center p-2 md:p-3">
+          <span className="text-xs md:text-sm text-slate-500 font-semibold whitespace-nowrap">
+            연속 학습일
+          </span>
+          <div className="flex gap-1">
             <div className="flex gap-1">
               <span className="font-bold text-teal-600">
                 {consecutiveDayCount}
@@ -285,17 +280,15 @@ function UserStatsCard({
               <span className="font-medium text-slate-500">일째</span>
             </div>
           </div>
-
-          <hr className="w-px h-9 bg-slate-200" />
-
-          <div className="flex flex-col items-center p-3">
-            <span className="text-sm text-slate-500 font-semibold">
-              해결한 문제
-            </span>
-            <div className="flex gap-1">
-              <span className="font-bold text-teal-600">{totalPoint}</span>
-              <span className="font-medium text-slate-500">개</span>
-            </div>
+        </div>
+        <hr className="w-px h-8 md:h-9 bg-slate-200" />
+        <div className="flex flex-col items-center p-2 md:p-3">
+          <span className="text-xs md:text-sm text-slate-500 font-semibold whitespace-nowrap">
+            해결한 문제
+          </span>
+          <div className="flex gap-1">
+            <span className="font-bold text-teal-600">{totalPoint}</span>
+            <span className="font-medium text-slate-500">개</span>
           </div>
         </div>
       </div>

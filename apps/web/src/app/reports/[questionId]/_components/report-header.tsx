@@ -37,7 +37,7 @@ function ReportHeader({ question, highestScore }: ReportHeaderProps) {
         <Button
           variant="outline"
           asChild
-          className="font-semibold text-slate-600 text-sm md:text-base"
+          className="font-semibold text-slate-600"
         >
           <Link href={`/daily/questions/${question.id}/others`}>
             <Users className="w-4 h-4" />

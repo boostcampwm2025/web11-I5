@@ -20,12 +20,12 @@ async function SolvedContent({
   };
   return (
     <>
-      <div className="flex py-8 justify-between items-center">
-        <div className="flex flex-col justify-start gap-2">
-          <span className="text-lg font-bold text-slate-900">
+      <div className="flex py-6 md:py-8 justify-between items-center">
+        <div className="flex flex-col justify-start gap-1 md:gap-2">
+          <span className="text-base md:text-lg font-bold text-slate-900">
             내가 푼 문제 리스트
           </span>
-          <span className="text-sm font-medium text-slate-500">
+          <span className="text-xs md:text-sm font-medium text-slate-500">
             어떤 문제를 풀었는지 확인할 수 있습니다.
           </span>
         </div>
@@ -33,10 +33,14 @@ async function SolvedContent({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-20">분류</TableHead>
+            <TableHead className="w-20 hidden sm:table-cell">분류</TableHead>
             <TableHead>문제 제목</TableHead>
-            <TableHead className="text-center">제출 시간</TableHead>
-            <TableHead className="text-center">내 최고 점수</TableHead>
+            <TableHead className="text-center hidden md:table-cell">
+              제출 시간
+            </TableHead>
+            <TableHead className="text-center w-24 md:w-auto">
+              내 점수
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -52,25 +56,31 @@ async function SolvedContent({
           ) : (
             solvedProblems.map((problem) => (
               <TableRow key={problem.questionId}>
-                <TableCell>
-                  <span className="text-sm py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
+                <TableCell className="hidden sm:table-cell">
+                  <span className="text-xs md:text-sm py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
                     {problem.category}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="whitespace-normal">
                   <Link
                     href={`/reports/${problem.questionId}`}
                     className="text-slate-900 font-medium text-sm hover:text-teal-600 hover:cursor-pointer hover:underline"
                   >
                     {problem.title}
                   </Link>
+                  <div className="sm:hidden text-xs text-muted-foreground mt-1">
+                    {problem.category}
+                  </div>
+                  <div className="md:hidden text-xs text-muted-foreground mt-0.5">
+                    {formattingDate(problem.completedAt)}
+                  </div>
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center hidden md:table-cell">
                   {formattingDate(problem.completedAt)}
                 </TableCell>
                 <TableCell className="text-center">
                   <span className="text-teal-600 font-medium text-sm bg-teal-50 px-2 py-1 rounded-sm">
-                    {problem.score}
+                    {problem.score}점
                   </span>
                 </TableCell>
               </TableRow>

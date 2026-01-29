@@ -90,7 +90,7 @@ async function QuestionsTableBodySection({
                 {question.category?.parent?.name ?? "-"}
               </TableCell>
               <TableCell className="text-muted-foreground hidden sm:table-cell">
-                <span className="text-xs py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium whitespace-normal max-w-32 truncate inline-block">
+                <span className="text-xs py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium whitespace-nowrap max-w-28 truncate inline-block">
                   {question.category?.name ?? "-"}
                 </span>
               </TableCell>
