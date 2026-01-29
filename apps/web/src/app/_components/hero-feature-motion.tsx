@@ -15,7 +15,7 @@ export function HeroFeatureMotion({ className }: { className?: string }) {
     <div className={cn("w-full", className)}>
       {/* 문장 */}
       <motion.div
-        className={cn("text-xl font-medium text-teal-500 text-center")}
+        className={cn("text-xl font-medium text-teal-400 text-center")}
         initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.55, ease: [0.2, 0.9, 0.2, 1] }}

@@ -19,7 +19,7 @@ const LOGO_DELAY =
 export function SplitBounceMalManHae({ className }: { className?: string }) {
   return (
     <div
-      className={cn("text-9xl flex mb-15 text-teal-500 relative", className)}
+      className={cn("text-9xl flex mb-15 text-teal-400 relative", className)}
       aria-label="말만해"
     >
       {letters.map(({ char, extra }, i) => (
@@ -81,7 +81,7 @@ export function SplitBounceMalManHae({ className }: { className?: string }) {
                 viewBox="0 0 79 81"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="text-teal-500 drop-shadow-sm"
+                className="text-teal-400 drop-shadow-sm"
                 aria-hidden="true"
                 focusable={false}
               >
