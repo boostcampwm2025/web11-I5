@@ -1,6 +1,7 @@
 "use client";
 import { useCanvas2D } from "@/hooks/use-canvas-2d";
 import * as React from "react";
+import { addRandomEdgeDistance } from "../../_lib/graph-view/add-random-edge-distance";
 import drawGraphView from "../../_lib/graph-view/draw-graph-view";
 import { GraphData } from "../../_types/graph-view";
 import NodeMap from "./node-map";
@@ -19,6 +20,10 @@ function GraphView({
   nodeMap,
   changeNodeMap,
 }: GraphViewProps) {
+  const graphDataRef = React.useRef<GraphData>({
+    ...graphData,
+    edges: addRandomEdgeDistance(graphData.edges),
+  });
   // canvasRef: Canvas DOM 참조
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   // ctx: Canvas 2D 렌더링 컨텍스트, width/height: 캔버스 크기
@@ -33,8 +38,8 @@ function GraphView({
     // nodeMap을 props로 받았았을 때 초기화 안되게
     // nodeMap이 존재할 때 width, height이 변경되도 초기화안되게
     if (nodeMap || nodeMapRef.current) return;
-    nodeMapRef.current = new NodeMap(graphData.nodes, width, height);
-  }, [width, height, graphData.nodes, nodeMap]);
+    nodeMapRef.current = new NodeMap(graphDataRef.current.nodes, width, height);
+  }, [width, height, graphDataRef, nodeMap]);
 
   // 캔버스 인터랙션 훅에서 반환된 값들
   // offset: 캔버스 이동 오프셋, scale: 줌 레벨
@@ -48,15 +53,21 @@ function GraphView({
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-  } = useGraphInteraction(canvasRef, clickEventDisabled, {
-    getNodeValues: () => nodeMapRef.current?.getNodeValues() ?? [].values(),
-    setNodeFixedCoords: (nodeId, x, y) =>
-      nodeMapRef.current?.setNodeFixedCoords(nodeId, x, y),
-    clearNodeFixedCoords: (nodeId) =>
-      nodeMapRef.current?.clearNodeFixedCoords(nodeId),
-    getNodeQuestionId: (nodeId) =>
-      nodeMapRef?.current?.nodeMap.get(nodeId)?.questionId ?? null,
-  });
+  } = useGraphInteraction(
+    canvasRef,
+    clickEventDisabled,
+    {
+      getNodeValues: () => nodeMapRef.current?.getNodeValues() ?? [].values(),
+      setNodeFixedCoords: (nodeId, x, y) =>
+        nodeMapRef.current?.setNodeFixedCoords(nodeId, x, y),
+      clearNodeFixedCoords: (nodeId) =>
+        nodeMapRef.current?.clearNodeFixedCoords(nodeId),
+      getNodeQuestionId: (nodeId) =>
+        nodeMapRef?.current?.nodeMap.get(nodeId)?.questionId ?? null,
+    },
+    { x: 0, y: 0 }, // initialOffset
+    0.5, // initialScale - 초기 줌 레벨을 0.5로 설정
+  );
 
   // 물리 엔진 기반 그래프 애니메이션 루프
   // 기대동작: 물리 시뮬레이션을 통해 노드들이 안정적인 위치로 이동하며, 수렴 또는 인터랙션이 있을 때만 애니메이션 실행
@@ -72,14 +83,18 @@ function GraphView({
       if (!nodeMapRef.current) return;
 
       // 1. 물리 엔진 단계: 힘 적용 및 위치 업데이트
-      nodeMapRef.current.applyPhysics(graphData.edges, centerX, centerY);
+      nodeMapRef.current.applyPhysics(
+        graphDataRef.current.edges,
+        centerX,
+        centerY,
+      );
 
       // 2. 렌더링 단계: 캔버스 지우고 그래프 그리기
       ctx.clearRect(0, 0, width, height);
       drawGraphView(
         ctx,
         nodeMapRef.current.nodeMap,
-        graphData.edges,
+        graphDataRef.current.edges,
         offset.current,
         scale.current,
         hoveredNodeId.current,
@@ -108,7 +123,7 @@ function GraphView({
     ctx,
     width,
     height,
-    graphData.edges,
+    graphDataRef,
     offset,
     scale,
     activeInteraction,

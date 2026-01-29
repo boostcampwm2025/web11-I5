@@ -15,12 +15,22 @@ class NodeMap {
 
   constructor(nodes: GraphNode[], width: number, height: number) {
     this._nodeMap = new Map();
-    const radius = GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
-    nodes.forEach((node) => {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const nodeCount = nodes.length;
+    // 화면 크기에 비례하는 원의 반지름 (화면의 50% 정도)
+    const circleRadius = Math.min(width, height) * 0.5;
+
+    nodes.forEach((node, index) => {
+      // 원형으로 균등하게 배치
+      const angle = (index / nodeCount) * 2 * Math.PI;
+      const x = centerX + circleRadius * Math.cos(angle);
+      const y = centerY + circleRadius * Math.sin(angle);
+
       this._nodeMap.set(node.id, {
         ...node,
-        x: Math.random() * (width - radius * 2) + radius,
-        y: Math.random() * (height - radius * 2) + radius,
+        x,
+        y,
         vx: 0,
         vy: 0,
         fx: null,

@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
+import { Button } from "@/components/button/button";
 import { BarChart3, Expand } from "lucide-react";
+import * as React from "react";
 import GraphView from "../_components/graph-view/graph-view";
 import NodeMap from "../_components/graph-view/node-map";
 import { GraphData } from "../_types/graph-view";
-import { Button } from "@/components/button/button";
 
 function GraphContent({ graphData }: { graphData: GraphData }) {
   const [openModalStatus, setOpenModalStatus] = React.useState(false);
@@ -39,7 +39,7 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
             onClick={handleModalToggle}
             size="icon"
             variant="outline"
-            className="absolute right-0 top-8"
+            className="absolute right-8 top-8"
             aria-label="그래프 확대"
           >
             <Expand className="text-muted-foreground" />
@@ -49,13 +49,14 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
       )}
       {openModalStatus && (
         <div
-          onClick={handleModalToggle}
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              handleModalToggle();
+            }
+          }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl w-full h-full max-w-5xl max-h-5/6 shadow-xl overflow-hidden relative"
-          >
+          <div className="bg-white rounded-2xl w-full h-full max-w-5xl max-h-5/6 shadow-xl overflow-hidden relative">
             <div className="w-full h-full">
               <GraphView graphData={graphData} nodeMap={nodeMap} />
             </div>

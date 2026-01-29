@@ -29,6 +29,18 @@ function useGraphInteraction(
   // scale: 캔버스에서 휠움직임을 통해 줌을 할 때 줌 단계
   const scale = React.useRef(initialScale);
 
+  // 초기 스케일이 1이 아닐 때 중앙 정렬을 위한 offset 조정
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || initialScale === 1) return;
+
+    const rect = canvas.getBoundingClientRect();
+    offset.current = {
+      x: (rect.width * (1 - initialScale)) / 2,
+      y: (rect.height * (1 - initialScale)) / 2,
+    };
+  }, [canvasRef, initialScale]);
+
   const hoveredNodeId = React.useRef<number | null>(null);
   const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -88,6 +100,7 @@ function useGraphInteraction(
   // 기대동작 2. 노드 클릭 o -> 해당 노드 고정
   const handleMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      document.body.style.cursor = "grabbing";
       setActiveInteraction(true);
       // 클릭 판정을 위해 항상 시작 위치 저장
       setDragStartOffset({ x: e.clientX, y: e.clientY });
@@ -163,7 +176,7 @@ function useGraphInteraction(
       setDraggedNodeId(null);
       setIsDraggingCanvas(false);
       setActiveInteraction(false);
-
+      document.body.style.cursor = "default";
       // 클릭 이벤트 처리 (드래그 없이 같은 위치에서 마우스 업)
       if (dragStartOffset.x === e.clientX && dragStartOffset.y === e.clientY) {
         if (clickEventDisabled || !clickedNodeId) return;
