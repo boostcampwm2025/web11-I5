@@ -1,10 +1,11 @@
 "use server";
 
+import { apiClient, apiGet, apiPost } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
+import { logger } from "@sentry/nextjs";
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { apiClient, apiGet } from "@/lib/api-client";
-import { ApiError } from "@/lib/api-error";
-import { revalidatePath } from "next/cache";
 
 const API_BASE_URL = process.env.API_URL || "http://localhost:8000";
 
@@ -205,11 +206,67 @@ async function signupAction(
   redirect("/login");
 }
 
+async function sendVerifyMail(email: string) {
+  try {
+    return apiPost<{ message: string }>("/api/users/mail-verification", {
+      email,
+    });
+  } catch (error) {
+    logger.error("인증 메일 보내기 요청 실패", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+
+export interface VerifyCodeState {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+// 인증 코드 확인 액션
+async function verifyCodeAction(
+  _prevState: VerifyCodeState | undefined,
+  formData: FormData,
+): Promise<VerifyCodeState> {
+  const email = formData.get("email") as string;
+  const code = formData.get("code") as string;
+
+  if (!code || code.length !== 6) {
+    return { success: false, error: "6자리 인증 코드를 입력해주세요." };
+  }
+
+  try {
+    const result = await apiPost<{ message: string }>(
+      "/api/users/verification-check",
+      { email, code },
+    );
+    return {
+      success: true,
+      message: result.message || "인증이 완료되었습니다.",
+    };
+  } catch (error) {
+    logger.error("인증 코드 확인 요청 실패", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "인증에 실패했습니다. 코드를 확인해주세요.",
+    };
+  }
+}
+
 export {
-  hasAccessToken,
   getCurrentUser,
   getTestUsers,
+  hasAccessToken,
   loginAction,
   logoutAction,
+  sendVerifyMail,
   signupAction,
+  verifyCodeAction,
 };
