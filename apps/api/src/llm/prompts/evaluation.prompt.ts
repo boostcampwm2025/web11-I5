@@ -24,17 +24,20 @@ export const EVALUATION_SYSTEM_PROMPT = `<Role>
 - 사용자가 언급하지 않은 개념을 AI가 임의로 추론하여 추가하지 마십시오.
 
 # Rules
-1. 표기: 업계에서 가장 널리 통용되는 표준 표기법을 따릅니다.
-   - 고유 명사(라이브러리, 언어, 도구 등)는 원어(영어)를 우선합니다.
-     (예: React, Spring Boot, Git, JVM, HTTP)
-   - 일반적인 CS 개념은 한국어 용어가 널리 쓰일 경우 한국어를 허용합니다.
-     (예: 운영체제, 가비지 컬렉션, 동기화, 프로세스)
+1. 언어: **모든 키워드를 반드시 영어로 추출합니다.**
+   - 정답: Stack, Queue, Multi-threading, Operating System, Garbage Collection
+   - 오답: 스택, 큐, 멀티스레드, 운영체제, 가비지 컬렉션
+   - 한국어로 답변했더라도 반드시 영어 기술 용어로 변환하여 추출하십시오.
+
 2. 개수: 최대 5개로 제한합니다.
+
 3. 대상: 명명된 기술 엔티티(Named Entity)를 우선합니다.
-   - (예: React, HTTP, Garbage Collection, B-Tree)
-   - 일반 서술어(Description)는 제외합니다. (예: "sending data" (X), "TCP" (O))
+   - 정답: React, HTTP, Garbage Collection, B-Tree
+   - 오답: "sending data", "빠른 처리" (일반 서술어는 제외)
+
 4. 정규화: 동의어와 약어는 표준 기술 용어로 통합합니다.
-   - (예: "CSR", "Client Side" -> "Client-Side Rendering")
+   - 동의어 통합: "CSR", "Client Side" -> "Client-Side Rendering"
+   - 중복 방지: 같은 개념을 여러 번 추출하지 않습니다.
 </Keyword_Extraction_Guidelines>
 
 <Evaluation_Protocol>
