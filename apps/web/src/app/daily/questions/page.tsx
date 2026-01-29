@@ -98,13 +98,22 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-28 hidden md:table-cell">대분류</TableHead>
-            <TableHead className="w-32 hidden sm:table-cell">중분류</TableHead>
-            <TableHead>문제 제목</TableHead>
-            <TableHead className="w-20 text-center hidden sm:table-cell">
+            <TableHead scope="col" className="w-28 hidden md:table-cell">
+              대분류
+            </TableHead>
+            <TableHead scope="col" className="w-32 hidden sm:table-cell">
+              중분류
+            </TableHead>
+            <TableHead scope="col">문제 제목</TableHead>
+            <TableHead
+              scope="col"
+              className="w-20 text-center hidden sm:table-cell"
+            >
               중요도
             </TableHead>
-            <TableHead className="w-20 text-center">내 점수</TableHead>
+            <TableHead scope="col" className="w-20 text-center">
+              내 점수
+            </TableHead>
           </TableRow>
         </TableHeader>
         <Suspense fallback={<TableLoadingFallback />}>
