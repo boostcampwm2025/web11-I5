@@ -181,20 +181,7 @@ export class AnswerSubmissionService {
           `Failed to request STT for audioAssetId: ${audioAsset.id}`,
           error,
         );
-
-        // Update submission status to FAILED when STT request fails
-        try {
-          savedSubmission.sttStatus = ProcessStatus.FAILED;
-          await this.answerSubmissionRepository.save(savedSubmission);
-          this.logger.warn(
-            `Updated submission ${savedSubmission.id} sttStatus to FAILED due to STT request failure`,
-          );
-        } catch (updateError) {
-          this.logger.error(
-            `Failed to update submission ${savedSubmission.id} status after STT request failure`,
-            updateError,
-          );
-        }
+        await this.markSttAsFailed(audioAsset.id);
       });
     } else {
       this.logger.log(
@@ -433,17 +420,31 @@ export class AnswerSubmissionService {
         `Failed to request STT for audioAssetId: ${audioAssetId}`,
         error,
       );
+      await this.markSttAsFailed(audioAssetId);
+    }
+  }
 
-      // STT 요청 실패 시 상태 업데이트
-      try {
-        submission.sttStatus = ProcessStatus.FAILED;
-        await this.answerSubmissionRepository.save(submission);
-      } catch (updateError) {
-        this.logger.error(
-          `Failed to update submission status after STT failure for audioAssetId: ${audioAssetId}`,
-          updateError,
-        );
-      }
+  /**
+   * STT 상태를 FAILED로 변경하는 헬퍼 메서드
+   * PENDING/IN_PROGRESS 상태일 때만 FAILED로 변경 (DONE 상태는 보존)
+   * 실패 시 로그만 남기고 CRON이 처리하도록 함
+   */
+  async markSttAsFailed(audioAssetId: number): Promise<void> {
+    try {
+      await this.answerSubmissionRepository
+        .createQueryBuilder()
+        .update(AnswerSubmission)
+        .set({ sttStatus: ProcessStatus.FAILED })
+        .where('audioAssetId = :audioAssetId', { audioAssetId })
+        .andWhere('sttStatus IN (:...statuses)', {
+          statuses: [ProcessStatus.PENDING, ProcessStatus.IN_PROGRESS],
+        })
+        .execute();
+    } catch (error) {
+      this.logger.error(
+        `Failed to mark sttStatus as FAILED for audioAssetId ${audioAssetId}`,
+        error,
+      );
     }
   }
 
