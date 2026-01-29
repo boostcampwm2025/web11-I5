@@ -16,8 +16,9 @@ export class RequestIdMiddleware implements NestMiddleware {
     next: NextFunction,
   ) {
     // 요청 헤더에서 X-Request-ID 읽기 (없으면 생성)
-    const requestId =
-      (req.headers['x-request-id'] as string) || this.generateRequestId();
+    const headerValue = req.headers['x-request-id'];
+    const incoming = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+    const requestId = (incoming && incoming.trim()) || this.generateRequestId();
 
     // Request 객체에 requestId 추가 (필터에서 사용)
     req.requestId = requestId;
