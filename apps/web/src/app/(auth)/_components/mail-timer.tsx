@@ -7,7 +7,7 @@ interface MailTimerProps {
 }
 
 function MailTimer({ onExpire }: MailTimerProps) {
-  const [seconds, setSeconds] = React.useState(300); // 5분 단위 -> 300초
+  const [seconds, setSeconds] = React.useState(600); // 10분 단위 -> 600초
   const rafIdRef = React.useRef<number | null>(null);
   const prevTimeRef = React.useRef<number | null>(null);
 

@@ -55,7 +55,7 @@ function MailVerificationModal({
       setTimeout(() => {
         onSuccess?.();
         handleModalToggle();
-      }, 1500);
+      }, 1000);
     }
   }, [state, onSuccess, handleModalToggle]);
 
