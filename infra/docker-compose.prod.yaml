@@ -108,7 +108,7 @@ services:
     restart: unless-stopped
     command: ["-config.file=/etc/promtail/config.yaml"]
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - ./promtail-config.yaml:/etc/promtail/config.yaml:ro
     depends_on:
       - loki
