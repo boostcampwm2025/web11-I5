@@ -87,6 +87,9 @@ export class BatchService {
       .where('submission.evaluationStatus = :status', {
         status: EvaluationStatus.PENDING,
       })
+      .andWhere('submission.sttStatus = :sttStatus', {
+        sttStatus: ProcessStatus.DONE,
+      })
       .andWhere('submission.submittedAt < :timeoutDate', { timeoutDate })
       .execute();
   }
