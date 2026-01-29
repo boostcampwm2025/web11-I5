@@ -1,17 +1,18 @@
 "use client";
 
-import * as React from "react";
 import { Button } from "@/components/button/button";
-import { SignupState } from "../_utils/auth";
+import * as React from "react";
 
-import { Mail, Lock, ArrowRight, User, AlertCircle } from "lucide-react";
+import { Checkbox } from "@/components/checkbox/checkbox";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/input-group/input-group";
-import { Checkbox } from "@/components/checkbox/checkbox";
+import { AlertCircle, ArrowRight, Lock, Mail, User } from "lucide-react";
 import { SIGNUP_CONSTANTS } from "../_constants/input-condition";
+import { SignupState } from "../_utils/auth";
+import MailVerificationModal from "./mail-verification-modal";
 
 interface SignUpFormProps {
   signupAction: (
@@ -35,6 +36,11 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
 
   const [formData, setFormData] = React.useState(INITIAL_FORM_STATE);
   const [agreed, setAgreed] = React.useState(false);
+  const [openModalStatus, setOpenModalStatus] = React.useState(false);
+
+  const handleModalToggle = React.useCallback(() => {
+    setOpenModalStatus((prev) => !prev);
+  }, []);
 
   const lastProcessedStateRef = React.useRef<typeof state>(undefined);
 
@@ -90,153 +96,168 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
   const serverErrorMessage = state?.error;
 
   return (
-    <form action={formAction} className="w-full">
-      {/* 이름(닉네임) 입력 */}
-      <div className="space-y-2 mb-4">
-        <label htmlFor="nickname" className="text-sm font-medium">
-          이름
-        </label>
-        <InputGroup className="h-11">
-          <InputGroupAddon>
-            <User />
-          </InputGroupAddon>
-          <InputGroupInput
-            id="nickname"
-            name="nickname"
-            placeholder="홍길동"
-            value={formData.nickname}
-            onChange={handleInputChange}
-            required
-          />
-        </InputGroup>
-        <p
-          className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.nickname && !validation.nickname ? "text-red-500" : "text-slate-500"}`}
-        >
-          * {SIGNUP_CONSTANTS.NICKNAME_MIN_LENGTH}~
-          {SIGNUP_CONSTANTS.NICKNAME_MAX_LENGTH}자 사이, 공백 없이 입력해주세요.
-        </p>
-      </div>
-
-      {/* 이메일 입력 섹션 */}
-      <div className="space-y-2 mb-4">
-        <label htmlFor="email" className="text-sm font-medium">
-          이메일
-        </label>
-        <InputGroup className="h-11">
-          <InputGroupAddon>
-            <Mail />
-          </InputGroupAddon>
-          <InputGroupInput
-            id="email"
-            type="email"
-            name="email"
-            placeholder="name@example.com"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-          />
-        </InputGroup>
-        <p
-          className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.email && !validation.email ? "text-red-500" : "text-slate-500"}`}
-        >
-          * 올바른 이메일 형식을 입력해주세요.
-        </p>
-      </div>
-
-      {/* 비밀번호 입력 섹션 */}
-      <div className="space-y-2 mb-4">
-        <label htmlFor="password" className="text-sm font-medium">
-          비밀번호
-        </label>
-        <InputGroup className="h-11">
-          <InputGroupAddon>
-            <Lock />
-          </InputGroupAddon>
-          <InputGroupInput
-            id="password"
-            type="password"
-            name="password"
-            placeholder="***********"
-            value={formData.password}
-            onChange={handleInputChange}
-            required
-          />
-        </InputGroup>
-        <p
-          className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.password && !validation.password ? "text-red-500" : "text-slate-500"}`}
-        >
-          * 최소 {SIGNUP_CONSTANTS.PASSWORD_MIN_LENGTH}자 이상 입력해주세요.
-        </p>
-      </div>
-
-      {/* 비밀번호 확인 입력 */}
-      <div className="space-y-2 mb-4">
-        <label htmlFor="passwordConfirm" className="text-sm font-medium">
-          비밀번호 확인
-        </label>
-        <InputGroup className="h-11">
-          <InputGroupAddon>
-            <Lock />
-          </InputGroupAddon>
-          <InputGroupInput
-            id="passwordConfirm"
-            type="password"
-            name="passwordConfirm"
-            placeholder="비밀번호를 한 번 더 입력해주세요"
-            value={formData.passwordConfirm}
-            onChange={handleInputChange}
-            required
-          />
-        </InputGroup>
-        <p
-          className={`text-[11px] mt-1.5 ml-1 font-medium text-red-500 ${
-            formData.passwordConfirm && !validation.passwordConfirm
-              ? "block"
-              : "hidden"
-          }`}
-        >
-          * 비밀번호가 일치하지 않습니다.
-        </p>
-      </div>
-
-      <div className="flex items-center gap-2 py-2 mb-4">
-        <Checkbox
-          id="terms"
-          name="terms"
-          onCheckedChange={(checked: boolean) => setAgreed(checked)}
-          required
-        />
-        <label htmlFor="terms" className="text-xs text-muted-foreground">
-          <span className="text-teal-600 font-semibold">서비스 이용약관</span>{" "}
-          및{" "}
-          <span className="text-teal-600 font-semibold">개인정보 처리방침</span>
-          에 동의합니다.
-        </label>
-      </div>
-
-      {serverErrorMessage && (
-        <div className="flex items-center gap-2 mb-4 p-3 rounded-md bg-red-50 text-red-600 text-xs font-medium animate-in fade-in slide-in-from-top-1">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{serverErrorMessage}</span>
+    <>
+      <form action={formAction} className="w-full">
+        {/* 이름(닉네임) 입력 */}
+        <div className="space-y-2 mb-4">
+          <label htmlFor="nickname" className="text-sm font-medium">
+            이름
+          </label>
+          <InputGroup className="h-11">
+            <InputGroupAddon>
+              <User />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="nickname"
+              name="nickname"
+              placeholder="홍길동"
+              value={formData.nickname}
+              onChange={handleInputChange}
+            />
+          </InputGroup>
+          <p
+            className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.nickname && !validation.nickname ? "text-red-500" : "text-slate-500"}`}
+          >
+            * {SIGNUP_CONSTANTS.NICKNAME_MIN_LENGTH}~
+            {SIGNUP_CONSTANTS.NICKNAME_MAX_LENGTH}자 사이, 공백 없이
+            입력해주세요.
+          </p>
         </div>
-      )}
 
-      {/* 회원가입 버튼 */}
-      <Button
-        size="lg"
-        type="submit"
-        disabled={isPending || !isFormValid}
-        className="w-full h-11 text-white font-bold transition-colors disabled:bg-slate-400 disabled:cursor-not-allowed"
-      >
-        {isPending ? (
-          "처리 중..."
-        ) : (
-          <div className="flex items-center justify-center gap-2">
-            회원가입하기 <ArrowRight className="h-5 w-5" />
+        {/* 이메일 입력 섹션 */}
+        <div className="space-y-2 mb-4">
+          <label htmlFor="email" className="text-sm font-medium">
+            이메일
+          </label>
+          <InputGroup className="h-11">
+            <InputGroupAddon>
+              <Mail />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="email"
+              type="email"
+              name="email"
+              placeholder="name@example.com"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+          </InputGroup>
+          <Button
+            type="button"
+            className="w-full"
+            variant={"outline"}
+            onClick={handleModalToggle}
+            disabled={!validation.email}
+          >
+            이메일 인증하기
+          </Button>
+          <p
+            className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.email && !validation.email ? "text-red-500" : "text-slate-500"}`}
+          >
+            * 올바른 이메일 형식을 입력해주세요.
+          </p>
+        </div>
+
+        {/* 비밀번호 입력 섹션 */}
+        <div className="space-y-2 mb-4">
+          <label htmlFor="password" className="text-sm font-medium">
+            비밀번호
+          </label>
+          <InputGroup className="h-11">
+            <InputGroupAddon>
+              <Lock />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="password"
+              type="password"
+              name="password"
+              placeholder="***********"
+              value={formData.password}
+              onChange={handleInputChange}
+            />
+          </InputGroup>
+          <p
+            className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.password && !validation.password ? "text-red-500" : "text-slate-500"}`}
+          >
+            * 최소 {SIGNUP_CONSTANTS.PASSWORD_MIN_LENGTH}자 이상 입력해주세요.
+          </p>
+        </div>
+
+        {/* 비밀번호 확인 입력 */}
+        <div className="space-y-2 mb-4">
+          <label htmlFor="passwordConfirm" className="text-sm font-medium">
+            비밀번호 확인
+          </label>
+          <InputGroup className="h-11">
+            <InputGroupAddon>
+              <Lock />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="passwordConfirm"
+              type="password"
+              name="passwordConfirm"
+              placeholder="비밀번호를 한 번 더 입력해주세요"
+              value={formData.passwordConfirm}
+              onChange={handleInputChange}
+            />
+          </InputGroup>
+          <p
+            className={`text-[11px] mt-1.5 ml-1 font-medium text-red-500 ${
+              formData.passwordConfirm && !validation.passwordConfirm
+                ? "block"
+                : "hidden"
+            }`}
+          >
+            * 비밀번호가 일치하지 않습니다.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 py-2 mb-4">
+          <Checkbox
+            id="terms"
+            name="terms"
+            onCheckedChange={(checked: boolean) => setAgreed(checked)}
+          />
+          <label htmlFor="terms" className="text-xs text-muted-foreground">
+            <span className="text-teal-600 font-semibold">서비스 이용약관</span>{" "}
+            및{" "}
+            <span className="text-teal-600 font-semibold">
+              개인정보 처리방침
+            </span>
+            에 동의합니다.
+          </label>
+        </div>
+
+        {serverErrorMessage && (
+          <div className="flex items-center gap-2 mb-4 p-3 rounded-md bg-red-50 text-red-600 text-xs font-medium animate-in fade-in slide-in-from-top-1">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{serverErrorMessage}</span>
           </div>
         )}
-      </Button>
-    </form>
+
+        {/* 회원가입 버튼 */}
+        <Button
+          size="lg"
+          type="submit"
+          disabled={isPending || !isFormValid}
+          className="w-full h-11 text-white font-bold transition-colors disabled:bg-slate-400 disabled:cursor-not-allowed"
+        >
+          {isPending ? (
+            "처리 중..."
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              회원가입하기 <ArrowRight className="h-5 w-5" />
+            </div>
+          )}
+        </Button>
+      </form>
+      {openModalStatus && (
+        <MailVerificationModal
+          email={formData.email}
+          handleModalToggle={handleModalToggle}
+        />
+      )}
+    </>
   );
 }
 
