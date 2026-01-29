@@ -60,26 +60,26 @@ function ReportTabs({
 
       <TabsContent value="answer">
         <div className="overflow-hidden">
-          <div className="p-9">
-            <div className="flex justify-between items-center mb-6">
+          <div className="p-5 md:p-9">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 md:mb-6">
               <div>
-                <h3 className="text-[1.125rem] font-bold text-slate-900">
+                <h3 className="text-base md:text-[1.125rem] font-bold text-slate-900">
                   나의 답변 원문
                 </h3>
               </div>
               {selectedAttempt.answerContent && (
                 <div className="flex items-center gap-2 px-3 py-1.5">
                   <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-                  <span className="text-sm text-slate-500">
+                  <span className="text-xs md:text-sm text-slate-500">
                     AI 음성 복원 완료
                   </span>
                 </div>
               )}
             </div>
 
-            <div className="bg-white py-6 border-y border-slate-200">
+            <div className="bg-white py-4 md:py-6 border-y border-slate-200">
               {selectedAttempt.answerContent ? (
-                <p className="text-[0.9375rem] leading-relaxed text-slate-700 whitespace-pre-wrap">
+                <p className="text-sm md:text-[0.9375rem] leading-relaxed text-slate-700 whitespace-pre-wrap">
                   {selectedAttempt.answerContent}
                 </p>
               ) : (
@@ -92,15 +92,15 @@ function ReportTabs({
             {keywords.length > 0 &&
               evaluation.totalScore &&
               evaluation.totalScore >= 30 && (
-                <div className="mt-6">
-                  <h4 className="font-semibold text-sm text-slate-400 uppercase tracking-wider mb-3">
+                <div className="mt-4 md:mt-6">
+                  <h4 className="font-semibold text-xs md:text-sm text-slate-400 uppercase tracking-wider mb-2 md:mb-3">
                     CORE KEYWORDS
                   </h4>
                   <div className="flex flex-wrap items-center gap-2">
                     {keywords.map((keyword, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-md"
+                        className="px-2 py-1 md:py-1.5 bg-slate-100 text-slate-700 text-xs md:text-sm font-medium rounded-md"
                       >
                         <span className="text-slate-400 font-semibold">#</span>{" "}
                         {keyword}

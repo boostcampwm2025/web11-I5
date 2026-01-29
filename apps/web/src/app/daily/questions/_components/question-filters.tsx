@@ -103,7 +103,7 @@ function QuestionFilters({
           · 전체 카테고리의 문제를 조회합니다.
         </div>
       ) : (
-        <div className="flex items-center gap-2 md:gap-3 mt-4 md:mt-7 mb-4 md:mb-6 flex-wrap">
+        <div className="flex items-center gap-2 md:gap-3 mt-4 md:mt-7 mb-4 md:mb-6 flex-wrap animate-in fade-in slide-in-from-bottom-5 duration-500">
           <div className="text-muted-foreground text-sm font-medium">
             세부 주제
           </div>

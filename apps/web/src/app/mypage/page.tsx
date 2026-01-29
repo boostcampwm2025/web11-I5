@@ -8,7 +8,6 @@ import { BookText, Brush, CircleCheckBig } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../(auth)/_utils/auth";
 import UserStatsCard from "./_components/user-stats-card/user-stats-card";
-import { mockGraphData } from "./_constants/graph-mock";
 import GraphContent from "./_contents/graph-content";
 import SolvedContent from "./_contents/solved-content";
 import StreakContent from "./_contents/streak-content";
@@ -22,24 +21,28 @@ async function MyPage() {
   if (!user) {
     redirect("/login");
   }
-  const [userData, _graphData, streakData, solvedData] = await Promise.all([
+  const [userData, graphData, streakData, solvedData] = await Promise.all([
     fetchUserInfo(),
     fetchGraph(),
     fetchStreaks(),
     fetchSolvedProblem(),
   ]);
-  const { streakCount, consecutiveDayCount } = streakData;
+  const {
+    submittedQuestionCount,
+    yearlyAnswerSubmissions,
+    consecutiveDayCount,
+  } = streakData;
   const { problems, totalCount } = solvedData;
 
+  // Refactor Todo: 365개 전부 채웠을 때 새로운 그림으로 전환하기
   const imageSrc = "/starry-night.jpg";
-  const mockData = mockGraphData; // 추후 리팩토링시 해당 부분 삭제
   return (
     <div className="w-full px-8 pt-15 pb-25 max-w-4xl flex flex-col gap-10">
       <UserStatsCard
         nickname={userData.nickname}
         email={userData.email || "@test123"} // 추후 작업에서 해당 부분 email 리턴하도록 수정 필요.
         totalPoint={totalCount}
-        role={userData.role}
+        profileImage={userData.profileImage}
         consecutiveDayCount={consecutiveDayCount}
       />
       <Tabs className="w-full" defaultValue="graph">
@@ -57,11 +60,15 @@ async function MyPage() {
             내가 푼 문제
           </TabsTrigger>
         </TabsList>
-        <TabsContent className="w-full px-8 pb-8 " value="graph">
-          <GraphContent graphData={mockData} />
+        <TabsContent className="w-full px-8 pb-8" value="graph">
+          <GraphContent graphData={graphData} />
         </TabsContent>
-        <TabsContent className="w-full px-8 pb-8" value="streak">
-          <StreakContent streakCount={streakCount} imageSrc={imageSrc} />
+        <TabsContent className="bg-white w-full px-8 pb-8" value="streak">
+          <StreakContent
+            streakCount={submittedQuestionCount}
+            imageSrc={imageSrc}
+            yearlyAnswerSubmissions={yearlyAnswerSubmissions}
+          />
         </TabsContent>
         <TabsContent className="w-full px-8 pb-8" value="solvedList">
           <SolvedContent solvedProblems={problems} />

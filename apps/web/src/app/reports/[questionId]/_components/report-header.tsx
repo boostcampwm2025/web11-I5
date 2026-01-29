@@ -16,27 +16,31 @@ interface ReportHeaderProps {
 
 function ReportHeader({ question, highestScore }: ReportHeaderProps) {
   return (
-    <section className="bg-white border border-gray-200 rounded-xl p-9">
-      <div className="text-gray-500 text-sm mb-3 flex items-center justify-between">
+    <section className="bg-white border border-gray-200 rounded-xl p-5 md:p-9">
+      <div className="text-gray-500 text-xs md:text-sm mb-2 md:mb-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
           {question.categoryDisplay}{" "}
           {question.subCategory && `| ${question.subCategory}`}
         </div>
-        <div className="text-sm bg-teal-50 border border-teal-100 text-teal-500 px-2 py-0.5 rounded-sm font-bold">
+        <div className="text-xs md:text-sm bg-teal-50 border border-teal-100 text-teal-500 px-2 py-0.5 rounded-sm font-bold w-fit">
           나의 최고 점수 : {highestScore ?? 0}점
         </div>
       </div>
-      <h2 className="text-xl font-bold mb-3">{question.title}</h2>
-      <p className="text-gray-600 leading-relaxed mb-6">{question.content}</p>
-      <hr className="border-gray-200 mb-6" />
-      <div className="flex items-center gap-2 justify-end">
+      <h2 className="text-lg md:text-xl font-bold mb-2 md:mb-3">
+        {question.title}
+      </h2>
+      <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4 md:mb-6">
+        {question.content}
+      </p>
+      <hr className="border-gray-200 mb-4 md:mb-6" />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:justify-end">
         <Button
           variant="outline"
           asChild
-          className="font-semibold text-slate-600"
+          className="font-semibold text-slate-600 text-sm md:text-base"
         >
           <Link href={`/daily/questions/${question.id}/others`}>
-            <Users />
+            <Users className="w-4 h-4" />
             다른 사람 답변 보기
           </Link>
         </Button>
