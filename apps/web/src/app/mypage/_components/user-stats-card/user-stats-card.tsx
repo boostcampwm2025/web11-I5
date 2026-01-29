@@ -148,67 +148,74 @@ function UserStatsCard({
   return (
     <form
       action={handleFormAction}
-      className="p-8 border border-slate-200 bg-white rounded-[12px] flex flex-col md:flex-row gap-4"
+      className="border border-slate-200 bg-white rounded-2xl"
     >
-      <div className="flex flex-1 justify-between items-center">
-        <div className="flex w-full gap-6 h-16">
-          <div className="flex flex-col gap-1">
-            <div
-              className={`relative rounded-full ${profileImagePreview ? "bg-none border-none" : "bg-slate-50 border-neutral-200 border inset-shadow-2xs "}   w-16 h-16 flex items-center justify-center ${isEditing ? "cursor-pointer hover:bg-slate-100" : ""} ${profileImagePreview ? "p-0" : "p-4"}`}
-              onClick={handleImageClick}
-            >
-              {profileImagePreview ? (
-                <Image
-                  src={profileImagePreview}
-                  alt="profileImage"
-                  fill={true}
-                  className="rounded-full object-cover "
-                />
-              ) : (
-                <User className="w-8 h-8" stroke="#CBD5E1" />
-              )}
-              {isEditing && (profileImagePreview || selectedFile) && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveImage();
-                  }}
-                  className="absolute -bottom-1 -right-2  rounded-full p-1 shadow-md transition-colors"
-                  aria-label="이미지 제거"
-                >
-                  <X className="w-3 h-3 text-slate-600" />
-                </button>
-              )}
-              {isEditing && !profileImagePreview && !selectedFile && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fileInputRef.current?.click();
-                  }}
-                  className="absolute -bottom-1 -right-2  rounded-full p-1 shadow-md transition-colors"
-                  aria-label="이미지 추가"
-                >
-                  <Pencil className="w-3 h-3 text-slate-600" />
-                </button>
-              )}
+      <div className="p-6 md:p-8">
+        {/* 모바일: 세로 중앙 정렬 / 데스크탑: 가로 배치 */}
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+          {/* 프로필 섹션 */}
+          <div className="flex flex-col md:flex-row items-center md:items-center gap-4 md:gap-6 md:flex-1">
+            {/* 프로필 이미지 */}
+            <div className="relative">
+              <div
+                className={`relative rounded-full w-20 h-20 md:w-16 md:h-16 flex items-center justify-center border border-slate-200 ${
+                  profileImagePreview ? "" : "bg-slate-50"
+                } ${isEditing ? "cursor-pointer hover:border-slate-300 transition-all" : ""}`}
+                onClick={handleImageClick}
+              >
+                {profileImagePreview ? (
+                  <Image
+                    src={profileImagePreview}
+                    alt="profileImage"
+                    fill={true}
+                    className="rounded-full object-cover"
+                  />
+                ) : (
+                  <User className="w-10 h-10 md:w-8 md:h-8 text-slate-300" />
+                )}
+                {isEditing && (profileImagePreview || selectedFile) && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveImage();
+                    }}
+                    className="absolute -bottom-1 -right-1 bg-white rounded-full p-1.5 shadow-md border border-slate-200 hover:bg-slate-50 transition-colors"
+                    aria-label="이미지 제거"
+                  >
+                    <X className="w-3 h-3 text-slate-500" />
+                  </button>
+                )}
+                {isEditing && !profileImagePreview && !selectedFile && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    className="absolute -bottom-1 -right-1 bg-teal-500 rounded-full p-1.5 shadow-md hover:bg-teal-600 transition-colors"
+                    aria-label="이미지 추가"
+                  >
+                    <Pencil className="w-3 h-3 text-white" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-            name="profileImage"
-          />
 
-          <div className="flex flex-1 flex-col w-0 gap-1">
-            {isEditing ? (
-              <>
-                <section className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+              name="profileImage"
+            />
+
+            {/* 유저 정보 */}
+            <div className="flex flex-col items-center md:items-start gap-1 min-w-0">
+              {isEditing ? (
+                <>
+                  <div className="flex flex-col sm:flex-row items-center gap-2">
                     <Input
                       name="nickname"
                       placeholder="닉네임 입력"
@@ -216,82 +223,72 @@ function UserStatsCard({
                       onChange={(e) => setNicknameValue(e.target.value)}
                       autoFocus
                       maxLength={20}
-                      className="h-9 w-40"
+                      className="h-9 w-44 text-center sm:text-left"
                     />
-                    <Button type="submit" size="sm" disabled={isPending}>
-                      {isPending ? "저장 중..." : "저장"}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" disabled={isPending}>
+                        {isPending ? "저장 중..." : "저장"}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCancel}
+                        aria-label="취소"
+                      >
+                        취소
+                      </Button>
+                    </div>
+                  </div>
+                  <span className="text-slate-400 text-sm">{email}</span>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-1.5">
+                    <h2 className="text-slate-900 font-bold text-xl md:text-2xl truncate max-w-48">
+                      {nicknameValue}
+                    </h2>
                     <Button
                       type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={handleCancel}
-                      aria-label="취소"
+                      size="icon"
+                      variant="ghost"
+                      onClick={onEditToggle}
+                      aria-label="프로필 편집"
+                      className="h-8 w-8 shrink-0"
                     >
-                      취소
+                      <Pencil className="w-4 h-4 text-slate-400" />
                     </Button>
                   </div>
-                </section>
-
-                <section>
-                  <div className="flex gap-4 items-center">
-                    <div className="text-muted-foreground font-medium text-sm">
-                      {email}
-                    </div>
-                  </div>
-                </section>
-              </>
-            ) : (
-              <>
-                <section className="flex w-full items-center gap-2">
-                  <div className="text-slate-900 font-bold text-2xl leading-9 truncate min-w-0">
-                    {nicknameValue}
-                  </div>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    onClick={onEditToggle}
-                    aria-label="프로필 편집"
-                  >
-                    <Pencil className="text-muted-foreground" />
-                  </Button>
-                </section>
-
-                <section>
-                  <div className="flex gap-4 items-center">
-                    <div className="text-muted-foreground font-medium text-sm">
-                      {email}
-                    </div>
-                  </div>
-                </section>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="flex px-3 md:px-4 py-2 bg-teal-50 rounded-xl items-center gap-2 md:gap-3 w-full sm:w-auto justify-center md:justify-start">
-        <div className="flex flex-col items-center p-2 md:p-3">
-          <span className="text-xs md:text-sm text-slate-500 font-semibold whitespace-nowrap">
-            연속 학습일
-          </span>
-          <div className="flex gap-1">
-            <div className="flex gap-1">
-              <span className="font-bold text-teal-600">
-                {consecutiveDayCount}
-              </span>
-              <span className="font-medium text-slate-500">일째</span>
+                  <span className="text-slate-400 text-sm">{email}</span>
+                </>
+              )}
             </div>
           </div>
-        </div>
-        <hr className="w-px h-8 md:h-9 bg-slate-200" />
-        <div className="flex flex-col items-center p-2 md:p-3">
-          <span className="text-xs md:text-sm text-slate-500 font-semibold whitespace-nowrap">
-            해결한 문제
-          </span>
-          <div className="flex gap-1">
-            <span className="font-bold text-teal-600">{totalPoint}</span>
-            <span className="font-medium text-slate-500">개</span>
+
+          {/* 통계 섹션 */}
+          <div className="flex gap-3 justify-center md:justify-end">
+            <div className="flex flex-col items-center px-5 py-3 bg-linear-to-br from-teal-50 to-teal-100/50 rounded-xl min-w-24">
+              <span className="text-xs text-teal-600 font-medium mb-1">
+                연속 학습
+              </span>
+              <div className="flex items-baseline gap-0.5">
+                <span className="font-bold text-2xl text-teal-600">
+                  {consecutiveDayCount}
+                </span>
+                <span className="text-sm font-medium text-teal-500">일</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-center px-5 py-3 bg-linear-to-br from-slate-50 to-slate-100/50 rounded-xl min-w-24">
+              <span className="text-xs text-slate-500 font-medium mb-1">
+                해결한 문제
+              </span>
+              <div className="flex items-baseline gap-0.5">
+                <span className="font-bold text-2xl text-slate-700">
+                  {totalPoint}
+                </span>
+                <span className="text-sm font-medium text-slate-400">개</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
