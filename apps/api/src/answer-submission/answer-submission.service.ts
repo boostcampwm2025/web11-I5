@@ -181,20 +181,7 @@ export class AnswerSubmissionService {
           `Failed to request STT for audioAssetId: ${audioAsset.id}`,
           error,
         );
-
-        // Update submission status to FAILED when STT request fails
-        try {
-          savedSubmission.sttStatus = ProcessStatus.FAILED;
-          await this.answerSubmissionRepository.save(savedSubmission);
-          this.logger.warn(
-            `Updated submission ${savedSubmission.id} sttStatus to FAILED due to STT request failure`,
-          );
-        } catch (updateError) {
-          this.logger.error(
-            `Failed to update submission ${savedSubmission.id} status after STT request failure`,
-            updateError,
-          );
-        }
+        await this.markSttAsFailed(audioAsset.id);
       });
     } else {
       this.logger.log(
@@ -293,6 +280,36 @@ export class AnswerSubmissionService {
       totalScore: submission.score,
       duration: submission.takenTime,
     };
+  }
+
+  /**
+   * 타 유저 답변 상세 조회용 제출 엔티티 조회
+   * - 존재하지 않는 제출 ID 이거나
+   * - 현재 사용자 본인의 제출인 경우
+   *   NotFoundException 을 던집니다.
+   */
+  async getSubmissionForOtherUser(
+    submissionId: number,
+    currentUserId: number,
+  ): Promise<AnswerSubmission> {
+    const submission = await this.answerSubmissionRepository.findOne({
+      where: { id: submissionId },
+    });
+
+    if (!submission) {
+      throw new NotFoundException(
+        `ID가 ${submissionId}인 제출 내역을 찾을 수 없습니다.`,
+      );
+    }
+
+    // 본인 제출은 다른 사람 답변 상세에서 조회 불가
+    if (submission.userId === currentUserId) {
+      throw new NotFoundException(
+        `ID가 ${submissionId}인 제출 내역을 찾을 수 없습니다.`,
+      );
+    }
+
+    return submission;
   }
 
   async updateImportance(
@@ -403,17 +420,31 @@ export class AnswerSubmissionService {
         `Failed to request STT for audioAssetId: ${audioAssetId}`,
         error,
       );
+      await this.markSttAsFailed(audioAssetId);
+    }
+  }
 
-      // STT 요청 실패 시 상태 업데이트
-      try {
-        submission.sttStatus = ProcessStatus.FAILED;
-        await this.answerSubmissionRepository.save(submission);
-      } catch (updateError) {
-        this.logger.error(
-          `Failed to update submission status after STT failure for audioAssetId: ${audioAssetId}`,
-          updateError,
-        );
-      }
+  /**
+   * STT 상태를 FAILED로 변경하는 헬퍼 메서드
+   * PENDING/IN_PROGRESS 상태일 때만 FAILED로 변경 (DONE 상태는 보존)
+   * 실패 시 로그만 남기고 CRON이 처리하도록 함
+   */
+  async markSttAsFailed(audioAssetId: number): Promise<void> {
+    try {
+      await this.answerSubmissionRepository
+        .createQueryBuilder()
+        .update(AnswerSubmission)
+        .set({ sttStatus: ProcessStatus.FAILED })
+        .where('audioAssetId = :audioAssetId', { audioAssetId })
+        .andWhere('sttStatus IN (:...statuses)', {
+          statuses: [ProcessStatus.PENDING, ProcessStatus.IN_PROGRESS],
+        })
+        .execute();
+    } catch (error) {
+      this.logger.error(
+        `Failed to mark sttStatus as FAILED for audioAssetId ${audioAssetId}`,
+        error,
+      );
     }
   }
 

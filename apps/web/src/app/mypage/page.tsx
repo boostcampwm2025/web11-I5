@@ -60,7 +60,7 @@ async function MyPage() {
             내가 푼 문제
           </TabsTrigger>
         </TabsList>
-        <TabsContent className="w-full px-8 pb-8" value="graph">
+        <TabsContent className="w-full" value="graph">
           <GraphContent graphData={graphData} />
         </TabsContent>
         <TabsContent className="bg-white w-full px-8 pb-8" value="streak">

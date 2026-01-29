@@ -17,7 +17,9 @@ describe('Logging E2E Tests', () => {
     app = moduleFixture.createNestApplication();
 
     // 인터셉터와 필터 등록
-    app.useGlobalInterceptors(new LoggingInterceptor());
+    // LoggingInterceptor는 AppModule providers에 등록되어 있으므로
+    // Nest 컨테이너에서 주입받아 사용한다.
+    app.useGlobalInterceptors(app.get(LoggingInterceptor));
     app.useGlobalFilters(new HttpExceptionFilter());
 
     await app.init();
