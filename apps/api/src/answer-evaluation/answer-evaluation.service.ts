@@ -25,6 +25,7 @@ import { AnswerSubmission } from '../answer-submission/entities/answer-submissio
 import { Question } from '../question/entities/question.entity';
 import { QuestionSolution } from '../question-solution/entities/question-solution.entity';
 import { GraphService } from '../graph/graph.service';
+import { normalizeKeywords } from './utils/keyword-normalizer';
 
 interface AiEvaluationRawResponse {
   core_concept_level: CoreConceptEval;
@@ -316,7 +317,7 @@ export class AnswerEvaluationService {
       depthLevel: rawResponse.depth_level,
       depthReason: rawResponse.depth_reason,
       mentoringFeedback: rawResponse.mentoring_feedback,
-      extractedKeywords: rawResponse.extracted_keywords,
+      extractedKeywords: normalizeKeywords(rawResponse.extracted_keywords),
     };
   }
 
