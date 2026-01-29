@@ -16,6 +16,7 @@ type ReportQuestion = Question & {
 
 interface HistoryItem {
   submissionId: number;
+  inputType: "VOICE" | "TEXT";
   displayIndex: number;
   status: AnalysisStatus;
   duration: string;
@@ -67,14 +68,15 @@ function ReportTabs({
                   나의 답변 원문
                 </h3>
               </div>
-              {selectedAttempt.answerContent && (
-                <div className="flex items-center gap-2 px-3 py-1.5">
-                  <div className="w-1.5 h-1.5 bg-teal-400 rounded-full" />
-                  <span className="text-sm text-slate-500">
-                    AI 음성 복원 완료
-                  </span>
-                </div>
-              )}
+              {selectedAttempt.inputType === "VOICE" &&
+                selectedAttempt.answerContent && (
+                  <div className="flex items-center gap-2 px-3 py-1.5">
+                    <div className="w-1.5 h-1.5 bg-teal-400 rounded-full" />
+                    <span className="text-sm text-slate-500">
+                      AI 음성 복원 완료
+                    </span>
+                  </div>
+                )}
             </div>
 
             <div className="bg-white py-6 border-y border-slate-200">
