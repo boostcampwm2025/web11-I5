@@ -27,7 +27,7 @@ async function bootstrap() {
   });
 
   // 전역 인터셉터 및 필터 설정
-  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(app.get(LoggingInterceptor));
   app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());
 
   // ValidationPipe 전역 설정
