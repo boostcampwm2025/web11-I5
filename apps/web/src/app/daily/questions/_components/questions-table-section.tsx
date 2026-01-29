@@ -14,6 +14,7 @@ import {
 } from "@/components/table/table";
 import { QuestionLinkButton } from "./question-link-button";
 import { fetchQuestions } from "../_lib/fetch-questions";
+import { ScoreBadge } from "@/components/score-badge/score-badge";
 
 interface QuestionsTableBodySectionProps {
   currentPage: number;
@@ -107,9 +108,7 @@ async function QuestionsTableBodySection({
               </TableCell>
               <TableCell className="text-center">
                 {question.score !== null ? (
-                  <span className="text-teal-600 font-medium text-sm bg-teal-50 px-2 py-1 rounded-sm">
-                    {question.score}점
-                  </span>
+                  <ScoreBadge score={question.score} />
                 ) : (
                   ""
                 )}

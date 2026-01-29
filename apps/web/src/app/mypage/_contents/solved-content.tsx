@@ -8,6 +8,7 @@ import {
 } from "@/components/table/table";
 import Link from "next/link";
 import { SolvedProblem } from "../_types/solved-problem";
+import { ScoreBadge } from "@/components/score-badge/score-badge";
 
 async function SolvedContent({
   solvedProblems,
@@ -79,9 +80,7 @@ async function SolvedContent({
                   {formattingDate(problem.completedAt)}
                 </TableCell>
                 <TableCell className="text-center">
-                  <span className="text-teal-600 font-medium text-sm bg-teal-50 px-2 py-1 rounded-sm">
-                    {problem.score}점
-                  </span>
+                  <ScoreBadge score={problem.score} />
                 </TableCell>
               </TableRow>
             ))

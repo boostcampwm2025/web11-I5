@@ -88,7 +88,7 @@ function FeedbackSection({
 
   return (
     <section className="p-5 md:p-9 transition-all duration-300">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
+      <div className="flex justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
         <div>
           <div className="text-xs md:text-sm font-extrabold text-zinc-400 tracking-widest uppercase mb-1">
             TRIAL #{attempt}
