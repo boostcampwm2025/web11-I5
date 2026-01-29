@@ -8,6 +8,7 @@ import {
 } from "../../_types/graph-view";
 import NodeMap from "./node-map";
 import drawGraphView from "../../_lib/graph-view/draw-graph-view";
+import { addRandomEdgeDistance } from "../../_lib/graph-view/add-random-edge-distance";
 
 // 호버된 노드와 연결된 모든 노드 ID를 반환
 function getConnectedNodeIds(
@@ -51,6 +52,9 @@ export interface GraphRendererReturn {
   drawGraph: (deltaTime: number) => void;
 }
 
+// 물리엔진 미리 동작 횟수
+const PRE_SIMULATION_ITERATIONS = 80;
+
 function useGraphRenderer({
   canvasRef,
   ctx,
@@ -62,9 +66,16 @@ function useGraphRenderer({
   onClickNode,
   textRenderScale = 0.5,
 }: UseGraphRendererOptions): GraphRendererReturn {
-  // 뷰포트 상태
+  // 엣지에 랜덤 거리 적용 (한 번만 계산)
+  const processedEdges = React.useMemo(
+    () => addRandomEdgeDistance(graphData.edges),
+    [graphData.edges],
+  );
+
+  // 뷰포트 상태 - 초기 스케일 0.5
   const offset = React.useRef({ x: 0, y: 0 });
-  const scale = React.useRef(1);
+  const scale = React.useRef(0.5);
+  const initializedOffset = React.useRef(false);
 
   // 인터랙션 상태
   const isDraggingCanvas = React.useRef(false);
@@ -78,14 +89,36 @@ function useGraphRenderer({
   // NodeMap 변경 콜백 throttle 용
   const shouldNotify = React.useRef(true);
 
-  // NodeMap 초기화
+  // NodeMap 초기화 및 물리엔진 미리 동작
   React.useEffect(() => {
     const width = getWidth();
     const height = getHeight();
     if (width === 0 || height === 0) return;
     if (externalNodeMap || nodeMapRef.current) return;
-    nodeMapRef.current = new NodeMap(graphData.nodes, width, height);
-  }, [getWidth, getHeight, graphData.nodes, externalNodeMap]);
+
+    const newNodeMap = new NodeMap(graphData.nodes, width, height);
+
+    // 물리엔진 미리 동작 - 렌더링 전에 안정화
+    for (let i = 0; i < PRE_SIMULATION_ITERATIONS; i++) {
+      newNodeMap.applyPhysics(processedEdges, width / 2, height / 2);
+    }
+
+    nodeMapRef.current = newNodeMap;
+  }, [getWidth, getHeight, graphData.nodes, externalNodeMap, processedEdges]);
+
+  // 초기 스케일이 0.5일 때 중앙 정렬을 위한 offset 조정
+  React.useEffect(() => {
+    if (initializedOffset.current) return;
+    const width = getWidth();
+    const height = getHeight();
+    if (width === 0 || height === 0) return;
+
+    offset.current = {
+      x: (width * (1 - scale.current)) / 2,
+      y: (height * (1 - scale.current)) / 2,
+    };
+    initializedOffset.current = true;
+  }, [getWidth, getHeight]);
 
   // 스크린 좌표 -> 캔버스 좌표 변환
   const convertCursorToCanvasCoords = React.useCallback(
@@ -233,17 +266,22 @@ function useGraphRenderer({
 
       // NodeMap 초기화 (캔버스 크기가 0에서 non-zero로 변경된 경우)
       if (!nodeMapRef.current && !externalNodeMap) {
-        nodeMapRef.current = new NodeMap(graphData.nodes, width, height);
+        const newNodeMap = new NodeMap(graphData.nodes, width, height);
+        // 물리엔진 미리 동작
+        for (let i = 0; i < PRE_SIMULATION_ITERATIONS; i++) {
+          newNodeMap.applyPhysics(processedEdges, width / 2, height / 2);
+        }
+        nodeMapRef.current = newNodeMap;
       }
       if (!nodeMapRef.current) return;
 
       // 물리 시뮬레이션 한 스텝
-      nodeMapRef.current.applyPhysics(graphData.edges, width / 2, height / 2);
+      nodeMapRef.current.applyPhysics(processedEdges, width / 2, height / 2);
 
       // 호버 애니메이션 업데이트
       const connectedNodeIds = getConnectedNodeIds(
         hoveredNodeId.current,
-        graphData.edges,
+        processedEdges,
       );
       nodeMapRef.current.updateAnimations(
         hoveredNodeId.current,
@@ -255,7 +293,7 @@ function useGraphRenderer({
       drawGraphView(
         ctx,
         nodeMapRef.current.nodeMap,
-        graphData.edges,
+        processedEdges,
         offset.current,
         scale.current,
         hoveredNodeId.current,
@@ -276,7 +314,7 @@ function useGraphRenderer({
       getWidth,
       getHeight,
       graphData.nodes,
-      graphData.edges,
+      processedEdges,
       externalNodeMap,
       textRenderScale,
       onNodeMapChange,
