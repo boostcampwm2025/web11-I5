@@ -77,8 +77,15 @@ function toTitleCase(str: string): string {
   return capitalize(str);
 }
 
-// 단어의 첫 글자를 대문자로
+// 단어의 첫 글자를 대문자로 (약어는 대문자 유지)
 function capitalize(word: string): string {
   if (!word) return '';
+
+  // 전체가 대문자이고 2-6자인 경우 약어로 판단
+  if (word === word.toUpperCase() && word.length >= 2 && word.length <= 6) {
+    return word;
+  }
+
+  // 일반 단어는 Title Case
   return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 }
