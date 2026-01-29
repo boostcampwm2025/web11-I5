@@ -101,7 +101,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
             {submissions.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={4}
                   className="h-32 text-center text-muted-foreground text-base"
                 >
                   아직 제출된 답변이 없습니다.

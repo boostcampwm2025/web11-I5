@@ -38,13 +38,14 @@ async function Home() {
                 지금 무료로 시작하기
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link
-                href="/"
+              <button
+                type="button"
+                disabled
                 className="flex bg-white border border-slate-300 py-3 px-6 lg:py-4 lg:px-9 gap-1 rounded-[50px] items-center justify-center font-bold text-slate-600 text-base lg:text-lg cursor-not-allowed"
               >
                 <ArrowRight className="w-4 h-4" stroke="#475569" />
                 사용 가이드
-              </Link>
+              </button>
             </div>
           </div>
           <div className="opacity-30 w-full lg:w-4/5 pointer-events-none">
