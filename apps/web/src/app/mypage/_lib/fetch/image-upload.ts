@@ -1,4 +1,5 @@
 import { apiPost } from "@/lib/api-client";
+import { logger } from "@/lib/sentry-logger";
 import { PresignedUrlDto } from "../../_types/presigned-url-dto";
 
 async function requestPresignedUrl(
@@ -13,7 +14,9 @@ async function requestPresignedUrl(
       contentType: imageType,
     });
   } catch (error) {
-    console.error(error);
+    logger.error("Presigned URL 요청 실패", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }

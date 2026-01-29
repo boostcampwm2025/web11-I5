@@ -1,5 +1,6 @@
 "use client";
 
+import { logger } from "@/lib/sentry-logger";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { checkReportProcessingStatus } from "../_lib/services/status-check";
@@ -26,7 +27,9 @@ function ReportRefresh({ pendingSubmissionIds }: ReportRefreshProps) {
           router.refresh();
         }
       } catch (error) {
-        console.error("[ReportRefresh]", error);
+        logger.error("ReportRefresh 상태 확인 실패", {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
