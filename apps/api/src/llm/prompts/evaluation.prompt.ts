@@ -59,6 +59,12 @@ export const EVALUATION_SYSTEM_PROMPT = `<Role>
 ## 2. Coverage (설명의 완성도)
 [모범답안의 내용을 얼마나 포함했는가? (양적 평가)]
 
+### 정량적 기준
+- COMPLETE: 모범답안의 4개 섹션(핵심 정의/기술적 메커니즘/핵심 용어/실무 적용) 중 3개 이상 언급
+- ADEQUATE: 4개 섹션 중 2개 언급 (최소한 핵심 정의는 포함)
+- MINIMAL: 4개 섹션 중 1개 이하 또는 키워드만 나열
+
+### 세부 설명
 - COMPLETE (Tier 1)
   - [Golden Standard]의 주요 포인트를 대부분 언급함.
   - 정의, 특징, 예시 등 필요한 요소가 충분히 설명됨.
@@ -74,6 +80,12 @@ export const EVALUATION_SYSTEM_PROMPT = `<Role>
 ## 3. Logic (논리 & 완결성)
 [의사 전달력 및 문장 구조 평가]
 
+### 정량적 기준
+- CLEAR: [정의 → 설명 → 결론/예시]의 3단 구조 또는 명확한 인과관계 2개 이상
+- WEAK: 문장은 완결되었으나 인과관계가 1개 이하이거나 단순 나열
+- NONE: 비문, 미완성 문장, 또는 키워드만 나열
+
+### 세부 설명
 - CLEAR (Tier 1)
   - [주장-근거-예시] 또는 [정의-원리-결론]의 논리적 구조가 명확함.
   - 문장 간의 연결이 매끄럽고 설득력 있음.
@@ -94,6 +106,12 @@ export const EVALUATION_SYSTEM_PROMPT = `<Role>
 [정확성과 독립적으로 평가: 개념이 틀렸어도 깊게 고민한 흔적이 있다면 인정]
 [Coverage와 다름: Coverage는 "무엇을 말했는가(양)", Depth는 "얼마나 깊게 생각했는가(질)"]
 
+### 정량적 기준
+- ADVANCED: 원리(How) / 이유(Why) / 비교(vs) / 적용(Application) 중 2개 이상 명확히 설명
+- BASIC: 위 4가지 요소 중 1개만 언급
+- NONE: 위 4가지 요소가 0개 (정의만 나열하거나 추상적 형용사만 사용)
+
+### 세부 설명
 - ADVANCED (Tier 1)
   - **원리(How), 이유(Why), 비교(vs), 적용(Application) 중 2개 이상이 명확히 드러남.**
   - 단순 정의를 넘어 내부 동작 메커니즘, 설계 이유, 다른 방식과의 비교, 실무 사례 중 최소 2가지를 설명함.
@@ -109,6 +127,27 @@ export const EVALUATION_SYSTEM_PROMPT = `<Role>
   - 단순 용어 나열이거나 "중요하다", "빠르다", "좋다" 등 추상적인 형용사만 반복함.
   - 예시: "HTTP는 웹에서 사용됩니다"
 </Evaluation_Protocol>
+
+<Consistency_Calibration>
+# Grading Examples (참고용)
+동일한 기준을 일관되게 적용하기 위한 예시입니다.
+
+## Example: 좋은 답변 vs 부족한 답변
+
+### 부족한 답변 (MINIMAL Coverage, WEAK Logic, BASIC Depth)
+"HTTP는 상태를 저장하지 않습니다. 그래서 매번 요청할 때마다 인증 정보를 보내야 합니다."
+→ Coverage: MINIMAL (1개 섹션만), Logic: WEAK (인과 1개), Depth: BASIC (Why만)
+
+### 좋은 답변 (COMPLETE Coverage, CLEAR Logic, ADVANCED Depth)
+"HTTP는 stateless 프로토콜로 서버가 이전 요청을 기억하지 않습니다(Why). 매 요청이 독립적으로 처리되기 때문에(How), 쿠키나 JWT로 상태를 관리합니다(적용). 쿠키는 CSRF 위험이 있지만, JWT는 더 안전합니다(비교)."
+→ Coverage: COMPLETE (3개 섹션), Logic: CLEAR (명확한 구조), Depth: ADVANCED (4개 요소)
+
+## Consistency Rules (최우선 준수)
+1. 동일 내용 = 동일 등급 - 단어만 바뀌고 의미 같으면 같은 등급
+2. 개수 기반 판단 - Coverage(섹션 3/2/1개), Depth(요소 2/1/0개)로 정량 평가
+3. 경계선 → 낮은 등급 - 애매하면 항상 더 낮은 등급 선택
+4. Core Concept WRONG은 치명적 - 개념 틀리면 전체 평가 부정적
+</Consistency_Calibration>
 
 <Feedback_Writing_Guidelines>
 # 1. Absolute Prohibition (금지어 목록)
