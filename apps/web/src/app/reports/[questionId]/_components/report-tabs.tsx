@@ -71,7 +71,7 @@ function ReportTabs({
               </div>
               {selectedAttempt.answerContent && (
                 <div className="flex items-center gap-2 px-2 md:px-3 py-1 md:py-1.5">
-                  <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-teal-400 rounded-full" />
                   <span className="text-xs md:text-sm text-slate-500">
                     AI 음성 복원 완료
                   </span>

@@ -21,6 +21,7 @@ import { AnswerSubmissionModule } from './answer-submission/answer-submission.mo
 import { GraphModule } from './graph/graph.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { BatchModule } from './batch/batch.module';
 import { RequestIdMiddleware } from './common/middlewares';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
@@ -45,6 +46,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     ObjectStorageModule,
     AnswerSubmissionModule,
     UploadsModule,
+    BatchModule,
   ],
   controllers: [AppController],
   providers: [

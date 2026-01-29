@@ -21,12 +21,21 @@ import {
 import { AudioUploadCompletedEvent } from '../uploads/events/audio-upload-completed.event';
 import { AnswerEvaluationService } from '../answer-evaluation/answer-evaluation.service';
 
+const mockQueryBuilder = {
+  update: jest.fn().mockReturnThis(),
+  set: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  andWhere: jest.fn().mockReturnThis(),
+  execute: jest.fn(),
+};
+
 const mockAnswerSubmissionRepository = {
   find: jest.fn(),
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
   update: jest.fn(),
+  createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
 };
 
 const mockAudioAssetRepository = {
@@ -405,17 +414,19 @@ describe('AnswerSubmissionService', () => {
       mockAnswerSubmissionRepository.findOne.mockResolvedValue(mockSubmission);
       mockAnswerSubmissionRepository.update.mockResolvedValue({ affected: 1 });
       mockAudioAssetRepository.findOne.mockResolvedValue(mockAudioAsset);
-      mockAnswerSubmissionRepository.save.mockResolvedValue(mockSubmission);
+      mockQueryBuilder.execute.mockResolvedValue({ affected: 1 });
       mockSttService.requestStt.mockRejectedValue(new Error('STT API error'));
 
       await service.handleAudioUploadCompleted(event);
 
       // FAILED로 업데이트되어야 함
-      expect(mockAnswerSubmissionRepository.save).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          sttStatus: ProcessStatus.FAILED,
-        }),
-      );
+      expect(
+        mockAnswerSubmissionRepository.createQueryBuilder,
+      ).toHaveBeenCalled();
+      expect(mockQueryBuilder.set).toHaveBeenCalledWith({
+        sttStatus: ProcessStatus.FAILED,
+      });
+      expect(mockQueryBuilder.execute).toHaveBeenCalled();
     });
 
     it('AudioAsset을 찾을 수 없으면 STT를 요청하지 않아야 한다', async () => {

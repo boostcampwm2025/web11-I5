@@ -20,7 +20,7 @@ export class SttService {
   /**
    * stt를 비동기로 요청합니다. 결과는 Object Storage에 저장됩니다.
    */
-  requestStt(audioAsset: AudioAsset) {
+  async requestStt(audioAsset: AudioAsset): Promise<any> {
     const requestUrl = `${this.ncpSpeechInvokeUrl}/recognizer/object-storage`;
     const callbackBaseUrl = this.configService.get<string>('STT_CALLBACK_URL');
     const params = {
@@ -39,13 +39,28 @@ export class SttService {
       `STT requested with params: ${JSON.stringify(sanitizedParams)}`,
     );
 
-    return fetch(requestUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CLOVASPEECH-API-KEY': this.ncpSpeechSecretKey ?? '',
-      },
-      body: JSON.stringify(params),
-    });
+    try {
+      const response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CLOVASPEECH-API-KEY': this.ncpSpeechSecretKey ?? '',
+        },
+        body: JSON.stringify(params),
+      });
+
+      if (!response.ok) {
+        throw new Error('NCP Clova Speech API Error');
+      }
+
+      return await response.json();
+    } catch (error) {
+      this.logger.error(
+        error instanceof Error
+          ? `[requestStt] ${error.stack}`
+          : `[requestStt] ${error}`,
+      );
+      throw error;
+    }
   }
 }
