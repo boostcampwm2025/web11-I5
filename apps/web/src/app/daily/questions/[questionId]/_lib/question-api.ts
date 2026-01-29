@@ -3,6 +3,7 @@
 import { Question } from "@/app/daily/questions/_types/types";
 import { apiGet } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/sentry-logger";
 import { redirect } from "next/navigation";
 
 export async function getQuestion(
@@ -21,7 +22,12 @@ export async function getQuestion(
   }
 
   if (caughtError) {
-    console.error("Error fetching question:", caughtError);
+    logger.error("질문 조회 실패", {
+      error:
+        caughtError instanceof Error
+          ? caughtError.message
+          : String(caughtError),
+    });
   }
 
   return null;
