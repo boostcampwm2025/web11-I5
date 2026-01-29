@@ -20,20 +20,20 @@ async function Home() {
     <>
       <Header />
       <main className="w-full h-full flex flex-col bg-white overflow-x-hidden">
-        <section className="w-full h-screen relative py-16 px-8 flex justify-center overflow-hidden">
+        <section className="w-full min-h-screen relative py-8 md:py-16 px-4 md:px-8 flex justify-center overflow-hidden">
           <div
             className={cn(
-              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-center items-center z-10 w-full px-4 lg:px-0 py-40 xl:pt-0",
+              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-center items-center z-10 w-full px-4 lg:px-0",
             )}
           >
             <div className={oneMobile.className}>
               <SplitBounceMalManHae />
             </div>
-            <div className={paperlogy.className}>
+            <div className={cn(paperlogy.className, "w-full max-w-2xl")}>
               <HeroFeatureMotion />
             </div>
           </div>
-          <div className="opacity-30 w-full lg:w-4/5 pointer-events-none">
+          <div className="opacity-20 md:opacity-30 w-full lg:w-4/5 pointer-events-none">
             <GraphView
               graphData={mockData}
               textRenderScale={1.2}

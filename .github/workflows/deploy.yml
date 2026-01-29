@@ -73,7 +73,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: infra/docker-compose.prod.yaml,nginx.conf
+          source: infra/docker-compose.prod.yaml,infra/prometheus.yaml,infra/grafana-datasource.yaml,infra/loki-config.yaml,infra/promtail-config.yaml,nginx.conf
           target: ~/malmanhae
 
       - name: Deploy via SSH
