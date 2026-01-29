@@ -49,13 +49,8 @@ function ImportanceRating({
           secondary: "#2dd4bf",
         },
       });
-
-      const timer = setTimeout(() => {
-        onSuccessRef.current?.();
-        setScore(0);
-      }, 1500);
-
-      return () => clearTimeout(timer);
+      onSuccessRef.current?.();
+      setScore(0);
     } else {
       toast.error(state.message);
     }
