@@ -264,8 +264,10 @@ function useGraphRenderer({
       const height = getHeight();
       if (width === 0 || height === 0) return;
 
-      // NodeMap 초기화 (캔버스 크기가 0에서 non-zero로 변경된 경우)
-      if (!nodeMapRef.current && !externalNodeMap) {
+      // NodeMap 초기화: externalNodeMap이 있으면 사용, 없으면 새로 생성
+      if (externalNodeMap) {
+        nodeMapRef.current = externalNodeMap;
+      } else if (!nodeMapRef.current) {
         const newNodeMap = new NodeMap(graphData.nodes, width, height);
         // 물리엔진 미리 동작
         for (let i = 0; i < PRE_SIMULATION_ITERATIONS; i++) {
