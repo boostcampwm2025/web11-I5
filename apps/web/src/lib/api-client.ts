@@ -64,14 +64,6 @@ export async function apiClient(
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
-  // 디버깅용 로그 (개발 환경에서만)
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[apiClient] ${options.method || "GET"} ${url}`);
-    console.log(
-      `[apiClient] Authorization: ${accessToken ? "Bearer ***" : "없음"}`,
-    );
-  }
-
   try {
     return await fetch(url, {
       cache: "no-store",
@@ -80,11 +72,7 @@ export async function apiClient(
       credentials: "include",
     });
   } catch (error) {
-    // 네트워크 에러 처리 (연결 실패, 타임아웃 등)
-    if (process.env.NODE_ENV === "development") {
-      console.error(`[apiClient] Network error:`, error);
-    }
-
+    // 네트워크 에러는 Sentry(captureException)로 이미 보고됨 — apiClient 호출부에서 throw 시 전파
     throw new ApiError(
       0,
       "Network Error",
@@ -97,7 +85,9 @@ export async function apiClient(
  * GET 요청 헬퍼
  */
 export async function apiGet<T>(endpoint: string): Promise<T> {
-  logger.info(`GET ${endpoint} API 호출`);
+  if (process.env.NODE_ENV === "development") {
+    logger.info(`GET ${endpoint} API 호출`);
+  }
   const response = await apiClient(endpoint, { method: "GET" });
 
   if (!response.ok) {
@@ -111,7 +101,9 @@ export async function apiGet<T>(endpoint: string): Promise<T> {
  * POST 요청 헬퍼
  */
 export async function apiPost<T>(endpoint: string, body?: unknown): Promise<T> {
-  logger.info(`POST ${endpoint} API 호출`);
+  if (process.env.NODE_ENV === "development") {
+    logger.info(`POST ${endpoint} API 호출`);
+  }
   const response = await apiClient(endpoint, {
     method: "POST",
     body: body ? JSON.stringify(body) : undefined,
@@ -128,7 +120,9 @@ export async function apiPost<T>(endpoint: string, body?: unknown): Promise<T> {
  * PUT 요청 헬퍼
  */
 export async function apiPut<T>(endpoint: string, body?: unknown): Promise<T> {
-  logger.info(`PUT ${endpoint} API 호출`);
+  if (process.env.NODE_ENV === "development") {
+    logger.info(`PUT ${endpoint} API 호출`);
+  }
   const response = await apiClient(endpoint, {
     method: "PUT",
     body: body ? JSON.stringify(body) : undefined,
@@ -148,7 +142,9 @@ export async function apiPatch<T>(
   endpoint: string,
   body?: unknown,
 ): Promise<T> {
-  logger.info(`PATCH ${endpoint} API 호출`);
+  if (process.env.NODE_ENV === "development") {
+    logger.info(`PATCH ${endpoint} API 호출`);
+  }
   const response = await apiClient(endpoint, {
     method: "PATCH",
     body: body ? JSON.stringify(body) : undefined,
@@ -165,7 +161,9 @@ export async function apiPatch<T>(
  * DELETE 요청 헬퍼
  */
 export async function apiDelete<T>(endpoint: string): Promise<T> {
-  logger.info(`DELETE ${endpoint} API 호출`);
+  if (process.env.NODE_ENV === "development") {
+    logger.info(`DELETE ${endpoint} API 호출`);
+  }
   const response = await apiClient(endpoint, { method: "DELETE" });
 
   if (!response.ok) {
