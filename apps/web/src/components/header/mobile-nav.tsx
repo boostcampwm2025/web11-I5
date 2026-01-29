@@ -42,11 +42,11 @@ function MobileNav({ isLoggedIn }: MobileNavProps) {
       {isOpen && (
         <>
           <div
-            className="fixed inset-x-0 top-16 bottom-0 bg-black/40 z-30 md:hidden"
+            className="fixed inset-x-0 top-16 bottom-0 bg-black/40 z-50 md:hidden"
             onClick={closeMenu}
           />
 
-          <nav className="fixed top-16 left-0 right-0 bg-white z-30 md:hidden border-b border-slate-200 shadow-lg animate-in slide-in-from-top-2 duration-200">
+          <nav className="fixed top-16 left-0 right-0 bg-white z-50 md:hidden border-b border-slate-200 shadow-lg animate-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col p-4 gap-2">
               <Button
                 variant="ghost"

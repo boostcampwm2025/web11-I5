@@ -46,7 +46,7 @@ function CollapsibleHistory({ history, selectedId }: CollapsibleHistoryProps) {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="lg:hidden fixed right-0 top-20 z-40 flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white pl-3 pr-2 py-3 rounded-l-xl shadow-lg transition-all hover:pr-3 group"
+          className="lg:hidden fixed right-0 top-20 z-30 flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white pl-3 pr-2 py-3 rounded-l-xl shadow-lg transition-all hover:pr-3 group"
           aria-label="시도 히스토리 열기"
         >
           <History className="w-4 h-4" />
@@ -70,7 +70,7 @@ function CollapsibleHistory({ history, selectedId }: CollapsibleHistoryProps) {
       {/* 히스토리 사이드바 */}
       <div
         className={`
-          fixed lg:sticky top-16 lg:top-22 right-0 z-40 lg:z-auto
+          fixed lg:sticky top-18 lg:top-22 right-0 z-30 lg:z-auto
           h-[calc(100vh-4rem)] lg:h-fit lg:max-h-[calc(100vh-10rem)] lg:self-start
           transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
