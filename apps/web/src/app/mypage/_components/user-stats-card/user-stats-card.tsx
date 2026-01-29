@@ -201,7 +201,7 @@ function UserStatsCard({
             name="profileImage"
           />
 
-          <div className="flex flex-1 flex-col min-w-0 gap-1">
+          <div className="flex flex-1 flex-col w-0 gap-1">
             {isEditing ? (
               <>
                 <section className="flex flex-col gap-1">
@@ -240,8 +240,8 @@ function UserStatsCard({
               </>
             ) : (
               <>
-                <section className="flex min-w-0 items-center gap-2">
-                  <div className="text-slate-900 flex-1 font-bold text-2xl leading-9 truncate w-0">
+                <section className="flex w-full items-center gap-2">
+                  <div className="text-slate-900 font-bold text-2xl leading-9 truncate min-w-0">
                     {nicknameValue}
                   </div>
                   <Button
