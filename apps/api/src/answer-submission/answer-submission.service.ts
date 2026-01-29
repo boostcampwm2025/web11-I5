@@ -426,7 +426,7 @@ export class AnswerSubmissionService {
 
   /**
    * STT 상태를 FAILED로 변경하는 헬퍼 메서드
-   * PENDING/IN_PROGRESS 상태일 때만 FAILED로 변경 (COMPLETED 상태는 보존)
+   * PENDING/IN_PROGRESS 상태일 때만 FAILED로 변경 (DONE 상태는 보존)
    * 실패 시 로그만 남기고 CRON이 처리하도록 함
    */
   async markSttAsFailed(audioAssetId: number): Promise<void> {
