@@ -48,6 +48,7 @@ function CollapsibleHistory({ history, selectedId }: CollapsibleHistoryProps) {
           onClick={() => setIsOpen(true)}
           className="lg:hidden fixed right-0 top-20 z-30 flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white pl-3 pr-2 py-3 rounded-l-xl shadow-lg transition-all hover:pr-3 group"
           aria-label="시도 히스토리 열기"
+          aria-expanded={isOpen}
         >
           <History className="w-4 h-4" />
           <span className="text-sm font-semibold whitespace-nowrap">
