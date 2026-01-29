@@ -211,6 +211,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             href="/policy/service-terms"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="text-teal-600 font-semibold hover:underline"
           >
             서비스 이용약관
@@ -220,6 +221,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             href="/policy/privacy"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="text-teal-600 font-semibold hover:underline"
           >
             개인정보 처리방침
