@@ -18,10 +18,13 @@ function applySpringForce(edges: GraphEdge[], nodes: NodeMapType) {
     let distance = Math.sqrt(dx * dx + dy * dy);
     if (distance < 1) distance = 1;
 
-    const targetDistance = GRAPH_NUMBER_CONSTANT.EDGE_DISTANCE;
+    // edge에 targetDistance가 있으면 사용, 없으면 기본값 사용
+    const targetDistance =
+      edge.targetDistance ?? GRAPH_NUMBER_CONSTANT.EDGE_DISTANCE;
 
     const force =
       PHISICS_CONSTANT.SPRING_STRENGTH * (distance - targetDistance);
+
     const forceX = (dx / distance) * force;
     const forceY = (dy / distance) * force;
 

@@ -16,6 +16,7 @@ export interface GraphEdge {
   id: number;
   sourceId: number;
   targetId: number;
+  targetDistance?: number;
 }
 
 export interface GraphData {
