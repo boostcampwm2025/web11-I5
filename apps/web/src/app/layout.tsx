@@ -27,7 +27,7 @@ function RootLayout({ children }: Readonly<RootLayoutProps>) {
       <body
         className={cn(
           pretendard.className,
-          "antialiased bg-slate-50 w-full flex flex-col items-center",
+          "antialiased bg-slate-50 w-full flex flex-col items-center overflow-x-hidden",
         )}
       >
         <Header />
