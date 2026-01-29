@@ -65,7 +65,7 @@ export class AnswerEvaluationService {
 
   async evaluate(
     submissionId: number,
-  ): Promise<{ evaluationId: number } | null> {
+  ): Promise<{ evaluationId: number } | void> {
     const submission = await this.answerSubmissionRepository.findOne({
       where: { id: submissionId },
     });
@@ -123,7 +123,6 @@ export class AnswerEvaluationService {
       await this.answerSubmissionRepository.update(submissionId, {
         evaluationStatus: EvaluationStatus.FAILED,
       });
-      return null;
     }
   }
 
