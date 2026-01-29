@@ -4,19 +4,12 @@ import { Button } from "@/components/button/button";
 import { BarChart3, Expand } from "lucide-react";
 import * as React from "react";
 import GraphView from "../_components/graph-view/graph-view";
-import NodeMap from "../_components/graph-view/node-map";
 import { GraphData } from "../_types/graph-view";
 
 function GraphContent({ graphData }: { graphData: GraphData }) {
   const [openModalStatus, setOpenModalStatus] = React.useState(false);
-  const [nodeMap, setNodeMap] = React.useState<NodeMap>();
-
   const handleModalToggle = React.useCallback(() => {
     setOpenModalStatus((prev) => !prev);
-  }, []);
-
-  const changeNodeMap = React.useCallback((map: NodeMap) => {
-    setNodeMap(map);
   }, []);
 
   return (
@@ -44,7 +37,7 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
           >
             <Expand className="text-muted-foreground" />
           </Button>
-          <GraphView graphData={graphData} changeNodeMap={changeNodeMap} />
+          <GraphView graphData={graphData} />
         </div>
       )}
       {openModalStatus && (
@@ -58,7 +51,7 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
         >
           <div className="bg-white rounded-2xl w-full h-full max-w-5xl max-h-5/6 shadow-xl overflow-hidden relative">
             <div className="w-full h-full">
-              <GraphView graphData={graphData} nodeMap={nodeMap} />
+              <GraphView graphData={graphData} />
             </div>
           </div>
         </div>
