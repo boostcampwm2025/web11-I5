@@ -126,7 +126,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
           />
         </Suspense>
       </Table>
-      {/* <div data-boostad-zone></div> */}
+      <div data-boostad-zone></div>
     </main>
   );
 }
