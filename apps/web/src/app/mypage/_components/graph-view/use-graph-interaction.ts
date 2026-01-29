@@ -100,6 +100,7 @@ function useGraphInteraction(
   // 기대동작 2. 노드 클릭 o -> 해당 노드 고정
   const handleMouseDown = React.useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      document.body.style.cursor = "grabbing";
       setActiveInteraction(true);
       // 클릭 판정을 위해 항상 시작 위치 저장
       setDragStartOffset({ x: e.clientX, y: e.clientY });
@@ -175,7 +176,7 @@ function useGraphInteraction(
       setDraggedNodeId(null);
       setIsDraggingCanvas(false);
       setActiveInteraction(false);
-
+      document.body.style.cursor = "default";
       // 클릭 이벤트 처리 (드래그 없이 같은 위치에서 마우스 업)
       if (dragStartOffset.x === e.clientX && dragStartOffset.y === e.clientY) {
         if (clickEventDisabled || !clickedNodeId) return;
