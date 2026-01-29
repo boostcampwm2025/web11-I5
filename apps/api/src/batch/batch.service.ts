@@ -57,35 +57,37 @@ export class BatchService {
 
   private async cleanupTimedOutUploads(timeoutDate: Date) {
     return this.audioAssetRepository
-      .createQueryBuilder()
+      .createQueryBuilder('audioAsset')
       .update(AudioAsset)
       .set({ uploadStatus: AudioUploadStatus.FAILED })
-      .where('uploadStatus = :status', { status: AudioUploadStatus.PENDING })
-      .andWhere('created_at < :timeoutDate', { timeoutDate })
+      .where('audioAsset.uploadStatus = :status', {
+        status: AudioUploadStatus.PENDING,
+      })
+      .andWhere('audioAsset.createdAt < :timeoutDate', { timeoutDate })
       .execute();
   }
 
   private async cleanupTimedOutStt(timeoutDate: Date) {
     return this.answerSubmissionRepository
-      .createQueryBuilder()
+      .createQueryBuilder('submission')
       .update(AnswerSubmission)
       .set({ sttStatus: ProcessStatus.FAILED })
-      .where('sttStatus IN (:...statuses)', {
+      .where('submission.sttStatus IN (:...statuses)', {
         statuses: [ProcessStatus.PENDING, ProcessStatus.IN_PROGRESS],
       })
-      .andWhere('submitted_at < :timeoutDate', { timeoutDate })
+      .andWhere('submission.submittedAt < :timeoutDate', { timeoutDate })
       .execute();
   }
 
   private async cleanupTimedOutEvaluations(timeoutDate: Date) {
     return this.answerSubmissionRepository
-      .createQueryBuilder()
+      .createQueryBuilder('submission')
       .update(AnswerSubmission)
       .set({ evaluationStatus: EvaluationStatus.FAILED })
-      .where('evaluationStatus = :status', {
+      .where('submission.evaluationStatus = :status', {
         status: EvaluationStatus.PENDING,
       })
-      .andWhere('submitted_at < :timeoutDate', { timeoutDate })
+      .andWhere('submission.submittedAt < :timeoutDate', { timeoutDate })
       .execute();
   }
 }
