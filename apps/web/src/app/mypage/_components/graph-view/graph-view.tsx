@@ -66,7 +66,7 @@ function GraphView({
         nodeMapRef?.current?.nodeMap.get(nodeId)?.questionId ?? null,
     },
     { x: 0, y: 0 }, // initialOffset
-    0.5, // initialScale - 초기 줌 레벨을 0.7로 설정
+    0.5, // initialScale - 초기 줌 레벨을 0.5로 설정
   );
 
   // 물리 엔진 기반 그래프 애니메이션 루프
