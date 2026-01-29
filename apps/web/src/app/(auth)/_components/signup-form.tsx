@@ -37,6 +37,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
   const [formData, setFormData] = React.useState(INITIAL_FORM_STATE);
   const [agreed, setAgreed] = React.useState(false);
   const [openModalStatus, setOpenModalStatus] = React.useState(false);
+  const [isEmailVerified, setIsEmailVerified] = React.useState(false);
 
   const handleModalToggle = React.useCallback(() => {
     setOpenModalStatus((prev) => !prev);
@@ -91,7 +92,8 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
     validation.email &&
     validation.password &&
     validation.passwordConfirm &&
-    agreed;
+    agreed &&
+    isEmailVerified;
 
   const serverErrorMessage = state?.error;
 
@@ -147,9 +149,9 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             className="w-full"
             variant={"outline"}
             onClick={handleModalToggle}
-            disabled={!validation.email}
+            disabled={!validation.email || isEmailVerified}
           >
-            이메일 인증하기
+            {isEmailVerified ? "이메일 인증 완료" : "이메일 인증하기"}
           </Button>
           <p
             className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.email && !validation.email ? "text-red-500" : "text-slate-500"}`}
@@ -255,6 +257,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
         <MailVerificationModal
           email={formData.email}
           handleModalToggle={handleModalToggle}
+          onSuccess={() => setIsEmailVerified(true)}
         />
       )}
     </>

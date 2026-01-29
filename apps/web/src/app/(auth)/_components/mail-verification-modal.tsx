@@ -124,12 +124,12 @@ function MailVerificationModal({
                 required
               />
             </InputGroup>
-            {state?.error && (
+            {!resendMessage && state?.error && (
               <p className="text-[11px] mt-1.5 ml-1 font-medium text-red-500">
                 {state.error}
               </p>
             )}
-            {state?.message && (
+            {!resendMessage && state?.message && (
               <p className="text-[11px] mt-1.5 ml-1 font-medium text-teal-600">
                 {state.message}
               </p>
