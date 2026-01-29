@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Header from "@/components/header/header";
 import ReportHeader from "./_components/report-header";
-import HistoryList from "./_components/history/history-list";
+import CollapsibleHistory from "./_components/history/collapsible-history";
 import { getReportPageData } from "./_lib/services/page-data";
 import ReportRefresh from "./_components/report-refresh";
 import ReportTabs from "./_components/report-tabs";
@@ -37,9 +37,9 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
   return (
     <>
       <Header />
-      <main className="w-full max-w-4xl mx-auto px-8 py-15 flex gap-8">
-        <div className="flex flex-col flex-1">
-          <div className="mb-14">
+      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-6 md:py-15 flex gap-4 lg:gap-8 min-h-main">
+        <div className="flex flex-col flex-1 min-w-0">
+          <div className="mb-8 md:mb-14">
             <ReportHeader question={question} highestScore={highestScore} />
           </div>
 
@@ -57,12 +57,10 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
           <div data-boostad-zone className="h-20"></div>
         </div>
 
-        <div className="sticky top-22 self-start">
-          <HistoryList
-            history={history}
-            selectedId={selectedAttempt.submissionId}
-          />
-        </div>
+        <CollapsibleHistory
+          history={history}
+          selectedId={selectedAttempt.submissionId}
+        />
       </main>
     </>
   );

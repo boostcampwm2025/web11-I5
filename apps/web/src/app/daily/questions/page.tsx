@@ -76,9 +76,9 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   return (
     <>
       <Header />
-      <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-main">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1">문제 리스트</h1>
+      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-15 space-y-6 md:space-y-8 min-h-main">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-1">문제 리스트</h1>
           <Suspense fallback={<TotalCountLoadingFallback />}>
             <TotalCountSection
               selectedCategoryId={selectedCategoryId}
@@ -101,10 +101,16 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-28">대분류</TableHead>
-              <TableHead className="w-32">중분류</TableHead>
+              <TableHead className="w-28 hidden md:table-cell">
+                대분류
+              </TableHead>
+              <TableHead className="w-32 hidden sm:table-cell">
+                중분류
+              </TableHead>
               <TableHead>문제 제목</TableHead>
-              <TableHead className="w-20 text-center">중요도</TableHead>
+              <TableHead className="w-20 text-center hidden sm:table-cell">
+                중요도
+              </TableHead>
               <TableHead className="w-20 text-center">내 점수</TableHead>
             </TableRow>
           </TableHeader>
