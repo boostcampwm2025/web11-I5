@@ -82,6 +82,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./promtail-config.yaml:/etc/promtail/config.yaml:ro
+      - promtail-positions:/var/lib/promtail
     depends_on:
       - loki
     networks:
@@ -120,3 +121,4 @@ networks:
 
 volumes:
   pgdata:
+  promtail-positions:
