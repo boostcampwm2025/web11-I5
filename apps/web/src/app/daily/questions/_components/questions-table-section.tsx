@@ -86,18 +86,23 @@ async function QuestionsTableBodySection({
         ) : (
           questions.map((question) => (
             <TableRow key={question.id}>
-              <TableCell className="text-muted-foreground font-medium">
+              <TableCell className="text-muted-foreground font-medium hidden md:table-cell">
                 {question.category?.parent?.name ?? "-"}
               </TableCell>
-              <TableCell className="text-muted-foreground">
-                <span className="text-xs py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
+              <TableCell className="text-muted-foreground hidden sm:table-cell">
+                <span className="text-xs py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium whitespace-normal max-w-32 truncate inline-block">
                   {question.category?.name ?? "-"}
                 </span>
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-normal">
                 <QuestionLinkButton question={question} />
+                <div className="sm:hidden text-xs text-muted-foreground mt-1">
+                  {[question.category?.parent?.name, question.category?.name]
+                    .filter(Boolean)
+                    .join(" > ")}
+                </div>
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell className="text-center hidden sm:table-cell">
                 {(question.avgImportance ?? 0).toFixed(1)}
               </TableCell>
               <TableCell className="text-center">
@@ -115,47 +120,52 @@ async function QuestionsTableBodySection({
       </TableBody>
       <TableFooter>
         <TableRow className="hover:bg-transparent">
-          <TableCell colSpan={2}>
+          <TableCell colSpan={2} className="hidden sm:table-cell">
             <span className="text-muted-foreground text-sm">
               {startIndex} - {endIndex} / 총 {totalCount}개
             </span>
           </TableCell>
-          <TableCell colSpan={3} className="text-right">
-            <Pagination className="justify-end">
-              <PaginationContent>
-                <PaginationItem>
-                  {currentPage > 1 ? (
-                    <PaginationPrevious
-                      href={buildPaginationUrl(currentPage - 1)}
-                    />
-                  ) : (
-                    <PaginationPrevious
-                      href={buildPaginationUrl(currentPage)}
-                      className="pointer-events-none opacity-50"
-                      aria-disabled="true"
-                    />
-                  )}
-                </PaginationItem>
-                <PaginationItem>
-                  <div className="px-2">
-                    {currentPage} / {totalPages}
-                  </div>
-                </PaginationItem>
-                <PaginationItem>
-                  {currentPage < totalPages ? (
-                    <PaginationNext
-                      href={buildPaginationUrl(currentPage + 1)}
-                    />
-                  ) : (
-                    <PaginationNext
-                      href={buildPaginationUrl(currentPage)}
-                      className="pointer-events-none opacity-50"
-                      aria-disabled="true"
-                    />
-                  )}
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+          <TableCell colSpan={3} className="sm:text-right">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
+              <span className="text-muted-foreground text-sm sm:hidden">
+                {startIndex} - {endIndex} / 총 {totalCount}개
+              </span>
+              <Pagination className="justify-center sm:justify-end">
+                <PaginationContent>
+                  <PaginationItem>
+                    {currentPage > 1 ? (
+                      <PaginationPrevious
+                        href={buildPaginationUrl(currentPage - 1)}
+                      />
+                    ) : (
+                      <PaginationPrevious
+                        href={buildPaginationUrl(currentPage)}
+                        className="pointer-events-none opacity-50"
+                        aria-disabled="true"
+                      />
+                    )}
+                  </PaginationItem>
+                  <PaginationItem>
+                    <div className="px-2">
+                      {currentPage} / {totalPages}
+                    </div>
+                  </PaginationItem>
+                  <PaginationItem>
+                    {currentPage < totalPages ? (
+                      <PaginationNext
+                        href={buildPaginationUrl(currentPage + 1)}
+                      />
+                    ) : (
+                      <PaginationNext
+                        href={buildPaginationUrl(currentPage)}
+                        className="pointer-events-none opacity-50"
+                        aria-disabled="true"
+                      />
+                    )}
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
           </TableCell>
         </TableRow>
       </TableFooter>
