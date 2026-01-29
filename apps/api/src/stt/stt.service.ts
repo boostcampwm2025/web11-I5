@@ -60,6 +60,7 @@ export class SttService {
           ? `[requestStt] ${error.stack}`
           : `[requestStt] ${error}`,
       );
+      throw error;
     }
   }
 }
