@@ -166,7 +166,7 @@ function VoiceInput({
     status === "no_device";
 
   return (
-    <div className="bg-white border rounded-xl h-100 flex flex-col items-center justify-center">
+    <div className="h-100 flex flex-col items-center justify-center">
       {isStatusError ? (
         <StatusError status={status} />
       ) : (
@@ -180,20 +180,21 @@ function VoiceInput({
           <div className="max-w-sm w-full px-6">
             {hasRecorded ? (
               <div className="flex items-center gap-3 h-40">
-                <button
+                <Button
                   type="button"
+                  size="icon-lg"
                   onClick={isPlaying ? pausePlayback : playRecording}
                   disabled={isSubmitting}
                   aria-label={isPlaying ? "일시정지" : "재생"}
+                  className="rounded-full"
                   aria-pressed={isPlaying}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   {isPlaying ? (
-                    <Pause className="w-5 h-5" />
+                    <Pause className="w-5 h-5 fill-current" />
                   ) : (
-                    <Play className="w-5 h-5 ml-0.5" />
+                    <Play className="w-5 h-5 ml-0.5 fill-current" />
                   )}
-                </button>
+                </Button>
                 <div className="flex-1 flex items-center gap-3">
                   <Slider
                     value={[playbackTime]}

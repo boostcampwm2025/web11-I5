@@ -25,7 +25,7 @@ function FeedbackSection({
       data.sttStatus === "IN_PROGRESS" || data.sttStatus === "PENDING";
 
     return (
-      <section className="bg-white rounded-xl border border-[#E2E8F0] p-9 transition-all duration-300">
+      <section className="p-9 transition-all duration-300">
         <div className="flex flex-col items-center justify-center py-12 gap-6">
           <div className="w-14 h-14 border-4 border-[#4FD1C5] border-t-transparent rounded-full animate-spin" />
 
@@ -53,7 +53,7 @@ function FeedbackSection({
     const isSttFailed = data.sttStatus === "FAILED";
 
     return (
-      <section className="bg-white rounded-xl border border-[#E2E8F0] p-9 transition-all duration-300">
+      <section className="p-9 transition-all duration-300">
         <div className="flex flex-col items-center justify-center py-12 gap-6">
           <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center">
             <AlertCircle className="w-8 h-8 text-red-500" />
@@ -87,7 +87,7 @@ function FeedbackSection({
   }
 
   return (
-    <section className="bg-white rounded-xl border border-[#E2E8F0] p-9 transition-all duration-300">
+    <section className="p-9 transition-all duration-300">
       <div className="flex justify-between items-center mb-6">
         <div>
           <div className="text-sm font-extrabold text-zinc-400 tracking-widest uppercase mb-1">

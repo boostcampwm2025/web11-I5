@@ -1,6 +1,7 @@
 import { ExecutionContext, Logger } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { of, throwError } from 'rxjs';
+import type { Counter, Histogram } from 'prom-client';
 import { LoggingInterceptor } from './logging.interceptor';
 
 describe('LoggingInterceptor', () => {
@@ -12,8 +13,21 @@ describe('LoggingInterceptor', () => {
     error: jest.fn(),
   };
 
+  // Prometheus 메트릭 mock
+  const mockCounter = {
+    labels: jest.fn(() => ({
+      inc: jest.fn(),
+    })),
+  } as unknown as Counter<string>;
+
+  const mockHistogram = {
+    labels: jest.fn(() => ({
+      observe: jest.fn(),
+    })),
+  } as unknown as Histogram<string>;
+
   beforeEach(() => {
-    interceptor = new LoggingInterceptor();
+    interceptor = new LoggingInterceptor(mockCounter, mockHistogram);
 
     jest.spyOn(Logger.prototype, 'log').mockImplementation(mockLogger.log);
     jest.spyOn(Logger.prototype, 'warn').mockImplementation(mockLogger.warn);
