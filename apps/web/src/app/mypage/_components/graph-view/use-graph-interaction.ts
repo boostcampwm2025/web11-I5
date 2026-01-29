@@ -29,6 +29,18 @@ function useGraphInteraction(
   // scale: 캔버스에서 휠움직임을 통해 줌을 할 때 줌 단계
   const scale = React.useRef(initialScale);
 
+  // 초기 스케일이 1이 아닐 때 중앙 정렬을 위한 offset 조정
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || initialScale === 1) return;
+
+    const rect = canvas.getBoundingClientRect();
+    offset.current = {
+      x: (rect.width * (1 - initialScale)) / 2,
+      y: (rect.height * (1 - initialScale)) / 2,
+    };
+  }, [canvasRef, initialScale]);
+
   const hoveredNodeId = React.useRef<number | null>(null);
   const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
