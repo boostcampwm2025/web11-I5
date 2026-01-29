@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Button } from "@/components/button/button";
 import { SignupState } from "../_utils/auth";
-
+import Link from "next/link";
 import { Mail, Lock, ArrowRight, User, AlertCircle } from "lucide-react";
 import {
   InputGroup,
@@ -207,9 +207,23 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
           required
         />
         <label htmlFor="terms" className="text-xs text-muted-foreground">
-          <span className="text-teal-600 font-semibold">서비스 이용약관</span>{" "}
+          <Link
+            href="/policy/service-terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-teal-600 font-semibold hover:underline"
+          >
+            서비스 이용약관
+          </Link>
           및{" "}
-          <span className="text-teal-600 font-semibold">개인정보 처리방침</span>
+          <Link
+            href="/policy/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-teal-600 font-semibold hover:underline"
+          >
+            개인정보 처리방침
+          </Link>
           에 동의합니다.
         </label>
       </div>
