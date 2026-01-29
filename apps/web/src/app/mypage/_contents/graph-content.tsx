@@ -1,22 +1,15 @@
 "use client";
 
-import * as React from "react";
-import { BarChart3, Expand } from "lucide-react";
-import GraphView from "../_components/graph-view/graph-view";
-import NodeMap from "../_components/graph-view/node-map";
-import { GraphData } from "../_types/graph-view";
 import { Button } from "@/components/button/button";
+import { BarChart3, Expand } from "lucide-react";
+import * as React from "react";
+import GraphView from "../_components/graph-view/graph-view";
+import { GraphData } from "../_types/graph-view";
 
 function GraphContent({ graphData }: { graphData: GraphData }) {
   const [openModalStatus, setOpenModalStatus] = React.useState(false);
-  const [nodeMap, setNodeMap] = React.useState<NodeMap>();
-
   const handleModalToggle = React.useCallback(() => {
     setOpenModalStatus((prev) => !prev);
-  }, []);
-
-  const changeNodeMap = React.useCallback((map: NodeMap) => {
-    setNodeMap(map);
   }, []);
 
   return (
@@ -44,12 +37,16 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
           >
             <Expand className="text-muted-foreground" />
           </Button>
-          <GraphView graphData={graphData} changeNodeMap={changeNodeMap} />
+          <GraphView graphData={graphData} />
         </div>
       )}
       {openModalStatus && (
         <div
-          onClick={handleModalToggle}
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              handleModalToggle();
+            }
+          }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 md:p-4 animate-in fade-in duration-200"
         >
           <div
@@ -57,7 +54,7 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
             className="bg-white rounded-xl md:rounded-2xl w-full h-full max-w-5xl max-h-[90vh] md:max-h-5/6 shadow-xl overflow-hidden relative"
           >
             <div className="w-full h-full">
-              <GraphView graphData={graphData} nodeMap={nodeMap} />
+              <GraphView graphData={graphData} />
             </div>
           </div>
         </div>

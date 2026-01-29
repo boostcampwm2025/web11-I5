@@ -1,4 +1,7 @@
-import { GRAPH_NUMBER_CONSTANT } from "../../_constants/graph-view-constant";
+import {
+  GRAPH_COLOR_CONSTANT,
+  GRAPH_NUMBER_CONSTANT,
+} from "../../_constants/graph-view-constant";
 import applyCenterGravity from "../../_lib/graph-view/apply-center-gravity";
 import applyRepulsionForce from "../../_lib/graph-view/apply-repulsion-force";
 import applySpringForce from "../../_lib/graph-view/apply-spring-force";
@@ -8,23 +11,45 @@ import {
   GraphNode,
   NodeMapType,
   NodePosition,
+  NodeType,
 } from "../../_types/graph-view";
+
+// 0.05 (~300ms)
+// 0.15 (~150ms)
+// 0.25 (~80ms)
+const LERP_FACTOR = 0.05;
 
 class NodeMap {
   private _nodeMap: NodeMapType;
 
   constructor(nodes: GraphNode[], width: number, height: number) {
     this._nodeMap = new Map();
-    const radius = GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
-    nodes.forEach((node) => {
+    const baseRadius = GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const nodeCount = nodes.length;
+    // 화면 크기에 비례하는 원의 반지름 (화면의 50% 정도)
+    const circleRadius = Math.min(width, height) * 0.5;
+
+    nodes.forEach((node, index) => {
+      const initialRadius =
+        node.type === NodeType.QUESTION ? baseRadius + 1 : baseRadius;
+      // 원형으로 균등하게 배치
+      const angle = (index / nodeCount) * 2 * Math.PI;
+      const x = centerX + circleRadius * Math.cos(angle);
+      const y = centerY + circleRadius * Math.sin(angle);
+
       this._nodeMap.set(node.id, {
         ...node,
-        x: Math.random() * (width - radius * 2) + radius,
-        y: Math.random() * (height - radius * 2) + radius,
+        x,
+        y,
         vx: 0,
         vy: 0,
         fx: null,
         fy: null,
+        displayRadius: initialRadius,
+        displayAlpha: 1,
+        displayHighlight: 0,
       });
     });
   }
@@ -69,6 +94,36 @@ class NodeMap {
 
   getNodeValues(): IterableIterator<GraphNode & NodePosition> {
     return this._nodeMap.values();
+  }
+
+  updateAnimations(
+    hoveredNodeId: number | null,
+    connectedNodeIds: Set<number>,
+  ) {
+    const baseRadius = GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
+
+    for (const node of this._nodeMap.values()) {
+      const isHovered = node.id === hoveredNodeId;
+      const isConnected = connectedNodeIds.has(node.id);
+      const isDimmed = hoveredNodeId !== null && !isHovered && !isConnected;
+
+      // 타겟 반경 계산
+      const nodeBaseRadius =
+        node.type === NodeType.QUESTION ? baseRadius + 1 : baseRadius;
+      const targetRadius = isHovered ? nodeBaseRadius + 2 : nodeBaseRadius;
+
+      // 타겟 알파 계산
+      const targetAlpha = isDimmed ? GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA : 1;
+
+      // 타겟 하이라이트 계산 (호버되거나 연결된 노드는 1)
+      const targetHighlight = isHovered || isConnected ? 1 : 0;
+
+      // lerp 적용
+      node.displayRadius += (targetRadius - node.displayRadius) * LERP_FACTOR;
+      node.displayAlpha += (targetAlpha - node.displayAlpha) * LERP_FACTOR;
+      node.displayHighlight +=
+        (targetHighlight - node.displayHighlight) * LERP_FACTOR;
+    }
   }
 }
 

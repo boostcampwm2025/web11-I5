@@ -1,6 +1,7 @@
 "use server";
 
 import { apiPost } from "@/lib/api-client";
+import { logger } from "@/lib/sentry-logger";
 
 interface SubmitAnswerState {
   success: boolean;
@@ -41,7 +42,9 @@ async function submitAnswerAction({
       submissionId: data.id,
     };
   } catch (error) {
-    console.error("Error submitting answer:", error);
+    logger.error("답변 제출 오류", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return {
       success: false,
       message: "",

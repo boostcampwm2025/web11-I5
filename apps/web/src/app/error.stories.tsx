@@ -11,14 +11,14 @@ const meta = {
     nextjs: {
       appDirectory: true,
       navigation: {
-        push: fn((url: string) => console.log("Navigate to:", url)),
-        back: fn(() => console.log("Navigate back")),
+        push: fn(),
+        back: fn(),
       },
     },
   },
   tags: ["autodocs"],
   args: {
-    reset: fn(() => console.log("Reset clicked")),
+    reset: fn(),
   },
 } satisfies Meta<typeof ErrorBoundary>;
 

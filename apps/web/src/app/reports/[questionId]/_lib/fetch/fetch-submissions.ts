@@ -2,6 +2,7 @@
 
 import { SubmissionDTO } from "../../_types/submission-dto";
 import { apiGet } from "@/lib/api-client";
+import { logger } from "@/lib/sentry-logger";
 
 async function fetchSubmissionsByQuestionId(
   questionId: number,
@@ -11,7 +12,9 @@ async function fetchSubmissionsByQuestionId(
       `/answer-submissions?questionId=${questionId}`,
     );
   } catch (error) {
-    console.error(error);
+    logger.error("제출 목록 조회 실패", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }

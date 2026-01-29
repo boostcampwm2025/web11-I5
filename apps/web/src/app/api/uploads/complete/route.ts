@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiClient } from "@/lib/api-client";
+import { logger } from "@/lib/sentry-logger";
 
 /**
  * POST /api/uploads/complete
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Failed to confirm upload:", errorText);
+      logger.error("업로드 완료 확인 실패", { responseBody: errorText });
       return NextResponse.json(
         { error: "Failed to confirm upload" },
         { status: response.status },
@@ -26,7 +27,9 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error in uploads/complete:", error);
+    logger.error("uploads/complete 처리 오류", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

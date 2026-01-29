@@ -1,4 +1,5 @@
 "use client";
+import { logger } from "@/lib/sentry-logger";
 import { Pencil, User, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
@@ -80,7 +81,9 @@ function UserStatsCard({
         formData.set("objectKey", objectKey);
         formData.delete("profileImage");
       } catch (error) {
-        console.error(error);
+        logger.error("이미지 업로드 실패", {
+          error: error instanceof Error ? error.message : String(error),
+        });
         toast.error("이미지 업로드에 실패하였습니다.");
         return;
       }

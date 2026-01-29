@@ -16,7 +16,7 @@ import {
 import { Slider } from "@/components/slider/slider";
 import useRecorder, { RecorderStatus } from "../_hooks/use-recorder";
 import RecordButton from "./record-button";
-import useWav from "@/hooks/use-wav";
+import useAudio from "@/hooks/use-audio";
 import {
   confirmUpload,
   requestPresignedUrl,
@@ -62,12 +62,12 @@ function VoiceInput({
     seekTo,
   } = useRecorder({ maxDurationSeconds });
 
-  const { play: playDing, ready: dingWavReady } = useWav("/ui-confirm.wav", 1);
+  const { play: playDing, ready: dingReady } = useAudio("/ui-confirm.wav", 1);
   const {
     play: playTickTock,
     stop: stopTickTock,
     ready: tickTockReady,
-  } = useWav("/ticking.wav", { volume: 0.5, loop: true });
+  } = useAudio("/ticking.wav", { volume: 0.5, loop: true });
 
   const WARNING_SECONDS = 10;
   const isInWarningZone =
@@ -117,7 +117,7 @@ function VoiceInput({
       : "idle";
 
   const handleStartRecording = () => {
-    if (dingWavReady) {
+    if (dingReady) {
       setTimeout(() => playDing(), 100);
     }
     startRecording();

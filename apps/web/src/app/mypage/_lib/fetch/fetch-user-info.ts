@@ -1,11 +1,14 @@
 import { apiGet, apiPatch } from "@/lib/api-client";
+import { logger } from "@/lib/sentry-logger";
 import { EditUserRequestDTO, UserInfoDTO } from "../../_types/user-info-dto";
 
 async function fetchUserInfo(): Promise<UserInfoDTO> {
   try {
     return await apiGet<UserInfoDTO>("/api/users/me");
   } catch (error) {
-    console.error(error);
+    logger.error("사용자 정보 조회 실패", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -23,7 +26,9 @@ async function editUserInfo({
 
     return await apiPatch<UserInfoDTO>("/api/users/me", body);
   } catch (error) {
-    console.error(error);
+    logger.error("사용자 정보 수정 실패", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
