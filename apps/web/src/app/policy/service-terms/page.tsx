@@ -1,6 +1,4 @@
-import React from "react";
-
-export default function TermsPage() {
+function TermsPage() {
   return (
     <div className="max-w-3xl mx-auto py-10 px-6">
       <h1 className="text-2xl font-bold mb-6">서비스 이용약관</h1>
@@ -60,3 +58,5 @@ export default function TermsPage() {
     </div>
   );
 }
+
+export default TermsPage;
