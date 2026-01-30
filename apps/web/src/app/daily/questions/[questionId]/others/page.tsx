@@ -152,43 +152,48 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
               </TableCell>
 
               <TableCell colSpan={2} className="text-right">
-                <Pagination className="justify-end">
-                  <PaginationContent>
-                    <PaginationItem>
-                      {currentPage > 1 ? (
-                        <PaginationPrevious
-                          href={buildPaginationUrl(currentPage - 1)}
-                        />
-                      ) : (
-                        <PaginationPrevious
-                          href={buildPaginationUrl(currentPage)}
-                          className="pointer-events-none opacity-50"
-                          aria-disabled="true"
-                        />
-                      )}
-                    </PaginationItem>
+                {/* totalPages > 0일 때만 이전/다음 버튼과 현재/전체 표시, 데이터 없을 때는 —만 표시 */}
+                {totalPages > 0 ? (
+                  <Pagination className="justify-end">
+                    <PaginationContent>
+                      <PaginationItem>
+                        {currentPage > 1 ? (
+                          <PaginationPrevious
+                            href={buildPaginationUrl(currentPage - 1)}
+                          />
+                        ) : (
+                          <PaginationPrevious
+                            href={buildPaginationUrl(currentPage)}
+                            className="pointer-events-none opacity-50"
+                            aria-disabled="true"
+                          />
+                        )}
+                      </PaginationItem>
 
-                    <PaginationItem>
-                      <div className="px-2">
-                        {currentPage} / {totalPages}
-                      </div>
-                    </PaginationItem>
+                      <PaginationItem>
+                        <div className="px-2">
+                          {currentPage} / {totalPages}
+                        </div>
+                      </PaginationItem>
 
-                    <PaginationItem>
-                      {currentPage < totalPages ? (
-                        <PaginationNext
-                          href={buildPaginationUrl(currentPage + 1)}
-                        />
-                      ) : (
-                        <PaginationNext
-                          href={buildPaginationUrl(currentPage)}
-                          className="pointer-events-none opacity-50"
-                          aria-disabled="true"
-                        />
-                      )}
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+                      <PaginationItem>
+                        {currentPage < totalPages ? (
+                          <PaginationNext
+                            href={buildPaginationUrl(currentPage + 1)}
+                          />
+                        ) : (
+                          <PaginationNext
+                            href={buildPaginationUrl(currentPage)}
+                            className="pointer-events-none opacity-50"
+                            aria-disabled="true"
+                          />
+                        )}
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                ) : (
+                  <span className="text-muted-foreground text-sm">—</span>
+                )}
               </TableCell>
             </TableRow>
           </TableFooter>
