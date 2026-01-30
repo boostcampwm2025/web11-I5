@@ -41,7 +41,7 @@ async function Home() {
                 textRenderScale={1.2}
                 clickEventDisabled={true}
                 zoomEnabled={false}
-                initialScale={2}
+                initialScale={1}
                 showLabels={false}
               />
             </div>
