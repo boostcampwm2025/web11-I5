@@ -3,7 +3,7 @@ export const GRAPH_NUMBER_CONSTANT = {
   MIN_SCALE: 0.3,
   MAX_SCALE: 2.3,
   EDGE_DISTANCE: 100,
-  VELOCITY_THRESHOLD: 0.1, // 기존 0.01에서 수렴 속도 빠르게 조정하기 위해 0.05 높임
+  VELOCITY_THRESHOLD: 0.2, // 기존 0.01에서 수렴 속도 빠르게 조정하기 위해 0.05 높임
   EDGE_STROKE_WIDTH: 2,
   MIN_EDGE_STROKE_WIDTH: 2, // 줌 아웃 시 최소 시각적 굵기 (픽셀 단위)
   MAX_EDGE_STROKE_WIDTH: 2, // 줌 인 시 최대 시각적 굵기 (픽셀 단위)
@@ -19,9 +19,10 @@ export const GRAPH_COLOR_CONSTANT = {
 };
 
 export const PHISICS_CONSTANT = {
-  REPULSION: 1500, //척력 강도. 크면 더 멀리 밀어냄
+  REPULSION: 2000, //척력 강도. 크면 더 멀리 밀어냄
   SPRING_STRENGTH: 0.25, //인력 강도
-  DAMPING: 0.3, // 속도 유지율. 낮으면 빠르게 정지 (진동 감소)
+  DAMPING: 0.6, // 속도 유지율. 낮으면 빠르게 정지 (0.5→0.35로 미끄러짐 감소)
   MAX_SPEED: 10.0, //최대 속도
   CENTER_GRAVITY: 0.002, // 중앙중력강도
+  ACCELERATION_THRESHOLD: 0.3, // 가속도 임계값. 이 값 미만의 가속도는 무시
 } as const;
