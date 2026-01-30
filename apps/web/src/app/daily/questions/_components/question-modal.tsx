@@ -25,7 +25,7 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden relative"
+        className="bg-white rounded-2xl w-full min-w-62.5 max-w-lg shadow-xl relative flex flex-col min-h-160 max-h-[90vh] overflow-y-auto"
       >
         <div className="p-8">
           {/* 배지 영역 */}
@@ -89,7 +89,7 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
           )}
 
           {answerMode === "text" && (
-            <div className=" h-75 mb-6 w-full bg-slate-50 border border-slate-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-300">
+            <div className=" h-65 mb-6 w-full bg-slate-50 border border-slate-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-300">
               <Keyboard className="w-10 h-10 text-slate-300 mb-4" />
               <p className="text-slate-500 text-sm font-medium">
                 마이크가 아닌{" "}

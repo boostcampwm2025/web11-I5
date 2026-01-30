@@ -100,7 +100,7 @@ export default function MicrophoneTester() {
     const ErrorIcon = errorContent.icon;
 
     return (
-      <div className="h-75 w-full bg-red-50 border border-red-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2">
+      <div className="h-65 w-full bg-red-50 border border-red-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2">
         <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
           <ErrorIcon className="w-6 h-6 text-red-500" />
         </div>
@@ -124,7 +124,7 @@ export default function MicrophoneTester() {
 
   if (hasRecorded && !isRecording) {
     return (
-      <div className="flex flex-col items-center justify-center h-75 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
+      <div className="flex flex-col items-center justify-center h-65 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
         <div className="w-full max-w-md mb-6 bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <button
@@ -175,7 +175,7 @@ export default function MicrophoneTester() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-75 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
+    <div className="flex flex-col items-center justify-center h-65 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
       {/* 파형 영역 */}
       <div className="h-24 flex items-center justify-center mb-6 relative w-full">
         {/* 녹음 중이 아니더라도 파형 UI 틀은 유지 (opacity 등으로 시각적 구분 가능) */}
