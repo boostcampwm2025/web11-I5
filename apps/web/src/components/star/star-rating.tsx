@@ -11,10 +11,20 @@ interface StarRatingProps {
   readOnly?: boolean;
   className?: string;
   max?: number;
+  label?: string;
 }
 
 export function StarRating(props: StarRatingProps) {
-  const { max = 5, readOnly = false, className } = props;
+  const {
+    max = 5,
+    readOnly = false,
+    className,
+    onChange,
+    label = "중요도 평가 입력",
+  } = props;
+
+  const errorId = React.useId();
+  const inputId = React.useId();
 
   const { containerRef, displayValue, eventHandlers } = useStarRating({
     ...props,
@@ -22,10 +32,52 @@ export function StarRating(props: StarRatingProps) {
     readOnly,
   });
 
-  const fillWidthPercent = (displayValue / max) * 100;
+  const [inputValue, setInputValue] = React.useState<string>(
+    displayValue.toString(),
+  );
+
+  const [isFocused, setIsFocused] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isFocused) {
+      setInputValue(displayValue.toFixed(1));
+    }
+  }, [displayValue, isFocused]);
+
+  const isOverLimit = parseFloat(inputValue) > max;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (readOnly) return;
+
+    const newValue = e.target.value;
+
+    if (newValue.length > 3) return;
+    setInputValue(newValue);
+
+    const parsedValue = parseFloat(newValue);
+    if (!isNaN(parsedValue)) {
+      const clampedValue = Math.min(Math.max(parsedValue, 0), max);
+      onChange?.(clampedValue);
+    }
+  };
+
+  const handleFocus = () => {
+    if (readOnly) return;
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    if (readOnly) return;
+    setIsFocused(false);
+    setInputValue(displayValue.toFixed(1));
+  };
+
+  const currentVisualValue = parseFloat(inputValue);
+  const safeValue = isNaN(currentVisualValue) ? 0 : currentVisualValue;
+  const fillWidthPercent = (Math.min(safeValue, max) / max) * 100;
 
   return (
-    <div className={cn("inline-flex items-center gap-3", className)}>
+    <div className={cn("relative inline-flex items-center gap-3", className)}>
       <div
         ref={containerRef}
         style={{ width: "160px", height: "32px" }}
@@ -68,13 +120,44 @@ export function StarRating(props: StarRatingProps) {
         </div>
       </div>
 
-      {/* 점수 텍스트 표시 */}
-      <div className="flex items-baseline gap-1 ml-1 select-none">
-        <span className="text-2xl font-bold text-zinc-900 tabular-nums">
-          {displayValue.toFixed(1)}
+      <div className="flex items-baseline gap-1 ml-1">
+        <input
+          id={inputId}
+          type="number"
+          inputMode="decimal"
+          min={0}
+          step="0.1"
+          value={inputValue}
+          onChange={handleInputChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          disabled={readOnly}
+          aria-label={`${label}, 총점 ${max}점 중`}
+          aria-invalid={isOverLimit}
+          aria-errormessage={isOverLimit ? errorId : undefined}
+          className={cn(
+            "w-12 bg-transparent text-2xl font-bold text-zinc-900 tabular-nums text-right outline-none p-0 border-none focus:ring-0 focus:border-none",
+            "appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none", // 스피너 제거
+            readOnly && "cursor-default text-zinc-500",
+            isOverLimit && "text-red-500",
+          )}
+        />
+        <span className="text-lg font-medium text-zinc-400 select-none">
+          / {max}
         </span>
-        <span className="text-lg font-medium text-zinc-400">/ {max}</span>
       </div>
+
+      {isOverLimit && (
+        <div
+          id={errorId}
+          role="alert"
+          className="absolute top-full left-0 mt-1 w-full text-center md:text-right md:pr-12"
+        >
+          <span className="text-xs font-medium text-red-500 whitespace-nowrap">
+            최대 {max}점까지 가능합니다.
+          </span>
+        </div>
+      )}
     </div>
   );
 }
