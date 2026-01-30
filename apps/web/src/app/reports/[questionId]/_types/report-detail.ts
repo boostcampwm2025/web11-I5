@@ -19,6 +19,7 @@ export interface FeedbackResult {
 
 export interface BaseReportDetail {
   submissionId: number;
+  inputType: "VOICE" | "TEXT";
   questionId: number;
   date: string;
   duration: string;

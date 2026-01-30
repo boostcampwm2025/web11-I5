@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -10,7 +11,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { randomUUID } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
+import { MailService } from 'src/mail/mail.service';
 import { ObjectStorageService } from 'src/object-storage/object-storage.service';
 import { QueryFailedError, Repository } from 'typeorm';
 import { EvaluationStatus } from '../answer-evaluation/answer-evaluation.constants';
@@ -37,12 +39,18 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
     private readonly objectStorageService: ObjectStorageService,
     @InjectRepository(AnswerSubmission)
     private readonly answerSubmissionRepository: Repository<AnswerSubmission>,
+    private readonly mailService: MailService,
   ) {}
 
   // 메시지큐 대신 사용할 맵
   private uploadSessions = new Map<
     string,
     { userId: number; expiresAt: Date }
+  >();
+
+  private verifySessions = new Map<
+    string,
+    { code: string; verified: boolean; expiresAt: Date; attempts: number }
   >();
 
   // 5분마다 uploadSession 초기화
@@ -63,17 +71,32 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
 
   private cleanupExpiredSessions() {
     const now = new Date();
-    let cleanedCount = 0;
+    let uploadCleanedCount = 0;
+    let verifyCleanedCount = 0;
 
     for (const [key, session] of this.uploadSessions.entries()) {
       if (session.expiresAt <= now) {
         this.uploadSessions.delete(key);
-        cleanedCount++;
+        uploadCleanedCount++;
       }
     }
 
-    if (cleanedCount > 0) {
-      this.logger.log(`Cleaned up ${cleanedCount} expired upload sessions`);
+    for (const [key, session] of this.verifySessions.entries()) {
+      if (session.expiresAt <= now) {
+        this.verifySessions.delete(key);
+        verifyCleanedCount++;
+      }
+    }
+
+    if (uploadCleanedCount > 0) {
+      this.logger.log(
+        `Cleaned up ${uploadCleanedCount} expired upload sessions`,
+      );
+    }
+    if (verifyCleanedCount > 0) {
+      this.logger.log(
+        `Cleaned up ${verifyCleanedCount} expired verification sessions`,
+      );
     }
   }
 
@@ -86,11 +109,9 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
     email: string;
     password: string;
   }): Promise<User> {
-    const existingUserByEmail = await this.userRepository.findOneByEmail(
-      params.email,
-    );
-    if (existingUserByEmail) {
-      throw new ConflictException('이미 사용 중인 이메일입니다.');
+    const isVerifiedMail = this.verifySessions.get(params.email);
+    if (!isVerifiedMail || !isVerifiedMail.verified) {
+      throw new BadRequestException('이메일 인증이 필요합니다.');
     }
 
     const existingUserByNickname = await this.userRepository.findOneByNickname(
@@ -101,7 +122,7 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      return await this.userRepository.create({
+      const newUser = await this.userRepository.create({
         email: params.email,
         nickname: params.nickname,
         password: hashPassword(params.password),
@@ -109,6 +130,10 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
         totalScore: 0,
         role: UserRole.USER,
       });
+
+      this.verifySessions.delete(params.email);
+
+      return newUser;
     } catch (error) {
       // 레이스 컨디션 등으로 DB 유니크 제약에서 터질 수 있으므로 409로 변환
       if (error instanceof QueryFailedError) {
@@ -433,5 +458,72 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
         err,
       );
     });
+  }
+
+  private async sendVerificationCode(email: string) {
+    //6자리 랜덤 코드
+    const code = randomBytes(3).toString('hex');
+
+    try {
+      await this.mailService.sendVerificationEmail(email, code);
+      return code;
+    } catch (error) {
+      this.logger.error(`Failed to send verification email to ${email}`, error);
+      throw new InternalServerErrorException(
+        '인증 메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.',
+      );
+    }
+  }
+
+  async requestVerificationCode(email: string) {
+    const existingUserByEmail = await this.userRepository.findOneByEmail(email);
+    if (existingUserByEmail) {
+      throw new ConflictException('이미 사용 중인 이메일입니다.');
+    }
+
+    const code = await this.sendVerificationCode(email);
+    this.verifySessions.set(email, {
+      code,
+      verified: false,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      attempts: 0,
+    });
+  }
+
+  checkVerificationCode(email: string, code: string) {
+    const userVerifyItem = this.verifySessions.get(email);
+
+    if (!userVerifyItem) {
+      throw new ForbiddenException('해당 메일로 요청을 보내지 않았습니다.');
+    }
+
+    // 만료 시간 체크
+    if (userVerifyItem.expiresAt <= new Date()) {
+      this.verifySessions.delete(email);
+      throw new ForbiddenException(
+        '인증 코드가 만료되었습니다. 다시 인증 코드를 요청해주세요.',
+      );
+    }
+
+    // 시도 횟수 제한 체크 (5회)
+    if (userVerifyItem.attempts >= 5) {
+      this.verifySessions.delete(email);
+      throw new ForbiddenException(
+        '인증 시도 횟수를 초과했습니다. 다시 인증 코드를 요청해주세요.',
+      );
+    }
+
+    const originalCode = userVerifyItem.code;
+    if (originalCode === code) {
+      this.verifySessions.set(email, { ...userVerifyItem, verified: true });
+      return;
+    }
+
+    this.verifySessions.set(email, {
+      ...userVerifyItem,
+      attempts: userVerifyItem.attempts + 1,
+    });
+
+    throw new BadRequestException('잘못 입력했습니다.');
   }
 }

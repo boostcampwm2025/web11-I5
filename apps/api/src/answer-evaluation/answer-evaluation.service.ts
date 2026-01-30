@@ -229,7 +229,10 @@ export class AnswerEvaluationService {
           EVALUATION_SYSTEM_PROMPT,
           userPrompt,
           EVALUATION_RESPONSE_SCHEMA,
-          { model: this.evaluationModel },
+          {
+            model: this.evaluationModel,
+            temperature: 0,
+          },
         );
 
       // camelCase로 변환
