@@ -31,7 +31,7 @@ async function SignUpPage() {
           <span className="text-sm text-muted-foreground">
             이미 계정이 있으신가요?
           </span>
-          <Link href="/login" className="text-sm font-bold text-teal-500">
+          <Link href="/login" className="text-sm font-bold text-teal-400">
             로그인하기
           </Link>
         </div>

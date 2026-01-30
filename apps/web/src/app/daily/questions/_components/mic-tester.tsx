@@ -100,9 +100,9 @@ export default function MicrophoneTester() {
     const ErrorIcon = errorContent.icon;
 
     return (
-      <div className="h-48 sm:h-60 md:h-75 w-full bg-red-50 border border-red-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
-          <ErrorIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
+      <div className="h-65 w-full bg-red-50 border border-red-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2">
+        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+          <ErrorIcon className="w-6 h-6 text-red-500" />
         </div>
         <h3 className="text-gray-900 font-bold text-base sm:text-lg mb-1.5 sm:mb-2">
           {errorContent.title}
@@ -124,9 +124,9 @@ export default function MicrophoneTester() {
 
   if (hasRecorded && !isRecording) {
     return (
-      <div className="flex flex-col items-center justify-center h-48 sm:h-60 md:h-75 w-full bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2">
-        <div className="w-full max-w-md mb-4 sm:mb-6 bg-white rounded-xl border border-slate-200 p-3 sm:p-4 shadow-sm">
-          <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex flex-col items-center justify-center h-65 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
+        <div className="w-full max-w-md mb-6 bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <div className="flex items-center gap-3">
             <button
               aria-label={isPlaying ? "일시정지" : "재생"}
               onClick={isPlaying ? pausePlayback : playRecording}
@@ -176,7 +176,7 @@ export default function MicrophoneTester() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-48 sm:h-60 md:h-75 w-full bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 animate-in fade-in slide-in-from-bottom-2">
+    <div className="flex flex-col items-center justify-center h-65 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
       {/* 파형 영역 */}
       <div className="h-16 sm:h-20 md:h-24 flex items-center justify-center mb-3 sm:mb-4 md:mb-6 relative w-full">
         {/* 녹음 중이 아니더라도 파형 UI 틀은 유지 (opacity 등으로 시각적 구분 가능) */}

@@ -37,7 +37,7 @@ async function LoginPage() {
           <span className="text-sm text-muted-foreground">
             계정이 없으신가요?
           </span>
-          <Link href="/signup" className="text-sm font-bold text-teal-500">
+          <Link href="/signup" className="text-sm font-bold text-teal-400">
             3초 만에 회원가입
           </Link>
         </div>
