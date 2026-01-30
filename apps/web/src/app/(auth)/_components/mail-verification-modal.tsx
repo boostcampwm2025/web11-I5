@@ -6,7 +6,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/input-group/input-group";
-import { Mail, RefreshCw, X } from "lucide-react";
+import { Mail, X } from "lucide-react";
 import * as React from "react";
 import { sendVerifyMail, verifyCodeAction } from "../_utils/auth";
 import MailTimer from "./mail-timer";
@@ -26,28 +26,10 @@ function MailVerificationModal({
     verifyCodeAction,
     undefined,
   );
-  const [isResending, setIsResending] = React.useState(false);
-  const [resendMessage, setResendMessage] = React.useState("");
-  const hasSentInitialMail = React.useRef(false);
+  const [isSending, setIsSending] = React.useState(false);
+  const [message, setMessage] = React.useState("");
+  const [hasSentMail, setHasSentMail] = React.useState(false);
   const timerRenderRef = React.useRef(0);
-
-  React.useEffect(() => {
-    if (hasSentInitialMail.current) return;
-
-    async function sendMail() {
-      try {
-        await sendVerifyMail(email);
-        hasSentInitialMail.current = true;
-      } catch (error) {
-        setResendMessage(
-          error instanceof Error
-            ? error.message
-            : "인증 코드 전송에 실패했습니다.",
-        );
-      }
-    }
-    sendMail();
-  }, [email]);
 
   React.useEffect(() => {
     if (!state) return;
@@ -59,22 +41,23 @@ function MailVerificationModal({
     }
   }, [state, onSuccess, handleModalToggle]);
 
-  const handleResend = async () => {
-    setResendMessage("");
-    setIsResending(true);
+  const handleSendMail = async () => {
+    setMessage("");
+    setIsSending(true);
 
     try {
       const result = await sendVerifyMail(email);
-      setResendMessage(result.message || "인증 코드가 재전송되었습니다.");
+      setMessage(result.message || "인증 코드가 전송되었습니다.");
+      setHasSentMail(true);
       timerRenderRef.current++;
     } catch (error) {
-      setResendMessage(
+      setMessage(
         error instanceof Error
           ? error.message
-          : "인증 코드 재전송에 실패했습니다.",
+          : "인증 코드 전송에 실패했습니다.",
       );
     } finally {
-      setIsResending(false);
+      setIsSending(false);
     }
   };
 
@@ -97,8 +80,8 @@ function MailVerificationModal({
         <div className="mb-6">
           <h2 className="text-xl font-bold text-slate-900 mb-2">이메일 인증</h2>
           <p className="text-sm text-slate-600">
-            <span className="font-medium text-teal-600">{email}</span>로 전송된
-            인증 코드를 입력해주세요.
+            <span className="font-medium text-teal-600">{email}</span>로 인증
+            코드를 전송합니다.
           </p>
         </div>
 
@@ -110,7 +93,7 @@ function MailVerificationModal({
               <label htmlFor="code" className="text-sm font-medium">
                 인증 코드
               </label>
-              <MailTimer key={timerRenderRef.current} />
+              {hasSentMail && <MailTimer key={timerRenderRef.current} />}
             </div>
             <InputGroup className="h-11">
               <InputGroupAddon>
@@ -124,42 +107,50 @@ function MailVerificationModal({
                 required
               />
             </InputGroup>
-            {!resendMessage && state?.error && (
+            {!message && state?.error && (
               <p className="text-[11px] mt-1.5 ml-1 font-medium text-red-500">
                 {state.error}
               </p>
             )}
-            {!resendMessage && state?.message && (
+            {!message && state?.message && (
               <p className="text-[11px] mt-1.5 ml-1 font-medium text-teal-600">
                 {state.message}
               </p>
             )}
-            {resendMessage && (
+            {message && (
               <p className="text-[11px] mt-1.5 ml-1 font-medium text-teal-600">
-                {resendMessage}
+                {message}
               </p>
             )}
-            {!state?.error && !state?.message && !resendMessage && (
+            {!state?.error && !state?.message && !message && (
               <p className="text-[11px] mt-1.5 ml-1 font-medium text-slate-500">
-                * 이메일로 전송된 6자리 인증 코드를 입력해주세요.
+                * 아래 버튼을 눌러 인증 코드를 받으세요.
               </p>
             )}
           </div>
 
           <Button
             type="button"
-            variant="ghost"
-            onClick={handleResend}
-            disabled={isResending}
-            className="w-full flex items-center justify-center gap-2 text-sm text-slate-600 hover:text-teal-600"
+            variant="outline"
+            onClick={handleSendMail}
+            disabled={isSending}
+            className="w-full flex items-center justify-center gap-2"
           >
-            <RefreshCw
-              className={`w-4 h-4 ${isResending ? "animate-spin" : ""}`}
-            />
-            <span>{isResending ? "전송 중..." : "인증 코드 재전송"}</span>
+            <Mail className={`w-4 h-4 ${isSending ? "animate-pulse" : ""}`} />
+            <span>
+              {isSending
+                ? "전송 중..."
+                : hasSentMail
+                  ? "인증 코드 재전송"
+                  : "인증 코드 전송"}
+            </span>
           </Button>
 
-          <Button type="submit" disabled={isPending} className="w-full">
+          <Button
+            type="submit"
+            disabled={isPending || !hasSentMail}
+            className="w-full"
+          >
             {isPending ? "인증 중..." : "인증 확인"}
           </Button>
         </form>
