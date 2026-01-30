@@ -6,6 +6,7 @@ import {
   Logger,
   ParseIntPipe,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ApiTags,
   ApiOperation,
@@ -17,6 +18,7 @@ import { SttResult } from './dtos/stt-result.dto';
 import { AnswerSubmissionService } from '../answer-submission/answer-submission.service';
 import { AnswerEvaluationService } from 'src/answer-evaluation/answer-evaluation.service';
 import { LlmService } from 'src/llm/llm.service';
+import { LLM_MODELS } from 'src/llm/llm.constants';
 import { STT_POST_PROCESSING_SYSTEM_PROMPT } from 'src/llm/prompts/stt-post-processing.prompt';
 import { STT_POST_PROCESSING_SCHEMA } from 'src/llm/prompts/stt-post-processing.schema';
 
@@ -24,12 +26,18 @@ import { STT_POST_PROCESSING_SCHEMA } from 'src/llm/prompts/stt-post-processing.
 @Controller('stt')
 export class SttController {
   private readonly logger = new Logger(SttController.name);
+  private readonly sttPostProcessingModel: string;
 
   constructor(
     private readonly answerSubmissionService: AnswerSubmissionService,
     private readonly answerEvaluationService: AnswerEvaluationService,
     private readonly llmService: LlmService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.sttPostProcessingModel =
+      this.configService.get<string>('GEMINI_STT_POST_PROCESSING_MODEL') ||
+      LLM_MODELS.EVALUATION;
+  }
 
   @Post('callback')
   @ApiOperation({
@@ -97,6 +105,7 @@ export class SttController {
         STT_POST_PROCESSING_SYSTEM_PROMPT,
         sttText,
         STT_POST_PROCESSING_SCHEMA,
+        { model: this.sttPostProcessingModel },
       );
 
       if (postProcessedSttText.postProcessed) {
