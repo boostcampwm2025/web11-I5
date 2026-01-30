@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/button/button";
+import Link from "next/link";
 import * as React from "react";
 
 import { Checkbox } from "@/components/checkbox/checkbox";
@@ -224,14 +225,53 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             name="terms"
             onCheckedChange={(checked: boolean) => setAgreed(checked)}
           />
-          <label htmlFor="terms" className="text-xs text-muted-foreground">
-            <span className="text-teal-600 font-semibold">서비스 이용약관</span>{" "}
-            및{" "}
-            <span className="text-teal-600 font-semibold">
-              개인정보 처리방침
-            </span>
-            에 동의합니다.
-          </label>
+        </InputGroup>
+        <p
+          className={`text-[11px] mt-1.5 ml-1 font-medium text-red-500 ${
+            formData.passwordConfirm && !validation.passwordConfirm
+              ? "block"
+              : "hidden"
+          }`}
+        >
+          * 비밀번호가 일치하지 않습니다.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2 py-2 mb-4">
+        <Checkbox
+          id="terms"
+          name="terms"
+          onCheckedChange={(checked: boolean) => setAgreed(checked)}
+          required
+        />
+        <label htmlFor="terms" className="text-xs text-muted-foreground">
+          <Link
+            href="/policy/service-terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-teal-600 font-semibold hover:underline"
+          >
+            서비스 이용약관
+          </Link>
+          및{" "}
+          <Link
+            href="/policy/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-teal-600 font-semibold hover:underline"
+          >
+            개인정보 처리방침
+          </Link>
+          에 동의합니다.
+        </label>
+      </div>
+
+      {serverErrorMessage && (
+        <div className="flex items-center gap-2 mb-4 p-3 rounded-md bg-red-50 text-red-600 text-xs font-medium animate-in fade-in slide-in-from-top-1">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{serverErrorMessage}</span>
         </div>
 
         {serverErrorMessage && (
