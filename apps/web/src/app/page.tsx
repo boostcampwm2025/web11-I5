@@ -20,10 +20,10 @@ async function Home() {
     <>
       <Header />
       <main className="w-full h-full flex flex-col bg-white overflow-x-hidden">
-        <section className="w-full min-h-screen relative py-8 md:py-16 px-4 md:px-8 flex justify-center overflow-hidden">
+        <section className="w-full min-h-[calc(100svh-64px)] relative flex justify-center items-center overflow-hidden">
           <div
             className={cn(
-              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col justify-center items-center z-10 w-full px-4 lg:px-0",
+              "flex flex-col justify-center items-center z-10 w-full px-4 lg:px-0 py-8 md:py-16",
             )}
           >
             <div className={oneMobile.className}>
@@ -33,12 +33,14 @@ async function Home() {
               <HeroFeatureMotion />
             </div>
           </div>
-          <div className="opacity-20 md:opacity-30 w-full lg:w-4/5 pointer-events-none">
-            <GraphView
-              graphData={mockData}
-              textRenderScale={1.2}
-              clickEventDisabled={true}
-            />
+          <div className="absolute inset-0 opacity-20 md:opacity-30 pointer-events-none flex justify-center">
+            <div className="w-full lg:w-4/5 h-full">
+              <GraphView
+                graphData={mockData}
+                textRenderScale={1.2}
+                clickEventDisabled={true}
+              />
+            </div>
           </div>
         </section>
       </main>
