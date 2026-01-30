@@ -39,6 +39,8 @@ export interface UseGraphRendererOptions {
   onNodeMapChange?: (map: NodeMap) => void;
   onClickNode?: (questionId: number) => void;
   textRenderScale?: number;
+  showLabels?: boolean;
+  initialScale?: number;
 }
 
 export interface GraphRendererReturn {
@@ -65,6 +67,8 @@ function useGraphRenderer({
   onNodeMapChange,
   onClickNode,
   textRenderScale = 0.5,
+  showLabels = true,
+  initialScale = 0.5,
 }: UseGraphRendererOptions): GraphRendererReturn {
   // 엣지에 랜덤 거리 적용 (한 번만 계산)
   const processedEdges = React.useMemo(
@@ -72,9 +76,9 @@ function useGraphRenderer({
     [graphData.edges],
   );
 
-  // 뷰포트 상태 - 초기 스케일 0.5
+  // 뷰포트 상태
   const offset = React.useRef({ x: 0, y: 0 });
-  const scale = React.useRef(0.5);
+  const scale = React.useRef(initialScale);
   const initializedOffset = React.useRef(false);
 
   // 인터랙션 상태
@@ -300,6 +304,7 @@ function useGraphRenderer({
         scale.current,
         hoveredNodeId.current,
         textRenderScale,
+        showLabels,
       );
 
       // NodeMap 변경 콜백 (throttle 처리 - 100ms 마다)
@@ -319,6 +324,7 @@ function useGraphRenderer({
       processedEdges,
       externalNodeMap,
       textRenderScale,
+      showLabels,
       onNodeMapChange,
     ],
   );

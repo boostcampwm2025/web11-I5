@@ -34,13 +34,15 @@ async function Home() {
               <HeroFeatureMotion />
             </div>
           </div>
-          <div className="absolute inset-0 opacity-20 md:opacity-30 flex justify-center">
-            <div className="w-full lg:w-4/5 h-full">
+          <div className="absolute inset-0 opacity-20 md:opacity-20 flex justify-center">
+            <div className="w-full h-full">
               <GraphView
                 graphData={mockData}
                 textRenderScale={1.2}
                 clickEventDisabled={true}
                 zoomEnabled={false}
+                initialScale={2}
+                showLabels={false}
               />
             </div>
           </div>
