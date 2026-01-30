@@ -212,7 +212,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="text-teal-600 font-semibold hover:underline"
+            className="text-teal-400 font-semibold hover:underline"
           >
             서비스 이용약관
           </Link>
@@ -222,7 +222,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="text-teal-600 font-semibold hover:underline"
+            className="text-teal-400 font-semibold hover:underline"
           >
             개인정보 처리방침
           </Link>
