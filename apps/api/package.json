@@ -37,6 +37,7 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.1.11",
+    "@nestjs/schedule": "^6.1.0",
     "@nestjs/swagger": "^11.2.4",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.11",
@@ -49,7 +50,9 @@
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.28",
+    "@willsoto/nestjs-prometheus": "^6.0.2",
+    "prom-client": "^15.1.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

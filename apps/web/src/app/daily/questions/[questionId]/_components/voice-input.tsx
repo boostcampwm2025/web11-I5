@@ -16,7 +16,7 @@ import {
 import { Slider } from "@/components/slider/slider";
 import useRecorder, { RecorderStatus } from "../_hooks/use-recorder";
 import RecordButton from "./record-button";
-import useWav from "@/hooks/use-wav";
+import useAudio from "@/hooks/use-audio";
 import {
   confirmUpload,
   requestPresignedUrl,
@@ -62,12 +62,12 @@ function VoiceInput({
     seekTo,
   } = useRecorder({ maxDurationSeconds });
 
-  const { play: playDing, ready: dingWavReady } = useWav("/ui-confirm.wav", 1);
+  const { play: playDing, ready: dingReady } = useAudio("/ui-confirm.wav", 1);
   const {
     play: playTickTock,
     stop: stopTickTock,
     ready: tickTockReady,
-  } = useWav("/ticking.wav", { volume: 0.5, loop: true });
+  } = useAudio("/ticking.wav", { volume: 0.5, loop: true });
 
   const WARNING_SECONDS = 10;
   const isInWarningZone =
@@ -117,7 +117,7 @@ function VoiceInput({
       : "idle";
 
   const handleStartRecording = () => {
-    if (dingWavReady) {
+    if (dingReady) {
       setTimeout(() => playDing(), 100);
     }
     startRecording();
@@ -166,7 +166,7 @@ function VoiceInput({
     status === "no_device";
 
   return (
-    <div className="bg-white border rounded-xl h-100 flex flex-col items-center justify-center">
+    <div className="min-h-80 md:h-100 flex flex-col items-center justify-center py-4 md:py-0">
       {isStatusError ? (
         <StatusError status={status} />
       ) : (
@@ -177,24 +177,25 @@ function VoiceInput({
             maxDurationSeconds={maxDurationSeconds}
           />
 
-          <div className="max-w-sm w-full px-6">
+          <div className="max-w-sm w-full px-12">
             {hasRecorded ? (
-              <div className="flex items-center gap-3 h-40">
-                <button
+              <div className="flex items-center gap-2 md:gap-3 h-32 md:h-40">
+                <Button
                   type="button"
+                  size="icon-lg"
                   onClick={isPlaying ? pausePlayback : playRecording}
                   disabled={isSubmitting}
                   aria-label={isPlaying ? "일시정지" : "재생"}
+                  className="rounded-full shrink-0"
                   aria-pressed={isPlaying}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   {isPlaying ? (
-                    <Pause className="w-5 h-5" />
+                    <Pause className="w-5 h-5 fill-current" />
                   ) : (
-                    <Play className="w-5 h-5 ml-0.5" />
+                    <Play className="w-5 h-5 ml-0.5 fill-current" />
                   )}
-                </button>
-                <div className="flex-1 flex items-center gap-3">
+                </Button>
+                <div className="flex-1 flex items-center gap-2 md:gap-3 min-w-0">
                   <Slider
                     value={[playbackTime]}
                     min={0}
@@ -210,18 +211,18 @@ function VoiceInput({
                     aria-label="녹음 재생 위치"
                     aria-valuetext={`${formatTime(Math.floor(playbackTime))} / ${formatTime(Math.floor(duration || elapsedSeconds))}`}
                   />
-                  <span className="text-sm tabular-nums text-muted-foreground min-w-17.5 text-right">
+                  <span className="text-xs md:text-sm tabular-nums text-muted-foreground shrink-0">
                     {formatTime(Math.floor(playbackTime))} /{" "}
                     {formatTime(Math.floor(duration || elapsedSeconds))}
                   </span>
                 </div>
               </div>
             ) : (
-              <Waveform historyRef={historyRef} />
+              <Waveform historyRef={historyRef} className="h-20 md:h-40" />
             )}
           </div>
 
-          <div className="flex items-center justify-center h-24">
+          <div className="flex items-center justify-center h-20 md:h-24">
             {recordingState !== "recorded" ? (
               <RecordButton
                 isRecording={isRecording}
@@ -229,9 +230,9 @@ function VoiceInput({
                 disabled={isSubmitting || disabled}
               />
             ) : (
-              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="flex items-center gap-2 md:gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <Button
-                  size="lg"
+                  size="default"
                   type="button"
                   variant="outline"
                   onClick={retryRecording}
@@ -241,9 +242,9 @@ function VoiceInput({
                 </Button>
                 <Button
                   type="button"
-                  size="lg"
+                  size="default"
                   disabled={isSubmitting || disabled}
-                  className="pl-6 pr-6 font-semibold"
+                  className="px-6 font-semibold"
                   onClick={handleSubmit}
                 >
                   답변 제출
@@ -319,23 +320,27 @@ function StatusMessage({
   maxDurationSeconds,
 }: StatusMessageProps) {
   return (
-    <div className="h-20 text-center">
+    <div className="h-16 md:h-20 text-center px-4">
       {state === "recording" && (
         <div className="animate-in fade-in">
-          <div className="text-5xl font-semibold tabular-nums text-center tracking-tight flex items-end gap-1">
+          <div className="text-4xl md:text-5xl font-semibold tabular-nums text-center tracking-tight flex items-end justify-center gap-1">
             <div>{formatTime(elapsedSeconds)} </div>
-            <div className="text-lg text-muted-foreground font-normal">
+            <div className="text-base md:text-lg text-muted-foreground font-normal">
               / {formatTime(maxDurationSeconds)}
             </div>
           </div>
-          <p className="text-muted-foreground text-center mt-1">녹음 중...</p>
+          <p className="text-muted-foreground text-center text-sm md:text-base mt-1">
+            녹음 중...
+          </p>
         </div>
       )}
 
       {state === "idle" && (
         <div>
-          <h3 className="text-2xl font-bold mb-3">답변 시작</h3>
-          <p className="text-muted-foreground">
+          <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3">
+            답변 시작
+          </h3>
+          <p className="text-muted-foreground text-sm md:text-base">
             버튼을 눌러 녹음을 시작하세요.
           </p>
         </div>
@@ -343,8 +348,10 @@ function StatusMessage({
 
       {state === "recorded" && (
         <div>
-          <h3 className="text-2xl font-bold mb-3">녹음 완료</h3>
-          <p className="text-muted-foreground">
+          <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3">
+            녹음 완료
+          </h3>
+          <p className="text-muted-foreground text-sm md:text-base">
             답변을 제출하고 채점 결과를 확인해보세요
           </p>
         </div>

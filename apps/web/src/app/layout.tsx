@@ -27,7 +27,7 @@ function RootLayout({ children }: Readonly<RootLayoutProps>) {
       <body
         className={cn(
           pretendard.className,
-          "antialiased bg-slate-50 w-full flex flex-col items-center",
+          "antialiased bg-slate-50 w-full flex flex-col items-center overflow-x-hidden",
         )}
       >
         <Header />
@@ -47,6 +47,7 @@ function RootLayout({ children }: Readonly<RootLayoutProps>) {
           src="https://kr.object.ncloudstorage.com/boostad-sdk-dev/sdk/sdk.js"
           data-blog-key={process.env.BOOSTAD_BLOG_KEY || "test-local"}
           data-auto="false"
+          data-context="말하면서 CS 지식을 학습할 수 있는 서비스"
           strategy="afterInteractive"
         />
       </body>

@@ -31,7 +31,7 @@ function TextInput({
   };
 
   return (
-    <div className="bg-white border rounded-xl p-6 flex flex-col gap-4">
+    <div className="p-4 md:p-6 flex flex-col gap-3 md:gap-4">
       <div className="flex items-center gap-2">
         <TextAlignStart className="w-4 h-4 text-teal-400" />
         <span className="text-sm text-muted-foreground font-medium">
@@ -43,11 +43,11 @@ function TextInput({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="면접 질문에 답하듯이 지식을 논리적으로 작성해 보세요."
-          className="min-h-40 resize-none"
+          className="min-h-32 md:min-h-40 resize-none text-base"
           maxLength={maxLength}
           disabled={isSubmitting || disabled}
         />
-        <p className="text-sm text-muted-foreground text-right">
+        <p className="text-xs md:text-sm text-muted-foreground text-right">
           {charCount.toLocaleString()} / {maxLength.toLocaleString()}자
         </p>
       </div>
@@ -55,9 +55,9 @@ function TextInput({
       <div className="flex justify-end">
         <Button
           type="button"
-          size="lg"
+          size="default"
           disabled={!canSubmit}
-          className="pl-6 pr-6 font-semibold"
+          className="px-6 font-semibold w-full sm:w-auto"
           onClick={handleSubmit}
         >
           답변 제출

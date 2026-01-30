@@ -10,16 +10,16 @@ interface MetricsListProps {
 function MetricsList({ feedback, isPending }: MetricsListProps) {
   if (isPending || !feedback) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="mb-4">
-          <div className="h-5 w-32 bg-slate-100 rounded mb-2" />
-          <div className="h-3 w-40 bg-slate-50 rounded" />
+      <div className="space-y-4 md:space-y-6 animate-pulse">
+        <div className="mb-3 md:mb-4">
+          <div className="h-4 md:h-5 w-28 md:w-32 bg-slate-100 rounded mb-2" />
+          <div className="h-3 w-36 md:w-40 bg-slate-50 rounded" />
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 md:gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-24 bg-slate-50 rounded-2xl border border-slate-100"
+              className="h-20 md:h-24 bg-slate-50 rounded-xl md:rounded-2xl border border-slate-100"
             />
           ))}
         </div>
@@ -55,15 +55,17 @@ function MetricsList({ feedback, isPending }: MetricsListProps) {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="mb-4">
-        <h3 className="font-bold text-xl mb-0.5">성취도 상세 분석</h3>
-        <span className="text-base text-muted-foreground">
+    <div className="space-y-4 md:space-y-6">
+      <div className="mb-3 md:mb-4">
+        <h3 className="font-bold text-lg md:text-xl mb-0.5">
+          성취도 상세 분석
+        </h3>
+        <span className="text-sm md:text-base text-muted-foreground">
           항목별 평가 상세 내역입니다
         </span>
       </div>
 
-      <Accordion.Root type="multiple" className="flex flex-col gap-4">
+      <Accordion.Root type="multiple" className="flex flex-col gap-3 md:gap-4">
         {coreMetrics.map((m) => (
           <MetricItem
             key={m.label}

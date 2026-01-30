@@ -78,8 +78,8 @@ function QuestionFilters({
   };
 
   return (
-    <div className="bg-white p-7 border rounded-xl">
-      <div className="flex gap-4 pb-7 border-b">
+    <div className="bg-white p-4 md:p-7 border rounded-xl">
+      <div className="flex gap-2 md:gap-4 pb-4 md:pb-7 border-b flex-wrap">
         <Button
           variant={selectedCategoryId === null ? "default" : "secondary"}
           onClick={() => handleCategoryChange(null)}
@@ -99,11 +99,11 @@ function QuestionFilters({
         ))}
       </div>
       {selectedCategoryId === null ? (
-        <div className="text-muted-foreground mt-7 mb-6 text-sm">
+        <div className="text-muted-foreground mt-4 md:mt-7 mb-4 md:mb-6 text-sm">
           · 전체 카테고리의 문제를 조회합니다.
         </div>
       ) : (
-        <div className="flex items-center gap-3 mt-7 mb-6 flex-wrap">
+        <div className="flex items-center gap-2 md:gap-3 mt-4 md:mt-7 mb-4 md:mb-6 flex-wrap animate-in fade-in slide-in-from-bottom-5 duration-500">
           <div className="text-muted-foreground text-sm font-medium">
             세부 주제
           </div>
@@ -128,7 +128,7 @@ function QuestionFilters({
           ))}
         </div>
       )}
-      <div className="pb-7 border-b">
+      <div className="pb-4 md:pb-7 border-b">
         <InputGroup>
           <InputGroupInput
             placeholder="문제 제목 검색"
@@ -140,9 +140,9 @@ function QuestionFilters({
           </InputGroupAddon>
         </InputGroup>
       </div>
-      <div className="mt-7 flex gap-12">
-        <div className="flex gap-3 items-center">
-          <div className="text-muted-foreground text-sm font-medium">
+      <div className="mt-4 md:mt-7 flex flex-col md:flex-row gap-4 md:gap-12">
+        <div className="flex items-center">
+          <div className="w-16 text-muted-foreground text-sm font-medium shrink-0">
             풀이 상태
           </div>
           <SegmentedControl
@@ -159,8 +159,8 @@ function QuestionFilters({
             }
           />
         </div>
-        <div className="flex gap-3 items-center">
-          <div className="text-muted-foreground text-sm font-medium">
+        <div className="flex items-center">
+          <div className="w-16 text-muted-foreground text-sm font-medium shrink-0">
             중요도
           </div>
           <SegmentedControl

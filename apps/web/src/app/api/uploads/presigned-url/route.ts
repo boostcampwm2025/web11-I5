@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { apiClient } from "@/lib/api-client";
+import { logger } from "@/lib/sentry-logger";
 
 /**
  * POST /api/uploads/presigned-url
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Failed to get presigned URL:", errorText);
+      logger.error("Presigned URL 발급 실패", { responseBody: errorText });
       return NextResponse.json(
         { error: "Failed to get presigned URL" },
         { status: response.status },
@@ -26,7 +27,9 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error in uploads/presigned-url:", error);
+    logger.error("uploads/presigned-url 처리 오류", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
