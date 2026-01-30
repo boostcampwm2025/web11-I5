@@ -25,7 +25,7 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-2xl w-full min-w-62.5 max-w-lg shadow-xl relative flex flex-col min-h-160 max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl w-full min-w-62.5 max-w-lg shadow-xl relative flex flex-col max-h-[90vh] overflow-y-auto"
       >
         <div className="p-8">
           {/* 배지 영역 */}
