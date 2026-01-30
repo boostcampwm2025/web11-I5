@@ -24,6 +24,7 @@ async function Home() {
           <div
             className={cn(
               "flex flex-col justify-center items-center z-10 w-full px-4 lg:px-0 py-8 md:py-16",
+              "pointer-events-none",
             )}
           >
             <div className={oneMobile.className}>
@@ -33,12 +34,15 @@ async function Home() {
               <HeroFeatureMotion />
             </div>
           </div>
-          <div className="absolute inset-0 opacity-20 md:opacity-30 pointer-events-none flex justify-center">
-            <div className="w-full lg:w-4/5 h-full">
+          <div className="absolute inset-0 opacity-20 md:opacity-20 flex justify-center">
+            <div className="w-full h-full">
               <GraphView
                 graphData={mockData}
                 textRenderScale={1.2}
                 clickEventDisabled={true}
+                zoomEnabled={false}
+                initialScale={1}
+                showLabels={false}
               />
             </div>
           </div>

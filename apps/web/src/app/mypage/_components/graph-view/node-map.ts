@@ -1,6 +1,7 @@
 import {
   GRAPH_COLOR_CONSTANT,
   GRAPH_NUMBER_CONSTANT,
+  PHISICS_CONSTANT,
 } from "../../_constants/graph-view-constant";
 import applyCenterGravity from "../../_lib/graph-view/apply-center-gravity";
 import applyRepulsionForce from "../../_lib/graph-view/apply-repulsion-force";
@@ -63,9 +64,33 @@ class NodeMap {
   }
 
   applyPhysics(edges: GraphEdge[], centerX: number, centerY: number) {
+    // 이전 속도 저장 (가속도 계산용)
+    const prevVelocities = new Map<number, { vx: number; vy: number }>();
+    for (const [id, node] of this._nodeMap.entries()) {
+      prevVelocities.set(id, { vx: node.vx, vy: node.vy });
+    }
+
+    // 힘 적용 (vx, vy 수정)
     applyRepulsionForce(this._nodeMap);
     applySpringForce(edges, this._nodeMap);
     applyCenterGravity(this._nodeMap, centerX, centerY);
+
+    // 가속도 임계값 적용 - 미세한 가속도는 무시
+    for (const [id, node] of this._nodeMap.entries()) {
+      if (node.fx !== null) continue; // 고정된 노드는 건너뜀
+
+      const prev = prevVelocities.get(id)!;
+      const ax = node.vx - prev.vx; // 가속도 x
+      const ay = node.vy - prev.vy; // 가속도 y
+      const accelerationMagnitude = Math.sqrt(ax * ax + ay * ay);
+
+      if (accelerationMagnitude < PHISICS_CONSTANT.ACCELERATION_THRESHOLD) {
+        // 미세한 힘은 무시하고 이전 속도 유지
+        node.vx = prev.vx;
+        node.vy = prev.vy;
+      }
+    }
+
     updatePositions(this._nodeMap);
   }
 

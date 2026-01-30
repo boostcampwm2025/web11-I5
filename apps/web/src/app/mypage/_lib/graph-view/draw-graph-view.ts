@@ -20,6 +20,7 @@ function drawGraphView(
   scale: number = 1,
   hoveredNode: number | null,
   textRenderScale: number = 0.5,
+  showLabels: boolean = true,
 ) {
   ctx.save();
   ctx.translate(offset.x, offset.y);
@@ -101,7 +102,7 @@ function drawGraphView(
     ctx.fillStyle = `rgba(${nodeRgba.r}, ${nodeRgba.g}, ${nodeRgba.b}, ${nodeRgba.a})`;
     ctx.fill();
 
-    if (textAlpha > 0) {
+    if (showLabels && textAlpha > 0) {
       const labelAlpha = node.displayAlpha * textAlpha;
       const labelRgba = hexToRgba(GRAPH_COLOR_CONSTANT.LABEL, labelAlpha);
       ctx.fillStyle = `rgba(${labelRgba.r}, ${labelRgba.g}, ${labelRgba.b}, ${labelRgba.a})`;
