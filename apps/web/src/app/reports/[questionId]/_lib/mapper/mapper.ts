@@ -44,6 +44,7 @@ function mapToReportDetail(
   const base = {
     submissionId: submission.id,
     questionId: submission.questionId,
+    inputType: submission.inputType,
     date: formatDateTimeKST(submission.submittedAt),
     duration: formatDuration(submission.duration),
     answerContent: submission.answerContent,
@@ -142,6 +143,7 @@ function mapToReportHistoryItem(
   return {
     submissionId: submission.id,
     questionId: submission.questionId,
+    inputType: submission.inputType,
     date: formatDateTimeKST(submission.submittedAt),
     duration: formatDuration(submission.duration),
     answerContent: submission.answerContent,

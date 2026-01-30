@@ -17,14 +17,16 @@ function MetricItem({ label, score, max, reason, value }: MetricItemProps) {
   // reason이 없으면 일반 div로 렌더링
   if (!reason) {
     return (
-      <div className="border border-slate-100 rounded-xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+      <div className="border border-slate-100 rounded-lg md:rounded-xl bg-white p-3 md:p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
         <div className="flex justify-between items-end mb-2">
-          <span className="font-bold text-base text-slate-800">{label}</span>
+          <span className="font-bold text-sm md:text-base text-slate-800">
+            {label}
+          </span>
           <div className="flex items-baseline gap-0.5">
-            <span className="text-2xl font-extrabold text-slate-700">
+            <span className="text-xl md:text-2xl font-extrabold text-slate-700">
               {score}
             </span>
-            <span className="text-base font-medium text-muted-foreground">
+            <span className="text-sm md:text-base font-medium text-muted-foreground">
               / {max}
             </span>
           </div>
@@ -44,20 +46,20 @@ function MetricItem({ label, score, max, reason, value }: MetricItemProps) {
   return (
     <Accordion.Item
       value={value || label}
-      className="border border-slate-100 rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+      className="border border-slate-100 rounded-lg md:rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
     >
       <Accordion.Header>
-        <Accordion.Trigger className="group w-full p-4 flex justify-between items-center hover:bg-slate-50 rounded-xl transition-colors">
+        <Accordion.Trigger className="group w-full p-3 md:p-4 flex justify-between items-center hover:bg-slate-50 rounded-lg md:rounded-xl transition-colors">
           <div className="flex-1">
             <div className="flex justify-between items-end mb-2">
-              <span className="font-bold text-base text-slate-800">
+              <span className="font-bold text-sm md:text-base text-slate-800">
                 {label}
               </span>
               <div className="flex items-baseline gap-0.5">
-                <span className="text-2xl font-extrabold text-slate-700">
+                <span className="text-xl md:text-2xl font-extrabold text-slate-700">
                   {score}
                 </span>
-                <span className="text-base font-medium text-muted-foreground">
+                <span className="text-sm md:text-base font-medium text-muted-foreground">
                   / {max}
                 </span>
               </div>
@@ -71,13 +73,13 @@ function MetricItem({ label, score, max, reason, value }: MetricItemProps) {
             </div>
           </div>
 
-          <ChevronDown className="ml-4 h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+          <ChevronDown className="ml-3 md:ml-4 h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </Accordion.Trigger>
       </Accordion.Header>
 
       <Accordion.Content className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-        <div className="px-4 pb-4 pt-2">
-          <p className="text-sm leading-relaxed text-muted-foreground">
+        <div className="px-3 md:px-4 pb-3 md:pb-4 pt-1 md:pt-2">
+          <p className="text-xs md:text-sm leading-relaxed text-muted-foreground">
             {reason}
           </p>
         </div>

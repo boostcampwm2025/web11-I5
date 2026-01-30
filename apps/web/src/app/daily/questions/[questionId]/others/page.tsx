@@ -1,3 +1,4 @@
+import Header from "@/components/header/header";
 import {
   Pagination,
   PaginationContent,
@@ -20,6 +21,7 @@ import { fetchOthersSubmissions } from "./_lib/fetch-others-submissions";
 import formatSubmittedAt from "./_lib/format-submitted-at";
 import parseIntOrNull from "@/lib/parse-int-or-null";
 import { notFound } from "next/navigation";
+import { ScoreBadge } from "@/components/score-badge/score-badge";
 
 interface OthersPageProps {
   params: Promise<{ questionId: string }>;
@@ -67,122 +69,137 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
   };
 
   return (
-    <main className="w-full max-w-4xl mx-auto px-8 py-15 space-y-8 min-h-main">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-base text-muted-foreground mb-2">
-          <span className="font-medium">{question.category?.parent?.name}</span>
-          <span>/</span>
-          <span className="text-base font-medium">
-            {question.category?.name}
-          </span>
+    <>
+      <Header />
+      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-15 space-y-6 md:space-y-8 min-h-main">
+        <div className="mb-8">
+          <div className="flex items-center gap-2 text-muted-foreground mb-2">
+            <span className="font-medium">
+              {question.category?.parent?.name}
+            </span>
+            <span>/</span>
+            <span className="font-medium">{question.category?.name}</span>
+          </div>
+          <h1 className="text-2xl font-bold mb-2">{question.title}</h1>
+          <p className="text-muted-foreground">
+            총 <span className="font-semibold text-teal-600">{totalCount}</span>
+            명이 이 문제를 풀었습니다.
+          </p>
         </div>
-        <h1 className="text-2xl font-bold mb-2">{question.title}</h1>
-        <p className="text-muted-foreground">
-          총 <span className="font-semibold text-teal-600">{totalCount}</span>
-          명이 이 문제를 풀었습니다.
-        </p>
-      </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>사용자</TableHead>
-            <TableHead>제출 시각</TableHead>
-            <TableHead className="text-center">점수</TableHead>
-            <TableHead className="w-24 text-center">상세</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {submissions.length === 0 ? (
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell
-                colSpan={5}
-                className="h-32 text-center text-muted-foreground text-base"
-              >
-                아직 제출된 답변이 없습니다.
-              </TableCell>
+              <TableHead>사용자</TableHead>
+              <TableHead className="text-center w-24">점수</TableHead>
+              <TableHead className="w-24 text-center">상세</TableHead>
             </TableRow>
-          ) : (
-            submissions.map((submission) => (
-              <TableRow key={submission.submissionId}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                      <User className="w-5 h-5 text-slate-400" />
-                    </div>
-                    <div className="font-medium text-base">
-                      {submission.nickname}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {formatSubmittedAt(submission.submittedAt)}
-                </TableCell>
-                <TableCell className="text-center">
-                  <span className="text-teal-600 font-medium text-base bg-teal-50 px-2 py-1 rounded-sm">
-                    {submission.totalScore}점
-                  </span>
-                </TableCell>
-                <TableCell className="text-center">
-                  <Link
-                    href={`/daily/questions/${questionId}/others/${submission.submissionId}`}
-                    className="text-sm text-teal-600 hover:text-teal-700 hover:underline"
-                  >
-                    답변 보기
-                  </Link>
+          </TableHeader>
+
+          <TableBody>
+            {submissions.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={3}
+                  className="h-32 text-center text-muted-foreground"
+                >
+                  아직 제출된 답변이 없습니다.
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={2}>
-              <span className="text-muted-foreground text-sm">
-                {displayStartIndex} - {displayEndIndex} / 총 {totalCount}개
-              </span>
-            </TableCell>
-            <TableCell colSpan={3} className="text-right">
-              <Pagination className="justify-end">
-                <PaginationContent>
-                  <PaginationItem>
-                    {currentPage > 1 ? (
-                      <PaginationPrevious
-                        href={buildPaginationUrl(currentPage - 1)}
-                      />
-                    ) : (
-                      <PaginationPrevious
-                        href={buildPaginationUrl(currentPage)}
-                        className="pointer-events-none opacity-50"
-                        aria-disabled="true"
-                      />
-                    )}
-                  </PaginationItem>
-                  <PaginationItem>
-                    <div className="px-2">
-                      {currentPage} / {totalPages}
+            ) : (
+              submissions.map((submission) => (
+                <TableRow key={submission.submissionId}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                        <User className="w-5 h-5 text-slate-400" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">
+                          {submission.nickname}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          {formatSubmittedAt(submission.submittedAt)}
+                        </div>
+                      </div>
                     </div>
-                  </PaginationItem>
-                  <PaginationItem>
-                    {currentPage < totalPages ? (
-                      <PaginationNext
-                        href={buildPaginationUrl(currentPage + 1)}
-                      />
-                    ) : (
-                      <PaginationNext
-                        href={buildPaginationUrl(currentPage)}
-                        className="pointer-events-none opacity-50"
-                        aria-disabled="true"
-                      />
-                    )}
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
-    </main>
+                  </TableCell>
+
+                  <TableCell className="text-center">
+                    <ScoreBadge score={submission.totalScore} />
+                  </TableCell>
+
+                  <TableCell className="text-center">
+                    <Link
+                      href={`/daily/questions/${questionId}/others/${submission.submissionId}`}
+                      className="text-sm text-teal-600 hover:text-teal-700 hover:underline"
+                    >
+                      답변 보기
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+
+          <TableFooter>
+            <TableRow className="hover:bg-transparent">
+              <TableCell>
+                <span className="text-muted-foreground text-sm">
+                  {displayStartIndex} - {displayEndIndex} / 총 {totalCount}개
+                </span>
+              </TableCell>
+
+              <TableCell colSpan={2} className="text-right">
+                {/* totalPages > 0일 때만 이전/다음 버튼과 현재/전체 표시, 데이터 없을 때는 —만 표시 */}
+                {totalPages > 0 ? (
+                  <Pagination className="justify-end">
+                    <PaginationContent>
+                      <PaginationItem>
+                        {currentPage > 1 ? (
+                          <PaginationPrevious
+                            href={buildPaginationUrl(currentPage - 1)}
+                          />
+                        ) : (
+                          <PaginationPrevious
+                            href={buildPaginationUrl(currentPage)}
+                            className="pointer-events-none opacity-50"
+                            aria-disabled="true"
+                          />
+                        )}
+                      </PaginationItem>
+
+                      <PaginationItem>
+                        <div className="px-2">
+                          {currentPage} / {totalPages}
+                        </div>
+                      </PaginationItem>
+
+                      <PaginationItem>
+                        {currentPage < totalPages ? (
+                          <PaginationNext
+                            href={buildPaginationUrl(currentPage + 1)}
+                          />
+                        ) : (
+                          <PaginationNext
+                            href={buildPaginationUrl(currentPage)}
+                            className="pointer-events-none opacity-50"
+                            aria-disabled="true"
+                          />
+                        )}
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                ) : (
+                  <span className="text-muted-foreground text-sm">—</span>
+                )}
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </main>
+    </>
   );
 }
 

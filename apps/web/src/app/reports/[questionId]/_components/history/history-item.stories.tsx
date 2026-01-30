@@ -5,6 +5,7 @@ import { ReportHistoryItem } from "../../_types/report-detail";
 const MOCK_COMPLETED_ITEM: ReportHistoryItem = {
   submissionId: 1,
   questionId: 101,
+  inputType: "VOICE",
   date: "2023-10-27 14:30:00",
   duration: "35s",
   answerContent: "HTTP는 평문 통신이고 HTTPS는 TLS로 암호화된 통신입니다.",
@@ -18,6 +19,7 @@ const MOCK_COMPLETED_ITEM: ReportHistoryItem = {
 const MOCK_PENDING_ITEM: ReportHistoryItem = {
   submissionId: 2,
   questionId: 101,
+  inputType: "TEXT",
   date: "2023-10-27 15:45:00",
   duration: "45s",
   answerContent: "REST API는 자원을 이름으로 구분하여...",
@@ -31,6 +33,7 @@ const MOCK_PENDING_ITEM: ReportHistoryItem = {
 const MOCK_FAILED_ITEM: ReportHistoryItem = {
   submissionId: 3,
   questionId: 101,
+  inputType: "VOICE",
   date: "2023-10-27 16:10:00",
   duration: "10s",
   answerContent: "잘 모르겠습니다.",
