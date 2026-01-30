@@ -14,6 +14,7 @@ import {
 } from "@/components/table/table";
 import { QuestionLinkButton } from "./question-link-button";
 import { fetchQuestions } from "../_lib/fetch-questions";
+import { ScoreBadge } from "@/components/score-badge/score-badge";
 
 interface QuestionsTableBodySectionProps {
   currentPage: number;
@@ -77,7 +78,7 @@ async function QuestionsTableBodySection({
         {questions.length === 0 ? (
           <TableRow>
             <TableCell
-              colSpan={5}
+              colSpan={4}
               className="h-32 text-center text-muted-foreground"
             >
               검색 결과가 없습니다.
@@ -86,25 +87,30 @@ async function QuestionsTableBodySection({
         ) : (
           questions.map((question) => (
             <TableRow key={question.id}>
-              <TableCell className="text-muted-foreground font-medium">
-                {question.category?.parent?.name ?? "-"}
+              <TableCell className="text-muted-foreground hidden sm:table-cell">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-muted-foreground/70">
+                    {question.category?.parent?.name ?? "-"}
+                  </span>
+                  <span className="text-xs py-0.5 px-1.5 bg-muted text-muted-foreground rounded font-medium w-fit max-w-24 truncate">
+                    {question.category?.name ?? "-"}
+                  </span>
+                </div>
               </TableCell>
-              <TableCell className="text-muted-foreground">
-                <span className="text-xs py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
-                  {question.category?.name ?? "-"}
-                </span>
-              </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-normal">
                 <QuestionLinkButton question={question} />
+                <div className="sm:hidden text-xs text-muted-foreground mt-1">
+                  {[question.category?.parent?.name, question.category?.name]
+                    .filter(Boolean)
+                    .join(" > ")}
+                </div>
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell className="text-center hidden sm:table-cell">
                 {(question.avgImportance ?? 0).toFixed(1)}
               </TableCell>
               <TableCell className="text-center">
                 {question.score !== null ? (
-                  <span className="text-teal-600 font-medium text-sm bg-teal-50 px-2 py-1 rounded-sm">
-                    {question.score}점
-                  </span>
+                  <ScoreBadge score={question.score} />
                 ) : (
                   ""
                 )}
@@ -115,47 +121,52 @@ async function QuestionsTableBodySection({
       </TableBody>
       <TableFooter>
         <TableRow className="hover:bg-transparent">
-          <TableCell colSpan={2}>
+          <TableCell colSpan={1} className="hidden sm:table-cell">
             <span className="text-muted-foreground text-sm">
               {startIndex} - {endIndex} / 총 {totalCount}개
             </span>
           </TableCell>
-          <TableCell colSpan={3} className="text-right">
-            <Pagination className="justify-end">
-              <PaginationContent>
-                <PaginationItem>
-                  {currentPage > 1 ? (
-                    <PaginationPrevious
-                      href={buildPaginationUrl(currentPage - 1)}
-                    />
-                  ) : (
-                    <PaginationPrevious
-                      href={buildPaginationUrl(currentPage)}
-                      className="pointer-events-none opacity-50"
-                      aria-disabled="true"
-                    />
-                  )}
-                </PaginationItem>
-                <PaginationItem>
-                  <div className="px-2">
-                    {currentPage} / {totalPages}
-                  </div>
-                </PaginationItem>
-                <PaginationItem>
-                  {currentPage < totalPages ? (
-                    <PaginationNext
-                      href={buildPaginationUrl(currentPage + 1)}
-                    />
-                  ) : (
-                    <PaginationNext
-                      href={buildPaginationUrl(currentPage)}
-                      className="pointer-events-none opacity-50"
-                      aria-disabled="true"
-                    />
-                  )}
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+          <TableCell colSpan={3} className="sm:text-right">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
+              <span className="text-muted-foreground text-sm sm:hidden">
+                {startIndex} - {endIndex} / 총 {totalCount}개
+              </span>
+              <Pagination className="justify-center sm:justify-end">
+                <PaginationContent>
+                  <PaginationItem>
+                    {currentPage > 1 ? (
+                      <PaginationPrevious
+                        href={buildPaginationUrl(currentPage - 1)}
+                      />
+                    ) : (
+                      <PaginationPrevious
+                        href={buildPaginationUrl(currentPage)}
+                        className="pointer-events-none opacity-50"
+                        aria-disabled="true"
+                      />
+                    )}
+                  </PaginationItem>
+                  <PaginationItem>
+                    <div className="px-2">
+                      {currentPage} / {totalPages}
+                    </div>
+                  </PaginationItem>
+                  <PaginationItem>
+                    {currentPage < totalPages ? (
+                      <PaginationNext
+                        href={buildPaginationUrl(currentPage + 1)}
+                      />
+                    ) : (
+                      <PaginationNext
+                        href={buildPaginationUrl(currentPage)}
+                        className="pointer-events-none opacity-50"
+                        aria-disabled="true"
+                      />
+                    )}
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
           </TableCell>
         </TableRow>
       </TableFooter>
@@ -167,7 +178,7 @@ function TableLoadingFallback() {
   return (
     <TableBody>
       <TableRow>
-        <TableCell colSpan={5} className="h-96 text-center">
+        <TableCell colSpan={4} className="h-96 text-center">
           <div className="flex flex-col items-center gap-3">
             <Spinner className="w-8 h-8" />
             <p className="text-sm text-slate-500">문제를 불러오는 중입니다</p>

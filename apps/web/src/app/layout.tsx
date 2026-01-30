@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import Footer from "@/components/footer/footer";
-import Header from "@/components/header/header";
 import { cn } from "@/lib/cn";
 import localFont from "next/font/local";
 import { Toaster } from "react-hot-toast";
@@ -27,10 +26,9 @@ function RootLayout({ children }: Readonly<RootLayoutProps>) {
       <body
         className={cn(
           pretendard.className,
-          "antialiased bg-slate-50 w-full flex flex-col items-center",
+          "antialiased bg-slate-50 w-full flex flex-col items-center overflow-x-hidden",
         )}
       >
-        <Header />
         {children}
         <Toaster
           position="top-center"

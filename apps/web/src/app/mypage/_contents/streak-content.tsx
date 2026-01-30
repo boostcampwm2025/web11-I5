@@ -12,13 +12,14 @@ async function StreakContent({
 }) {
   return (
     <>
-      <div className="py-8 flex flex-col justify-start gap-2">
-        <div className="flex items-center gap-3">
-          <span className="text-lg font-bold text-slate-900">명화 스트릭</span>
-
+      <div className="py-6 md:py-8 flex flex-col justify-start gap-1 md:gap-2">
+        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+          <span className="text-base md:text-lg font-bold text-slate-900">
+            명화 스트릭
+          </span>
           <span className="text-teal-500">{streakCount}개</span>
         </div>
-        <span className="text-sm font-medium text-slate-500">
+        <span className="text-xs md:text-sm font-medium text-slate-500">
           꾸준히 문제를 풀면서 그림을 완성해보세요.
         </span>
       </div>

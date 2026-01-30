@@ -1,12 +1,12 @@
 "use client";
 import * as React from "react";
 
-interface UseWavOptions {
+interface UseAudioOptions {
   volume?: number;
   loop?: boolean;
 }
 
-function useWav(src: string, options: UseWavOptions | number = 1) {
+function useAudio(src: string, options: UseAudioOptions | number = 1) {
   const { volume = 1, loop = false } =
     typeof options === "number" ? { volume: options } : options;
 
@@ -51,4 +51,4 @@ function useWav(src: string, options: UseWavOptions | number = 1) {
   return { play, stop, ready };
 }
 
-export default useWav;
+export default useAudio;

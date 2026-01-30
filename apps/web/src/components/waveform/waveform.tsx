@@ -26,12 +26,12 @@ function Waveform({
   onChangeSize,
 }: WaveFormProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
-  const { ctx, width } = useCanvas2D(canvasRef, { onChangeSize });
+  const { ctx, width, height } = useCanvas2D(canvasRef, { onChangeSize });
 
   useAnimationFrame(() => {
     if (!ctx) return;
 
-    drawWaveform(ctx, width, 158, historyRef.current, {
+    drawWaveform(ctx, width, height, historyRef.current, {
       barWidthPx: barWidthPx,
       barGapPx: barGapPx,
       barColor: barColor,

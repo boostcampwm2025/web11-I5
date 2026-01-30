@@ -57,40 +57,43 @@ export class BatchService {
 
   private async cleanupTimedOutUploads(timeoutDate: Date) {
     return this.audioAssetRepository
-      .createQueryBuilder('audioAsset')
+      .createQueryBuilder()
       .update(AudioAsset)
       .set({ uploadStatus: AudioUploadStatus.FAILED })
-      .where('audioAsset.uploadStatus = :status', {
+      .where('uploadStatus = :status', {
         status: AudioUploadStatus.PENDING,
       })
-      .andWhere('audioAsset.createdAt < :timeoutDate', { timeoutDate })
+      .andWhere('createdAt < :timeoutDate', { timeoutDate })
       .execute();
   }
 
   private async cleanupTimedOutStt(timeoutDate: Date) {
     return this.answerSubmissionRepository
-      .createQueryBuilder('submission')
+      .createQueryBuilder()
       .update(AnswerSubmission)
       .set({ sttStatus: ProcessStatus.FAILED })
-      .where('submission.sttStatus IN (:...statuses)', {
+      .where('sttStatus IN (:...statuses)', {
         statuses: [ProcessStatus.PENDING, ProcessStatus.IN_PROGRESS],
       })
-      .andWhere('submission.submittedAt < :timeoutDate', { timeoutDate })
+      .andWhere('submittedAt < :timeoutDate', { timeoutDate })
       .execute();
   }
 
   private async cleanupTimedOutEvaluations(timeoutDate: Date) {
     return this.answerSubmissionRepository
-      .createQueryBuilder('submission')
+      .createQueryBuilder()
       .update(AnswerSubmission)
       .set({ evaluationStatus: EvaluationStatus.FAILED })
-      .where('submission.evaluationStatus = :status', {
+      .where('evaluationStatus = :status', {
         status: EvaluationStatus.PENDING,
       })
-      .andWhere('submission.sttStatus = :sttStatus', {
-        sttStatus: ProcessStatus.DONE,
+      .andWhere('sttStatus IN (:...allowedStatuses)', {
+        allowedStatuses: [ProcessStatus.DONE, ProcessStatus.FAILED],
       })
-      .andWhere('submission.submittedAt < :timeoutDate', { timeoutDate })
+      .andWhere('(sttStatus = :failedStatus OR submittedAt < :timeoutDate)', {
+        failedStatus: ProcessStatus.FAILED,
+        timeoutDate,
+      })
       .execute();
   }
 }
