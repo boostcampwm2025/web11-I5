@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MailModule } from 'src/mail/mail.module';
 import { ObjectStorageModule } from 'src/object-storage/object-storage.module';
 import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
 import { AuthModule } from '../auth/auth.module';
@@ -14,6 +15,7 @@ import { UserService } from './user.service';
     TypeOrmModule.forFeature([User, AnswerSubmission, Question]),
     AuthModule,
     ObjectStorageModule,
+    MailModule,
   ],
   controllers: [UserController],
   providers: [UserRepository, UserService],
