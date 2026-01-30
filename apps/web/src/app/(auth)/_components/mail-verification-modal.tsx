@@ -141,7 +141,7 @@ function MailVerificationModal({
             )}
             {!state?.error && !state?.message && !resendMessage && (
               <p className="text-[11px] mt-1.5 ml-1 font-medium text-slate-500">
-                * 이메일로 전송된 6자리 숫자를 입력해주세요.
+                * 이메일로 전송된 6자리 인증 코드를 입력해주세요.
               </p>
             )}
           </div>

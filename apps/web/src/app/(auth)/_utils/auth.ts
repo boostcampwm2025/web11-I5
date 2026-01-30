@@ -208,7 +208,7 @@ async function signupAction(
 
 async function sendVerifyMail(email: string) {
   try {
-    return apiPost<{ message: string }>("/api/users/mail-verification", {
+    return await apiPost<{ message: string }>("/api/users/mail-verification", {
       email,
     });
   } catch (error) {

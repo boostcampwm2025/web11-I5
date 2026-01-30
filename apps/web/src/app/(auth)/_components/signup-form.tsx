@@ -71,6 +71,10 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "email") {
+      setIsEmailVerified(false);
+    }
   };
 
   const validation = {
