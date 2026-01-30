@@ -1,6 +1,7 @@
 "use server";
 
 import { apiClient } from "@/lib/api-client";
+import { logger } from "@/lib/sentry-logger";
 
 export interface ActionState {
   success: boolean;
@@ -45,7 +46,9 @@ export async function updateImportanceAction(
       message: "평가가 성공적으로 기록되었습니다.",
     };
   } catch (error) {
-    console.error("Server Action Error:", error);
+    logger.error("중요도 평가 액션 오류", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return {
       success: false,
       message: "네트워크 오류가 발생했습니다.",

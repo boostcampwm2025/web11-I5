@@ -4,6 +4,7 @@ import {
   GRAPH_NUMBER_CONSTANT,
 } from "../../_constants/graph-view-constant";
 import { GraphEdge, NodeMapType, NodeType } from "../../_types/graph-view";
+import lerpColorWithAlpha from "@/lib/lerp-color-with-alpha";
 
 function getNodeColor(type: NodeType) {
   return type === NodeType.QUESTION
@@ -24,8 +25,6 @@ function drawGraphView(
   ctx.translate(offset.x, offset.y);
   ctx.scale(scale, scale);
 
-  const hoveredSet = new Set<number>();
-
   // 줌 레벨에 따라 시각적 굵기를 min/max 범위 내로 유지
   const minVisualWidth = GRAPH_NUMBER_CONSTANT.MIN_EDGE_STROKE_WIDTH;
   const maxVisualWidth = GRAPH_NUMBER_CONSTANT.MAX_EDGE_STROKE_WIDTH;
@@ -41,21 +40,37 @@ function drawGraphView(
     const target = nodes.get(edge.targetId);
     if (!source || !target) return;
 
-    const isConnectedToHovered =
+    // 호버된 노드에 직접 연결된 엣지만 하이라이트
+    const isDirectlyConnected =
       source.id === hoveredNode || target.id === hoveredNode;
-    const isDimmed = hoveredNode !== null && !isConnectedToHovered;
-    if (isConnectedToHovered) {
-      ctx.strokeStyle = GRAPH_COLOR_CONSTANT.HOVERED;
-      hoveredSet.add(source.id);
-      hoveredSet.add(target.id);
-    } else if (isDimmed) {
-      ctx.strokeStyle = hexToRgba(
-        GRAPH_COLOR_CONSTANT.EDGE,
-        GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA,
-      );
+
+    // 직접 연결된 경우만 하이라이트 강도 사용
+    const edgeHighlight = isDirectlyConnected
+      ? Math.max(source.displayHighlight, target.displayHighlight)
+      : 0;
+
+    // 3가지 상태에 따른 알파 계산
+    // - Normal (hoveredNode === null): 0.5
+    // - Active (직접 연결됨): 1.0
+    // - Inactive (연결 안됨): NOT_HOVERED_ALPHA
+    const NORMAL_EDGE_ALPHA = 0.5;
+    const INACTIVE_ALPHA = GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA;
+
+    let finalAlpha: number;
+    if (hoveredNode === null) {
+      // Normal 상태
+      finalAlpha = NORMAL_EDGE_ALPHA;
     } else {
-      ctx.strokeStyle = hexToRgba(GRAPH_COLOR_CONSTANT.EDGE, 0.5);
+      // Active 또는 Inactive 상태
+      // edgeHighlight로 Active(1.0)와 Inactive(0.2) 사이를 보간
+      finalAlpha = INACTIVE_ALPHA + edgeHighlight * (1 - INACTIVE_ALPHA);
     }
+    ctx.strokeStyle = lerpColorWithAlpha(
+      GRAPH_COLOR_CONSTANT.EDGE,
+      GRAPH_COLOR_CONSTANT.HOVERED,
+      edgeHighlight,
+      finalAlpha,
+    );
 
     ctx.beginPath();
     ctx.moveTo(source.x, source.y);
@@ -72,34 +87,25 @@ function drawGraphView(
   );
   nodes.forEach((node) => {
     const isHovered = node.id === hoveredNode;
-    const isHighlighted = hoveredSet.has(node.id);
-    const isDimmed = hoveredNode !== null && !isHovered && !isHighlighted;
-    // 질문노드 -> 키워드 노드보다 반지름 +1px 정도 크게
-    const nodeRadius =
-      node.type === NodeType.QUESTION
-        ? GRAPH_NUMBER_CONSTANT.NODE_RADIUS + 1
-        : GRAPH_NUMBER_CONSTANT.NODE_RADIUS;
-    const radius = isHovered ? nodeRadius + 2 : nodeRadius;
+
+    // displayRadius와 displayAlpha 사용 (애니메이션된 값)
+    const radius = node.displayRadius;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
 
-    const nodeColor = getNodeColor(node.type);
-
-    ctx.fillStyle = isDimmed
-      ? hexToRgba(nodeColor, GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA)
-      : nodeColor;
-    if (isHovered) {
-      ctx.fillStyle = GRAPH_COLOR_CONSTANT.HOVERED;
-    }
+    const nodeColor = isHovered
+      ? GRAPH_COLOR_CONSTANT.HOVERED
+      : getNodeColor(node.type);
+    const nodeRgba = hexToRgba(nodeColor, node.displayAlpha);
+    ctx.fillStyle = `rgba(${nodeRgba.r}, ${nodeRgba.g}, ${nodeRgba.b}, ${nodeRgba.a})`;
     ctx.fill();
 
     if (textAlpha > 0) {
-      const labelAlpha = isDimmed
-        ? GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA * textAlpha
-        : textAlpha;
-      ctx.fillStyle = hexToRgba(GRAPH_COLOR_CONSTANT.LABEL, labelAlpha);
-      ctx.fillText(node.label, node.x, node.y + radius + 14);
+      const labelAlpha = node.displayAlpha * textAlpha;
+      const labelRgba = hexToRgba(GRAPH_COLOR_CONSTANT.LABEL, labelAlpha);
+      ctx.fillStyle = `rgba(${labelRgba.r}, ${labelRgba.g}, ${labelRgba.b}, ${labelRgba.a})`;
+      ctx.fillText(node.label, node.x, node.y + radius + 10);
     }
   });
 

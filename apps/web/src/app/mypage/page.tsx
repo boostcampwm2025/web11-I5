@@ -37,7 +37,7 @@ async function MyPage() {
   // Refactor Todo: 365개 전부 채웠을 때 새로운 그림으로 전환하기
   const imageSrc = "/starry-night.jpg";
   return (
-    <div className="w-full px-8 pt-15 pb-25 max-w-4xl flex flex-col gap-10">
+    <div className="w-full px-4 md:px-8 pt-8 md:pt-15 pb-16 md:pb-25 max-w-4xl flex flex-col gap-6 md:gap-10 min-h-main">
       <UserStatsCard
         nickname={userData.nickname}
         email={userData.email || "@test123"} // 추후 작업에서 해당 부분 email 리턴하도록 수정 필요.
@@ -46,31 +46,37 @@ async function MyPage() {
         consecutiveDayCount={consecutiveDayCount}
       />
       <Tabs className="w-full" defaultValue="graph">
-        <TabsList>
-          <TabsTrigger className="flex gap-2.5" value="graph">
-            <CircleCheckBig className="w-4 h-4" />
+        <TabsList className="w-full justify-start">
+          <TabsTrigger className="flex gap-1.5 md:gap-2.5" value="graph">
+            <CircleCheckBig className="w-4 h-4 hidden sm:block" />
             지식 그래프
           </TabsTrigger>
-          <TabsTrigger className="flex gap-2.5" value="streak">
-            <Brush className="w-4 h-4" />
+          <TabsTrigger className="flex gap-1.5 md:gap-2.5" value="streak">
+            <Brush className="w-4 h-4 hidden sm:block" />
             명화 스트릭
           </TabsTrigger>
-          <TabsTrigger className="flex gap-2.5" value="solvedList">
-            <BookText className="w-4 h-4" />
+          <TabsTrigger className="flex gap-1.5 md:gap-2.5" value="solvedList">
+            <BookText className="w-4 h-4 hidden sm:block" />
             내가 푼 문제
           </TabsTrigger>
         </TabsList>
-        <TabsContent className="w-full px-8 pb-8" value="graph">
+        <TabsContent className="w-full px-4 md:px-8 pb-4 md:pb-8" value="graph">
           <GraphContent graphData={graphData} />
         </TabsContent>
-        <TabsContent className="bg-white w-full px-8 pb-8" value="streak">
+        <TabsContent
+          className="w-full px-4 md:px-8 pb-4 md:pb-8"
+          value="streak"
+        >
           <StreakContent
             streakCount={submittedQuestionCount}
             imageSrc={imageSrc}
             yearlyAnswerSubmissions={yearlyAnswerSubmissions}
           />
         </TabsContent>
-        <TabsContent className="w-full px-8 pb-8" value="solvedList">
+        <TabsContent
+          className="w-full px-4 md:px-8 pb-4 md:pb-8"
+          value="solvedList"
+        >
           <SolvedContent solvedProblems={problems} />
         </TabsContent>
       </Tabs>

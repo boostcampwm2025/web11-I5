@@ -1,6 +1,7 @@
 "use server";
 
 import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/sentry-logger";
 import { revalidatePath } from "next/cache";
 import { editUserInfo } from "../fetch/fetch-user-info";
 
@@ -80,7 +81,9 @@ async function editUserAction(
         : "프로필이 성공적으로 업데이트되었습니다.",
     };
   } catch (error) {
-    console.error("Edit user action error:", error);
+    logger.error("프로필 수정 액션 오류", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     if (error instanceof ApiError) {
       return {
         success: false,

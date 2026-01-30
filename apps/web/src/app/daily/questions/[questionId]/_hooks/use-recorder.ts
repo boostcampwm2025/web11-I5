@@ -1,5 +1,6 @@
 import * as React from "react";
 import createAudioStreamer, { AudioStreamerHandle } from "@/lib/audio-streamer";
+import { logger } from "@/lib/sentry-logger";
 import { encodePcmToWav } from "@/lib/wav-encoder";
 import useAnimationFrame from "@/hooks/use-animation-frame";
 import {
@@ -262,7 +263,9 @@ function useRecorder(options: UseRecorderOptions = {}) {
       setStatus("ready");
       setIsRecording(true);
     } catch (error) {
-      console.error("Failed to start recording:", error);
+      logger.error("녹음 시작 실패", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       setIsRecording(false);
 
       // 에러 유형에 따라 상태 업데이트
@@ -309,7 +312,9 @@ function useRecorder(options: UseRecorderOptions = {}) {
 
       setIsRecording(false);
     } catch (error) {
-      console.error("Failed to stop recording:", error);
+      logger.error("녹음 중지 실패", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       setIsRecording(false);
     }
   }, []);
@@ -388,7 +393,9 @@ function useRecorder(options: UseRecorderOptions = {}) {
       setIsPlaying(true);
     } catch (error) {
       setIsPlaying(false);
-      console.error("Failed to play recording:", error);
+      logger.error("녹음 재생 실패", {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }, [ensureAudioElement]);
 
