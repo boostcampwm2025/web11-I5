@@ -16,14 +16,31 @@ interface QuestionModalProps {
 function QuestionModal({ question, onClose }: QuestionModalProps) {
   const [answerMode, setAnswerMode] = React.useState<string>("voice");
 
+  // Escape 키로 모달 닫기
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
+
   if (!question) return null;
 
   return (
     <div
+      role="presentation"
+      aria-hidden="true"
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="question-modal-title"
         onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-2xl w-full min-w-62.5 max-w-lg shadow-xl relative flex flex-col max-h-[90vh] overflow-y-auto"
       >
@@ -41,7 +58,10 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
           </div>
 
           {/* 제목 및 내용 */}
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
+          <h2
+            id="question-modal-title"
+            className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 leading-tight"
+          >
             {question.title}
           </h2>
           <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-5 sm:mb-8 whitespace-pre-wrap">
@@ -52,6 +72,7 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
           <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-6">
             <button
               onClick={() => setAnswerMode("voice")}
+              aria-pressed={answerMode === "voice"}
               className={cn(
                 "flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-4 rounded-lg sm:rounded-xl border transition-all duration-200",
                 answerMode === "voice"
@@ -64,6 +85,7 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
                   "w-3.5 h-3.5 sm:w-4 sm:h-4",
                   answerMode === "voice" ? "fill-teal-100" : "",
                 )}
+                aria-hidden="true"
               />
               <span className="font-bold text-[11px] sm:text-sm">
                 음성 답변
@@ -72,6 +94,7 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
 
             <button
               onClick={() => setAnswerMode("text")}
+              aria-pressed={answerMode === "text"}
               className={cn(
                 "flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-4 rounded-lg sm:rounded-xl border transition-all duration-200",
                 answerMode === "text"
@@ -79,7 +102,10 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
                   : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100",
               )}
             >
-              <Keyboard className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <Keyboard
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                aria-hidden="true"
+              />
               <span className="font-bold text-[11px] sm:text-sm">
                 텍스트 답변
               </span>
@@ -94,7 +120,10 @@ function QuestionModal({ question, onClose }: QuestionModalProps) {
 
           {answerMode === "text" && (
             <div className=" h-65 mb-6 w-full bg-slate-50 border border-slate-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-300">
-              <Keyboard className="w-10 h-10 text-slate-300 mb-4" />
+              <Keyboard
+                className="w-10 h-10 text-slate-300 mb-4"
+                aria-hidden="true"
+              />
               <p className="text-slate-500 text-sm font-medium">
                 마이크가 아닌{" "}
                 <span className="text-teal-400 text-sm sm:text-base">
