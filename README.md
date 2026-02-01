@@ -25,7 +25,7 @@
 - Clova Speech로 음성을 STT 변환한 뒤, Gemini로 문맥에 맞게 답변을 후보정합니다.
 - STT 단독 사용 시 발생하는 인식 오류를 줄여 설명의 의도가 최대한 정확히 반영되도록 설계되었습니다.
 
-[음성 입력부터 의미 보정까지, Presigned URL–STT–Gemini 파이프라인 설계](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%9D%8C%EC%84%B1-%EC%9E%85%EB%A0%A5%EB%B6%80%ED%84%B0-%EC%9D%98%EB%AF%B8-%EB%B3%B4%EC%A0%95%EA%B9%8C%EC%A7%80,-Presigned-URL%E2%80%93STT%E2%80%93Gemini-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8-%EC%84%A4%EA%B3%84)
+[🔗 음성 입력부터 의미 보정까지, Presigned URL–STT–Gemini 파이프라인 설계](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%9D%8C%EC%84%B1-%EC%9E%85%EB%A0%A5%EB%B6%80%ED%84%B0-%EC%9D%98%EB%AF%B8-%EB%B3%B4%EC%A0%95%EA%B9%8C%EC%A7%80,-Presigned-URL%E2%80%93STT%E2%80%93Gemini-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8-%EC%84%A4%EA%B3%84)
 
 ![speech](https://github.com/user-attachments/assets/483df25f-4420-4cdd-8b7f-9fb659160933)
 
@@ -34,7 +34,7 @@
 - 루브릭 기반 평가를 통해 답변을 정량적으로 점수화합니다.
 - 총점과 세부 점수를 통해 현재 CS 이해 수준을 확인할 수 있습니다.
 
-[CS 답변을 정량화하기 위한 루브릭 기반 AI 체점 설계](https://github.com/boostcampwm2025/web11-MMH/wiki/CS-%EB%8B%B5%EB%B3%80%EC%9D%84-%EC%A0%95%EB%9F%89%ED%99%94%ED%95%98%EA%B8%B0-%EC%9C%84%ED%95%9C-%EB%A3%A8%EB%B8%8C%EB%A6%AD-%EA%B8%B0%EB%B0%98-AI-%EC%B2%B4%EC%A0%90-%EC%84%A4%EA%B3%84)
+[🔗 CS 답변을 정량화하기 위한 루브릭 기반 AI 체점 설계](https://github.com/boostcampwm2025/web11-MMH/wiki/CS-%EB%8B%B5%EB%B3%80%EC%9D%84-%EC%A0%95%EB%9F%89%ED%99%94%ED%95%98%EA%B8%B0-%EC%9C%84%ED%95%9C-%EB%A3%A8%EB%B8%8C%EB%A6%AD-%EA%B8%B0%EB%B0%98-AI-%EC%B2%B4%EC%A0%90-%EC%84%A4%EA%B3%84)
 
 ![reports](https://github.com/user-attachments/assets/b0e67df3-08e3-40a7-aaaf-f8e81bf9206a)
 
@@ -45,7 +45,7 @@
 - 답변한 질문은 그래프의 노드가 됩니다.
 - 문제를 풀수록 키워드 간 연결이 쌓이며, 나만의 CS 지식 구조가 시각화됩니다.
 
-[왜 그래프 라이브러리를 쓰지 않았을까: Canvas로 구현한 개인화 지식 그래프](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%99%9C-%EA%B7%B8%EB%9E%98%ED%94%84-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC%EB%A5%BC-%EC%93%B0%EC%A7%80-%EC%95%8A%EC%95%98%EC%9D%84%EA%B9%8C:-Canvas%EB%A1%9C-%EA%B5%AC%ED%98%84%ED%95%9C-%EA%B0%9C%EC%9D%B8%ED%99%94-%EC%A7%80%EC%8B%9D-%EA%B7%B8%EB%9E%98%ED%94%84)
+[🔗 왜 그래프 라이브러리를 쓰지 않았을까: Canvas로 구현한 개인화 지식 그래프](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%99%9C-%EA%B7%B8%EB%9E%98%ED%94%84-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC%EB%A5%BC-%EC%93%B0%EC%A7%80-%EC%95%8A%EC%95%98%EC%9D%84%EA%B9%8C:-Canvas%EB%A1%9C-%EA%B5%AC%ED%98%84%ED%95%9C-%EA%B0%9C%EC%9D%B8%ED%99%94-%EC%A7%80%EC%8B%9D-%EA%B7%B8%EB%9E%98%ED%94%84)
 
 ![graph](https://github.com/user-attachments/assets/94a3ac5e-51e0-46c6-817c-eb20ea161db4)
 
@@ -54,7 +54,7 @@
 - 문제를 하나씩 풀수록 셀이 채워지며 그림이 점진적으로 완성됩니다.
 - 문제 풀이 결과가 시각적으로 누적되어, 자연스럽게 학습 지속을 유도합니다.
 
-[보로노이 알고리즘으로 구현한 학습 스트릭 시스템](https://github.com/boostcampwm2025/web11-MMH/wiki/%EB%B3%B4%EB%A1%9C%EB%85%B8%EC%9D%B4-%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%EC%9C%BC%EB%A1%9C-%EA%B5%AC%ED%98%84%ED%95%9C-%ED%95%99%EC%8A%B5-%EC%8A%A4%ED%8A%B8%EB%A6%AD-%EC%8B%9C%EC%8A%A4%ED%85%9C)
+[🔗 보로노이 알고리즘으로 구현한 학습 스트릭 시스템](https://github.com/boostcampwm2025/web11-MMH/wiki/%EB%B3%B4%EB%A1%9C%EB%85%B8%EC%9D%B4-%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%EC%9C%BC%EB%A1%9C-%EA%B5%AC%ED%98%84%ED%95%9C-%ED%95%99%EC%8A%B5-%EC%8A%A4%ED%8A%B8%EB%A6%AD-%EC%8B%9C%EC%8A%A4%ED%85%9C)
 
 ![streak](https://github.com/user-attachments/assets/5bfbdaef-a173-4c03-a3db-1aa8c1750688)
 
@@ -81,7 +81,7 @@ pnpm dev
 
 ## 🧩 기술 스택
 
-[📐 인프라 구성 및 배포 아키텍처](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%9D%B8%ED%94%84%EB%9D%BC-%EA%B5%AC%EC%84%B1-%EB%B0%8F-%EB%B0%B0%ED%8F%AC-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98)
+[🔗 인프라 구성 및 배포 아키텍처](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%9D%B8%ED%94%84%EB%9D%BC-%EA%B5%AC%EC%84%B1-%EB%B0%8F-%EB%B0%B0%ED%8F%AC-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98)
 
 <table>
     <thead>
