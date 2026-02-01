@@ -19,11 +19,21 @@ const LOGO_DELAY =
 export function SplitBounceMalManHae({ className }: { className?: string }) {
   return (
     <div
-      className={cn("text-9xl flex mb-15 text-teal-400 relative", className)}
+      className={cn(
+        "text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl flex mb-6 sm:mb-8 md:mb-10 lg:mb-12 text-teal-400 relative",
+        className,
+      )}
       aria-label="말만해"
     >
       {letters.map(({ char, extra }, i) => (
-        <div key={`${char}-${i}`} className={cn("relative", extra)}>
+        <div
+          key={`${char}-${i}`}
+          className={cn(
+            "relative",
+            extra &&
+              "translate-y-2 sm:translate-y-3 md:translate-y-4 lg:translate-y-5 xl:translate-y-6",
+          )}
+        >
           <motion.div
             className="select-none will-change-transform"
             initial={{
@@ -53,7 +63,7 @@ export function SplitBounceMalManHae({ className }: { className?: string }) {
             <motion.div
               className={cn(
                 "pointer-events-none absolute left-1/2 -translate-x-1/2",
-                "-top-24",
+                "-top-10 sm:-top-12 md:-top-14 lg:-top-18 xl:-top-24",
               )}
               initial={{
                 opacity: 0,
@@ -70,7 +80,7 @@ export function SplitBounceMalManHae({ className }: { className?: string }) {
                 filter: "blur(0px)",
               }}
               transition={{
-                delay: LOGO_DELAY, // 말만해 끝난 다음
+                delay: LOGO_DELAY,
                 duration: 0.55,
                 ease: [0.2, 0.9, 0.2, 1],
               }}
@@ -81,7 +91,7 @@ export function SplitBounceMalManHae({ className }: { className?: string }) {
                 viewBox="0 0 79 81"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="text-teal-400 drop-shadow-sm"
+                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 xl:w-20 xl:h-20 text-teal-400 drop-shadow-sm"
                 aria-hidden="true"
                 focusable={false}
               >

@@ -100,20 +100,20 @@ export default function MicrophoneTester() {
     const ErrorIcon = errorContent.icon;
 
     return (
-      <div className="h-75 w-full bg-red-50 border border-red-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2">
+      <div className="h-65 w-full bg-red-50 border border-red-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2">
         <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
           <ErrorIcon className="w-6 h-6 text-red-500" />
         </div>
-        <h3 className="text-gray-900 font-bold text-lg mb-2">
+        <h3 className="text-gray-900 font-bold text-base sm:text-lg mb-1.5 sm:mb-2">
           {errorContent.title}
         </h3>
-        <p className="text-gray-500 text-sm leading-relaxed max-w-xs whitespace-pre-wrap">
+        <p className="text-gray-500 text-xs sm:text-sm leading-relaxed max-w-xs whitespace-pre-wrap">
           {errorContent.desc}
         </p>
         <Button
           variant="outline"
           size="sm"
-          className="mt-4 bg-white border-red-200 text-red-600 hover:bg-red-50"
+          className="mt-3 sm:mt-4 bg-white border-red-200 text-red-600 hover:bg-red-50"
           onClick={() => startRecording()}
         >
           다시 시도
@@ -124,23 +124,23 @@ export default function MicrophoneTester() {
 
   if (hasRecorded && !isRecording) {
     return (
-      <div className="flex flex-col items-center justify-center h-75 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
+      <div className="flex flex-col items-center justify-center h-65 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
         <div className="w-full max-w-md mb-6 bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <button
               aria-label={isPlaying ? "일시정지" : "재생"}
               aria-pressed={isPlaying}
               onClick={isPlaying ? pausePlayback : playRecording}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-teal-500 text-white hover:bg-teal-600 transition-colors shrink-0"
+              className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-teal-500 text-white hover:bg-teal-600 transition-colors shrink-0"
             >
               {isPlaying ? (
-                <Pause className="w-4 h-4 fill-current" />
+                <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
               ) : (
-                <Play className="w-4 h-4 fill-current ml-0.5" />
+                <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current ml-0.5" />
               )}
             </button>
 
-            <div className="flex-1 flex flex-col justify-center h-10">
+            <div className="flex-1 flex flex-col justify-center h-9 sm:h-10">
               <Slider
                 value={[playbackTime]}
                 min={0}
@@ -155,7 +155,7 @@ export default function MicrophoneTester() {
               />
             </div>
 
-            <span className="text-xs font-medium text-slate-500 w-20 text-right tabular-nums">
+            <span className="text-[10px] sm:text-xs font-medium text-slate-500 w-16 sm:w-20 text-right tabular-nums">
               {formatTime(playbackTime)} / {formatTime(duration)}
             </span>
           </div>
@@ -164,10 +164,11 @@ export default function MicrophoneTester() {
         <div className="flex gap-2">
           <Button
             variant="outline"
+            size="sm"
             onClick={retryRecording}
-            className="border-slate-200 text-slate-600 hover:bg-slate-50 gap-2"
+            className="border-slate-200 text-slate-600 hover:bg-slate-50 gap-1.5 sm:gap-2 text-xs sm:text-sm"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             다시 테스트
           </Button>
         </div>
@@ -176,9 +177,9 @@ export default function MicrophoneTester() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-75 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
+    <div className="flex flex-col items-center justify-center h-65 w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-2">
       {/* 파형 영역 */}
-      <div className="h-24 flex items-center justify-center mb-6 relative w-full">
+      <div className="h-16 sm:h-20 md:h-24 flex items-center justify-center mb-3 sm:mb-4 md:mb-6 relative w-full">
         {/* 녹음 중이 아니더라도 파형 UI 틀은 유지 (opacity 등으로 시각적 구분 가능) */}
         <div
           className={`w-full max-w-xs transition-opacity duration-300 ${isRecording ? "opacity-100" : "opacity-50"}`}
@@ -188,23 +189,23 @@ export default function MicrophoneTester() {
       </div>
 
       {/* 하단 컨트롤 바 */}
-      <div className="flex items-center justify-between w-full bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between w-full bg-white p-3 sm:p-4 rounded-xl border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* 상태 아이콘: 녹음 중일 때만 pulse 애니메이션 */}
           <div
-            className={`w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center shrink-0 ${isRecording ? "animate-pulse" : ""}`}
+            className={`w-8 h-8 sm:w-10 sm:h-10 bg-teal-50 rounded-full flex items-center justify-center shrink-0 ${isRecording ? "animate-pulse" : ""}`}
           >
             <Mic
-              className={`w-5 h-5 ${isRecording ? "text-teal-500" : "text-slate-400"}`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 ${isRecording ? "text-teal-500" : "text-slate-400"}`}
             />
           </div>
 
           {/* 상태 텍스트 변경 */}
           <div className="text-left">
-            <p className="text-sm font-semibold text-gray-900">
+            <p className="text-xs sm:text-sm font-semibold text-gray-900">
               {isRecording ? "마이크 테스트 녹음 중..." : "마이크 테스트"}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-[10px] sm:text-xs text-gray-500 hidden sm:block">
               {isRecording
                 ? "마이크 테스트 원 투 쓰리"
                 : "마이크 정상 작동을 확인합니다."}
@@ -217,7 +218,7 @@ export default function MicrophoneTester() {
           <Button
             size="sm"
             onClick={() => stopRecording()}
-            className="bg-red-500 hover:bg-red-600 text-white font-medium px-4 h-9 gap-2"
+            className="bg-red-500 hover:bg-red-600 text-white font-medium px-3 sm:px-4 h-8 sm:h-9 gap-1.5 sm:gap-2 text-xs sm:text-sm"
           >
             <Square className="w-3 h-3 fill-current" />
             중지
@@ -226,9 +227,9 @@ export default function MicrophoneTester() {
           <Button
             size="sm"
             onClick={() => startRecording()}
-            className="bg-teal-500 hover:bg-teal-600 text-white font-medium px-4 h-9 gap-2"
+            className="bg-teal-500 hover:bg-teal-600 text-white font-medium px-3 sm:px-4 h-8 sm:h-9 gap-1.5 sm:gap-2 text-xs sm:text-sm"
           >
-            <Mic className="w-4 h-4" /> {/* 또는 Play 아이콘 */}
+            <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             녹음 시작
           </Button>
         )}

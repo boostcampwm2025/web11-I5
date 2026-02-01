@@ -10,12 +10,18 @@ interface GraphViewProps {
   graphData: GraphData;
   textRenderScale?: number;
   clickEventDisabled?: boolean;
+  zoomEnabled?: boolean;
+  showLabels?: boolean;
+  initialScale?: number;
 }
 
 function GraphView({
   graphData,
   textRenderScale,
   clickEventDisabled,
+  zoomEnabled = true,
+  showLabels = true,
+  initialScale,
 }: GraphViewProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const { ctx, getWidth, getHeight } = useCanvas2D(canvasRef);
@@ -30,10 +36,15 @@ function GraphView({
       ? undefined
       : (questionId) => window.open(`/reports/${questionId}`),
     textRenderScale,
+    showLabels,
+    initialScale,
   });
 
   // 휠 이벤트 바인딩 (passive: false 필요)
-  React.useEffect(() => bindWheelEvent(), [bindWheelEvent]);
+  React.useEffect(() => {
+    if (!zoomEnabled) return;
+    return bindWheelEvent();
+  }, [bindWheelEvent, zoomEnabled]);
 
   // 애니메이션 루프
   useAnimationFrame(drawGraph);

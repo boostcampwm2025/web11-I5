@@ -46,6 +46,7 @@ export const Success: Story = {
     data: {
       submissionId: 2,
       questionId: 1,
+      inputType: "VOICE",
       date: "2024-01-08 14:30:00",
       status: "COMPLETED",
       sttStatus: "DONE",
@@ -84,6 +85,7 @@ export const SttPending: Story = {
     data: {
       submissionId: 3,
       questionId: 1,
+      inputType: "VOICE",
       date: "2024-01-09 10:00:00",
       status: "PENDING",
       sttStatus: "PENDING",
@@ -106,6 +108,7 @@ export const EvaluationPending: Story = {
       questionId: 1,
       date: "2024-01-09 10:05:00",
       status: "PENDING",
+      inputType: "VOICE",
       sttStatus: "DONE",
       evaluationStatus: "PENDING",
       duration: "00:45",
@@ -124,6 +127,7 @@ export const SttFailed: Story = {
     data: {
       submissionId: 4,
       questionId: 1,
+      inputType: "VOICE",
       date: "2024-01-10 11:00:00",
       status: "FAILED",
       sttStatus: "FAILED",
@@ -143,6 +147,7 @@ export const EvaluationFailed: Story = {
     question: MOCK_QUESTION,
     data: {
       submissionId: 5,
+      inputType: "VOICE",
       questionId: 1,
       date: "2024-01-11 12:00:00",
       status: "FAILED",

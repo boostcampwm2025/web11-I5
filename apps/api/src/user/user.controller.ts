@@ -22,9 +22,11 @@ import type { Response } from 'express';
 import { AuthService } from '../auth/auth.service';
 import { UserId } from '../auth/decorators/user-id.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CheckVerificationCodeRequestDto } from './dtos/request/check-verification-code.request.dto';
 import { CreateUserRequestDto } from './dtos/request/create-user.request.dto';
 import { EditUserRequestDto } from './dtos/request/edit-user.request.dto';
 import { LoginRequestDto } from './dtos/request/login.request.dto';
+import { RequestVerificationCodeRequestDto } from './dtos/request/request-verification-code.request.dto';
 import { UserPresignedUrlRequestDto } from './dtos/request/user-presigned-url.request.dto';
 import { LoginResponseDto } from './dtos/response/login.response.dto';
 import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
@@ -45,6 +47,66 @@ export class UserController {
     private readonly userService: UserService,
     private readonly authService: AuthService,
   ) {}
+
+  @Post('mail-verification')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '이메일 인증 코드 요청' })
+  @ApiBody({ type: RequestVerificationCodeRequestDto })
+  @ApiResponse({
+    status: 200,
+    description: '인증 코드 전송 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: '인증 코드가 전송되었습니다.' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: '이미 사용 중인 이메일',
+  })
+  @ApiResponse({
+    status: 500,
+    description: '인증 메일 전송 실패',
+  })
+  @UsePipes(USER_CONTROLLER_VALIDATION_PIPE)
+  async requestVerificationCode(
+    @Body() dto: RequestVerificationCodeRequestDto,
+  ): Promise<{ message: string }> {
+    await this.userService.requestVerificationCode(dto.email);
+    return { message: '인증 코드가 전송되었습니다.' };
+  }
+
+  @Post('verification-check')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '이메일 인증 코드 확인' })
+  @ApiBody({ type: CheckVerificationCodeRequestDto })
+  @ApiResponse({
+    status: 200,
+    description: '인증 성공',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: '인증이 완료되었습니다.' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 인증 코드',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '인증 요청이 없거나 만료되었거나 시도 횟수 초과',
+  })
+  @UsePipes(USER_CONTROLLER_VALIDATION_PIPE)
+  checkVerificationCode(@Body() dto: CheckVerificationCodeRequestDto): {
+    message: string;
+  } {
+    this.userService.checkVerificationCode(dto.email, dto.code);
+    return { message: '인증이 완료되었습니다.' };
+  }
 
   @Post('/signup')
   @HttpCode(HttpStatus.CREATED)

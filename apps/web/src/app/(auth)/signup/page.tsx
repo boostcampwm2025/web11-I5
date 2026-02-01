@@ -12,12 +12,12 @@ async function SignUpPage() {
   }
 
   return (
-    <div className="w-full flex min-h-main flex-col items-center justify-center py-4 md:py-20 px-4">
+    <div className="w-full flex min-h-screen flex-col items-center justify-center py-4 md:py-20 px-4">
       <div className="bg-white border rounded-xl p-6 md:p-12 w-full max-w-100">
-        <div className="flex gap-2 justify-center items-center mb-9">
+        <Link href="/" className="flex gap-2 justify-center items-center mb-9">
           <Image src="/mmh-logo.svg" alt="" width={32} height={32} />
           <span className="text-xl font-bold text-slate-700">말만해</span>
-        </div>
+        </Link>
         <div className="flex flex-col gap-3 items-center">
           <h1 className="text-2xl font-bold">회원가입</h1>
           <p className="text-sm text-muted-foreground">
@@ -31,7 +31,7 @@ async function SignUpPage() {
           <span className="text-sm text-muted-foreground">
             이미 계정이 있으신가요?
           </span>
-          <Link href="/login" className="text-sm font-bold text-teal-500">
+          <Link href="/login" className="text-sm font-bold text-teal-400">
             로그인하기
           </Link>
         </div>

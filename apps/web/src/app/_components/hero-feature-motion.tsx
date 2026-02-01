@@ -12,10 +12,12 @@ export function HeroFeatureMotion({ className }: { className?: string }) {
   ];
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("w-full px-4", className)}>
       {/* 문장 */}
       <motion.div
-        className={cn("text-xl font-medium text-teal-400 text-center")}
+        className={cn(
+          "text-base sm:text-lg md:text-xl font-medium text-teal-400 text-center",
+        )}
         initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.55, ease: [0.2, 0.9, 0.2, 1] }}
@@ -23,9 +25,11 @@ export function HeroFeatureMotion({ className }: { className?: string }) {
         말로 설명하고, AI로 구조화하며, 습관처럼 학습하자!
       </motion.div>
 
-      {/* 카드들(데스크탑에서만) */}
+      {/* 카드들 */}
       <motion.div
-        className={cn("mt-10 hidden md:flex flex-col gap-5")}
+        className={cn(
+          "mt-4 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col gap-2 sm:gap-3 md:gap-4 lg:gap-5",
+        )}
         initial="hidden"
         animate="show"
         variants={{
@@ -38,13 +42,14 @@ export function HeroFeatureMotion({ className }: { className?: string }) {
           },
         }}
       >
-        <div className="flex gap-5">
+        {/* 모바일: 2x2 그리드 / 데스크탑: 2행 */}
+        <div className="grid grid-cols-2 lg:flex gap-2 sm:gap-3 md:gap-4 lg:gap-5">
           {cards.slice(0, 2).map((c) => (
             <FeatureCard key={c.title} title={c.title} desc={c.desc} />
           ))}
         </div>
 
-        <div className="flex gap-5">
+        <div className="grid grid-cols-2 lg:flex gap-2 sm:gap-3 md:gap-4 lg:gap-5">
           {cards.slice(2, 4).map((c) => (
             <FeatureCard key={c.title} title={c.title} desc={c.desc} />
           ))}
@@ -58,8 +63,8 @@ function FeatureCard({ title, desc }: { title: string; desc: string }) {
   return (
     <motion.div
       className={cn(
-        "flex flex-col items-center justify-center gap-2",
-        "bg-teal-500/10 text-teal-600 w-80 h-30 rounded-lg",
+        "flex flex-col items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2",
+        "bg-teal-500/10 text-teal-600 w-full lg:w-80 h-16 sm:h-18 md:h-22 lg:h-28 rounded-lg px-2",
         "will-change-transform",
       )}
       variants={{
@@ -79,8 +84,12 @@ function FeatureCard({ title, desc }: { title: string; desc: string }) {
       }}
       whileTap={{ scale: 0.99 }}
     >
-      <div className="text-xl font-bold text-center">{title}</div>
-      <div className="text-center">{desc}</div>
+      <div className="text-xs sm:text-sm md:text-base lg:text-xl font-bold text-center">
+        {title}
+      </div>
+      <div className="text-[10px] sm:text-xs md:text-sm lg:text-base text-center">
+        {desc}
+      </div>
     </motion.div>
   );
 }
