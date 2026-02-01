@@ -79,6 +79,66 @@ pnpm infra
 pnpm dev
 ```
 
+## 🧩 기술 스택
+
+[📐 인프라 구성 및 배포 아키텍처](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%9D%B8%ED%94%84%EB%9D%BC-%EA%B5%AC%EC%84%B1-%EB%B0%8F-%EB%B0%B0%ED%8F%AC-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98)
+
+<table>
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Stack</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <p align=center>Common</p>
+            </td>
+            <td>
+                <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/Prettier-F7B93E?logo=prettier&logoColor=ffffff">
+								<img src="https://img.shields.io/badge/Turborepo-FF1E56?logo=turborepo&logoColor=white" alt="Turborepo" />
+                <img src="https://img.shields.io/badge/ESLint-4B32C3?logo=Eslint">
+            </td>
+        </tr>
+        <tr>
+            <td>
+               <p align=center>Frontend</p>
+            </td>
+            <td>
+						  <img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white" alt="Next.js" />
+						  <img src="https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss&logoColor=white" alt="TailwindCSS" />
+						  <img src="https://img.shields.io/badge/Storybook-FF4785?logo=storybook&logoColor=white" alt="Storybook" />
+						  <img src="https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white" alt="Vitest" />
+		        </td>
+        </tr>
+        <tr>
+            <td>
+                <p align=center>Backend</p>
+            </td>
+            <td>
+              <img src="https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white" alt="NestJS" />
+						  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
+						  <img src="https://img.shields.io/badge/TypeORM-FE0803?logo=typeorm&logoColor=white" alt="TypeORM" />
+						  <img src="https://img.shields.io/badge/Jest-C21325?logo=jest&logoColor=white" alt="Jest" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p align=center>Infrastructure & AI</p>
+            </td>
+            <td>
+              <img src="https://img.shields.io/badge/Naver_Cloud_Platform-03C75A?logo=naver&logoColor=white" alt="Naver Cloud Platform" />
+						  <img src="https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white" alt="Nginx" />
+						  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white" alt="Docker" />
+						  <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=githubactions&logoColor=white" alt="GitHub Actions" />
+						  <img src="https://img.shields.io/badge/google%20gemini-8E75B2?logo=google%20gemini&logoColor=white" alt="Google Gemini" />
+            </td>
+        </tr>
+    </tbody>
+</table>
+
 ## 👥 팀원 소개
 
 | [<img src="https://github.com/AYEOOON.png" width="100px">](https://github.com/AYEOOON) | [<img src="https://github.com/kimjihyo.png" width="100px">](https://github.com/kimjihyo) | [<img src="https://github.com/dltnwjd308.png" width="100px">](https://github.com/dltnwjd308) | [<img src="https://github.com/rwaeng.png" width="100px">](https://github.com/rwaeng) | [<img src="https://github.com/swgivenchy.png" width="100px">](https://github.com/swgivenchy) |
