@@ -87,7 +87,7 @@ function ImportanceRating({
 
         <Button
           type="submit"
-          disabled={isPending || score === 0}
+          disabled={isPending || score === 0 || state?.success}
           size="lg"
           className={
             "w-full text-base font-semibold transition-all duration-200"
