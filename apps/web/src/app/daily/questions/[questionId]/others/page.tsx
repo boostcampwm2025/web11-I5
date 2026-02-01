@@ -90,9 +90,13 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>사용자</TableHead>
-              <TableHead className="text-center w-24">점수</TableHead>
-              <TableHead className="w-24 text-center">상세</TableHead>
+              <TableHead scope="col">사용자</TableHead>
+              <TableHead scope="col" className="text-center w-24">
+                점수
+              </TableHead>
+              <TableHead scope="col" className="w-24 text-center">
+                상세
+              </TableHead>
             </TableRow>
           </TableHeader>
 
@@ -134,6 +138,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
                     <Link
                       href={`/daily/questions/${questionId}/others/${submission.submissionId}`}
                       className="text-sm text-teal-600 hover:text-teal-700 hover:underline"
+                      aria-label={`${submission.nickname}의 답변 보기`}
                     >
                       답변 보기
                     </Link>
@@ -166,12 +171,16 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
                             href={buildPaginationUrl(currentPage)}
                             className="pointer-events-none opacity-50"
                             aria-disabled="true"
+                            tabIndex={-1}
                           />
                         )}
                       </PaginationItem>
 
                       <PaginationItem>
-                        <div className="px-2">
+                        <div
+                          className="px-2"
+                          aria-label={`현재 ${currentPage}페이지, 전체 ${totalPages}페이지`}
+                        >
                           {currentPage} / {totalPages}
                         </div>
                       </PaginationItem>
@@ -186,6 +195,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
                             href={buildPaginationUrl(currentPage)}
                             className="pointer-events-none opacity-50"
                             aria-disabled="true"
+                            tabIndex={-1}
                           />
                         )}
                       </PaginationItem>
