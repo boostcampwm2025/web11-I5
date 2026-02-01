@@ -8,6 +8,8 @@
   <h4>말로 설명하며 배우는 AI 기반 CS 학습 플랫폼</h4> 
 </div>
 
+---
+
 ## 💭 이런 불편함에서 시작했습니다
 
 - CS 학습이 개념 이해에 머물러, 이를 논리적으로 설명하고 점검할 기회가 부족합니다.
@@ -25,7 +27,7 @@
 
 [음성 입력부터 의미 보정까지, Presigned URL–STT–Gemini 파이프라인 설계](https://github.com/boostcampwm2025/web11-MMH)
 
-![speech gif](https://res.cloudinary.com/dab33vdij/image/upload/v1769955242/speech_wcgijb.gif)
+![speech](https://github.com/user-attachments/assets/483df25f-4420-4cdd-8b7f-9fb659160933)
 
 ### 🤖 AI 체점으로 CS 실력 확인
 
@@ -34,7 +36,7 @@
 
 [CS 답변을 정량화하기 위한 루브릭 기반 AI 체점 설계](https://github.com/boostcampwm2025/web11-MMH)
 
-![reports gif](https://res.cloudinary.com/dab33vdij/image/upload/v1769955243/reports_dc6ggr.gif)
+![reports](https://github.com/user-attachments/assets/b0e67df3-08e3-40a7-aaaf-f8e81bf9206a)
 
 ### 🧠 나의 답변으로 완성되는 지식 그래프
 
@@ -45,7 +47,7 @@
 
 [왜 그래프 라이브러리를 쓰지 않았을까: Canvas로 구현한 개인화 지식 그래프](https://github.com/boostcampwm2025/web11-MMH)
 
-![graph gif](https://res.cloudinary.com/dab33vdij/image/upload/v1769955242/graph_xzqvtp.gif)
+![graph](https://github.com/user-attachments/assets/94a3ac5e-51e0-46c6-817c-eb20ea161db4)
 
 ### 🖼️ 명화 스트릭으로 학습 지속
 
@@ -54,7 +56,7 @@
 
 [보로노이 알고리즘으로 구현한 학습 스트릭 시스템](https://github.com/boostcampwm2025/web11-MMH)
 
-![streak gif](https://res.cloudinary.com/dab33vdij/image/upload/v1769955850/streak_zmtllj.gif)
+![streak](https://github.com/user-attachments/assets/5bfbdaef-a173-4c03-a3db-1aa8c1750688)
 
 ## 🚀 로컬에서 실행하기
 
