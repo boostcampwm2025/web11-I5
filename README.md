@@ -27,7 +27,10 @@
 
 [🔗 음성 입력부터 의미 보정까지, Presigned URL–STT–Gemini 파이프라인 설계](https://github.com/boostcampwm2025/web11-MMH/wiki/%EC%9D%8C%EC%84%B1-%EC%9E%85%EB%A0%A5%EB%B6%80%ED%84%B0-%EC%9D%98%EB%AF%B8-%EB%B3%B4%EC%A0%95%EA%B9%8C%EC%A7%80,-Presigned-URL%E2%80%93STT%E2%80%93Gemini-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8-%EC%84%A4%EA%B3%84)
 
+[🔗 Canvas로 직접 실시간 녹음 파형 그래프 그리기](https://github.com/boostcampwm2025/web11-MMH/wiki/Canvas%EB%A1%9C-%EC%A7%81%EC%A0%91-%EC%8B%A4%EC%8B%9C%EA%B0%84-%EB%85%B9%EC%9D%8C-%ED%8C%8C%ED%98%95-%EA%B7%B8%EB%9E%98%ED%94%84-%EA%B7%B8%EB%A6%AC%EA%B8%B0)
+
 ![speech](https://github.com/user-attachments/assets/483df25f-4420-4cdd-8b7f-9fb659160933)
+
 
 ### 🤖 AI 채점으로 CS 실력 확인
 
