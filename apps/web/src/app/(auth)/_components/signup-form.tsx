@@ -107,7 +107,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
       <form action={formAction} className="w-full">
         {/* 이름(닉네임) 입력 */}
         <div className="space-y-2 mb-4">
-          <label htmlFor="nickname" className="text-sm font-medium">
+          <label htmlFor="nickname" className="text-sm ">
             이름
           </label>
           <InputGroup className="h-11">
@@ -122,18 +122,18 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
               onChange={handleInputChange}
             />
           </InputGroup>
-          <p
-            className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.nickname && !validation.nickname ? "text-red-500" : "text-slate-500"}`}
-          >
-            * {SIGNUP_CONSTANTS.NICKNAME_MIN_LENGTH}~
-            {SIGNUP_CONSTANTS.NICKNAME_MAX_LENGTH}자 사이, 공백 없이
-            입력해주세요.
-          </p>
+          {formData.nickname && !validation.nickname && (
+            <p className="text-xs mt-1.5 ml-1 text-red-500">
+              {SIGNUP_CONSTANTS.NICKNAME_MIN_LENGTH}~
+              {SIGNUP_CONSTANTS.NICKNAME_MAX_LENGTH}자 사이, 공백 없이
+              입력해주세요.
+            </p>
+          )}
         </div>
 
         {/* 이메일 입력 섹션 */}
         <div className="space-y-2 mb-4">
-          <label htmlFor="email" className="text-sm font-medium">
+          <label htmlFor="email" className="text-sm ">
             이메일
           </label>
           <InputGroup className="h-11">
@@ -158,16 +158,16 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
           >
             {isEmailVerified ? "이메일 인증 완료" : "이메일 인증하기"}
           </Button>
-          <p
-            className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.email && !validation.email ? "text-red-500" : "text-slate-500"}`}
-          >
-            * 올바른 이메일 형식을 입력해주세요.
-          </p>
+          {formData.email && !validation.email && (
+            <p className="text-xs mt-1.5 ml-1 text-red-500">
+              올바른 이메일 형식을 입력해주세요.
+            </p>
+          )}
         </div>
 
         {/* 비밀번호 입력 섹션 */}
         <div className="space-y-2 mb-4">
-          <label htmlFor="password" className="text-sm font-medium">
+          <label htmlFor="password" className="text-sm ">
             비밀번호
           </label>
           <InputGroup className="h-11">
@@ -178,21 +178,21 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
               id="password"
               type="password"
               name="password"
-              placeholder="***********"
+              placeholder="비밀번호를 입력해주세요"
               value={formData.password}
               onChange={handleInputChange}
             />
           </InputGroup>
-          <p
-            className={`text-[11px] mt-1.5 ml-1 font-medium ${formData.password && !validation.password ? "text-red-500" : "text-slate-500"}`}
-          >
-            * 최소 {SIGNUP_CONSTANTS.PASSWORD_MIN_LENGTH}자 이상 입력해주세요.
-          </p>
+          {formData.password && !validation.password && (
+            <p className="text-xs mt-1.5 ml-1 text-red-500">
+              최소 {SIGNUP_CONSTANTS.PASSWORD_MIN_LENGTH}자 이상 입력해주세요.
+            </p>
+          )}
         </div>
 
         {/* 비밀번호 확인 입력 */}
         <div className="space-y-2 mb-4">
-          <label htmlFor="passwordConfirm" className="text-sm font-medium">
+          <label htmlFor="passwordConfirm" className="text-sm ">
             비밀번호 확인
           </label>
           <InputGroup className="h-11">
@@ -208,15 +208,11 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
               onChange={handleInputChange}
             />
           </InputGroup>
-          <p
-            className={`text-[11px] mt-1.5 ml-1 font-medium text-red-500 ${
-              formData.passwordConfirm && !validation.passwordConfirm
-                ? "block"
-                : "hidden"
-            }`}
-          >
-            * 비밀번호가 일치하지 않습니다.
-          </p>
+          {formData.passwordConfirm && !validation.passwordConfirm && (
+            <p className="text-xs mt-1.5 ml-1 text-red-500">
+              비밀번호가 일치하지 않습니다.
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-2 py-2 mb-4">
@@ -251,7 +247,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
         </div>
 
         {serverErrorMessage && (
-          <div className="flex items-center gap-2 mb-4 p-3 rounded-md bg-red-50 text-red-600 text-xs font-medium animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center gap-2 mb-4 p-3 rounded-md bg-red-50 text-red-600 text-xs  animate-in fade-in slide-in-from-top-1">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{serverErrorMessage}</span>
           </div>

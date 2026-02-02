@@ -28,8 +28,9 @@ function MailVerificationModal({
   );
   const [isSending, setIsSending] = React.useState(false);
   const [message, setMessage] = React.useState("");
+  const [isError, setIsError] = React.useState(false);
   const [hasSentMail, setHasSentMail] = React.useState(false);
-  const timerRenderRef = React.useRef(0);
+  const [timerKey, setTimerKey] = React.useState(0);
 
   React.useEffect(() => {
     if (!state) return;
@@ -43,22 +44,21 @@ function MailVerificationModal({
 
   const handleSendMail = async () => {
     setMessage("");
+    setIsError(false);
     setIsSending(true);
 
-    try {
-      const result = await sendVerifyMail(email);
+    const result = await sendVerifyMail(email);
+
+    if (result.success) {
       setMessage(result.message || "인증 코드가 전송되었습니다.");
       setHasSentMail(true);
-      timerRenderRef.current++;
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "인증 코드 전송에 실패했습니다.",
-      );
-    } finally {
-      setIsSending(false);
+      setTimerKey((prev) => prev + 1);
+    } else {
+      setIsError(true);
+      setMessage(result.error || "인증 코드 전송에 실패했습니다.");
     }
+
+    setIsSending(false);
   };
 
   return (
@@ -80,8 +80,8 @@ function MailVerificationModal({
         <div className="mb-6">
           <h2 className="text-xl font-bold text-slate-900 mb-2">이메일 인증</h2>
           <p className="text-sm text-slate-600">
-            <span className="font-medium text-teal-600">{email}</span>로 인증
-            코드를 전송합니다.
+            <span className=" text-teal-600">{email}</span>로 인증 코드를
+            전송합니다.
           </p>
         </div>
 
@@ -90,10 +90,10 @@ function MailVerificationModal({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="code" className="text-sm font-medium">
+              <label htmlFor="code" className="text-sm ">
                 인증 코드
               </label>
-              {hasSentMail && <MailTimer key={timerRenderRef.current} />}
+              {hasSentMail && <MailTimer key={timerKey} />}
             </div>
             <InputGroup className="h-11">
               <InputGroupAddon>
@@ -108,23 +108,23 @@ function MailVerificationModal({
               />
             </InputGroup>
             {!message && state?.error && (
-              <p className="text-[11px] mt-1.5 ml-1 font-medium text-red-500">
-                {state.error}
-              </p>
+              <p className="text-xs mt-1.5 ml-1  text-red-500">{state.error}</p>
             )}
             {!message && state?.message && (
-              <p className="text-[11px] mt-1.5 ml-1 font-medium text-teal-600">
+              <p className="text-xs mt-1.5 ml-1  text-teal-600">
                 {state.message}
               </p>
             )}
             {message && (
-              <p className="text-[11px] mt-1.5 ml-1 font-medium text-teal-600">
+              <p
+                className={`text-xs mt-1.5 ml-1 ${isError ? "text-red-500" : "text-teal-600"}`}
+              >
                 {message}
               </p>
             )}
             {!state?.error && !state?.message && !message && (
-              <p className="text-[11px] mt-1.5 ml-1 font-medium text-slate-500">
-                * 아래 버튼을 눌러 인증 코드를 받으세요.
+              <p className="text-xs mt-1.5 ml-1  text-slate-500">
+                아래 버튼을 눌러 인증 코드를 받으세요.
               </p>
             )}
           </div>
@@ -132,6 +132,7 @@ function MailVerificationModal({
           <Button
             type="button"
             variant="outline"
+            size="lg"
             onClick={handleSendMail}
             disabled={isSending}
             className="w-full flex items-center justify-center gap-2"
@@ -148,6 +149,7 @@ function MailVerificationModal({
 
           <Button
             type="submit"
+            size="lg"
             disabled={isPending || !hasSentMail}
             className="w-full"
           >
