@@ -258,14 +258,21 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    // profileImage의 objectKey를 S3 URL로 변환
-    if (user.profileImage) {
+    // profileImage의 objectKey를 S3 URL로 변환 (외부 URL인 경우 그대로 사용)
+    if (user.profileImage && !this.isExternalUrl(user.profileImage)) {
       user.profileImage = await this.objectStorageService.createPresignedGetUrl(
         user.profileImage,
       );
     }
 
     return user;
+  }
+
+  /**
+   * 외부 URL인지 확인 (Google 프로필 이미지 등)
+   */
+  private isExternalUrl(url: string): boolean {
+    return url.startsWith('http://') || url.startsWith('https://');
   }
 
   /**
@@ -453,8 +460,11 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
           this.cleanupOldProfileImage(oldProfileImageKey);
         }
 
-        // profileImage를 objectKey에서 URL로 변환
-        if (savedUser.profileImage) {
+        // profileImage를 objectKey에서 URL로 변환 (외부 URL인 경우 그대로 사용)
+        if (
+          savedUser.profileImage &&
+          !this.isExternalUrl(savedUser.profileImage)
+        ) {
           savedUser.profileImage =
             await this.objectStorageService.createPresignedGetUrl(
               savedUser.profileImage,
@@ -481,8 +491,8 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
       }
     }
 
-    // profileImage를 objectKey에서 URL로 변환
-    if (userInfo.profileImage) {
+    // profileImage를 objectKey에서 URL로 변환 (외부 URL인 경우 그대로 사용)
+    if (userInfo.profileImage && !this.isExternalUrl(userInfo.profileImage)) {
       userInfo.profileImage =
         await this.objectStorageService.createPresignedGetUrl(
           userInfo.profileImage,
