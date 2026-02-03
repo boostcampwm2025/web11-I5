@@ -4,10 +4,14 @@ import { Button } from "@/components/button/button";
 import { BarChart3, Expand } from "lucide-react";
 import * as React from "react";
 import GraphView from "../_components/graph-view/graph-view";
+import ScaleSlider from "../_components/graph-view/scale-slider";
 import { GraphData } from "../_types/graph-view";
+
+const INITIAL_GRAPH_SCALE = 0.5;
 
 function GraphContent({ graphData }: { graphData: GraphData }) {
   const [openModalStatus, setOpenModalStatus] = React.useState(false);
+  const [scale, setScale] = React.useState(INITIAL_GRAPH_SCALE);
   const handleModalToggle = React.useCallback(() => {
     setOpenModalStatus((prev) => !prev);
   }, []);
@@ -28,16 +32,22 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
         </div>
       ) : (
         <div className="relative w-full h-120">
-          <Button
-            onClick={handleModalToggle}
-            size="icon"
-            variant="outline"
-            className="absolute right-0 top-6 md:top-8"
-            aria-label="그래프 확대"
-          >
-            <Expand className="text-muted-foreground" />
-          </Button>
-          <GraphView graphData={graphData} />
+          <div className="absolute right-0 top-6 md:top-8 z-10 flex flex-col items-center gap-5">
+            <Button
+              onClick={handleModalToggle}
+              size="icon"
+              variant="outline"
+              aria-label="그래프 확대"
+            >
+              <Expand className="text-muted-foreground" />
+            </Button>
+            <ScaleSlider scale={scale} onScaleChange={setScale} />
+          </div>
+          <GraphView
+            graphData={graphData}
+            scale={scale}
+            onScaleChange={setScale}
+          />
         </div>
       )}
       {openModalStatus && (
@@ -53,8 +63,15 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-xl md:rounded-2xl w-full h-full max-w-5xl max-h-[90vh] md:max-h-5/6 shadow-xl overflow-hidden relative"
           >
+            <div className="absolute right-4 top-4 z-10">
+              <ScaleSlider scale={scale} onScaleChange={setScale} />
+            </div>
             <div className="w-full h-full">
-              <GraphView graphData={graphData} />
+              <GraphView
+                graphData={graphData}
+                scale={scale}
+                onScaleChange={setScale}
+              />
             </div>
           </div>
         </div>
