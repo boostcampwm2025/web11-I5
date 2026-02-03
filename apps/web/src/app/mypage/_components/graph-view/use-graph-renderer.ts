@@ -1,5 +1,7 @@
 import * as React from "react";
 import { GRAPH_NUMBER_CONSTANT } from "../../_constants/graph-view-constant";
+import { addRandomEdgeDistance } from "../../_lib/graph-view/add-random-edge-distance";
+import drawGraphView from "../../_lib/graph-view/draw-graph-view";
 import {
   GraphData,
   GraphEdge,
@@ -7,8 +9,6 @@ import {
   NodePosition,
 } from "../../_types/graph-view";
 import NodeMap from "./node-map";
-import drawGraphView from "../../_lib/graph-view/draw-graph-view";
-import { addRandomEdgeDistance } from "../../_lib/graph-view/add-random-edge-distance";
 
 // 호버된 노드와 연결된 모든 노드 ID를 반환
 function getConnectedNodeIds(
@@ -40,7 +40,9 @@ export interface UseGraphRendererOptions {
   onClickNode?: (questionId: number) => void;
   textRenderScale?: number;
   showLabels?: boolean;
-  initialScale?: number;
+  initialScale?: number; // scale의 초기값만 저장
+  scale?: number; // 외부에서 scale 조정할 때 사용
+  onScaleChange?: (scale: number) => void;
 }
 
 export interface GraphRendererReturn {
@@ -69,6 +71,8 @@ function useGraphRenderer({
   textRenderScale = 0.5,
   showLabels = true,
   initialScale = 0.5,
+  scale: externalScale,
+  onScaleChange,
 }: UseGraphRendererOptions): GraphRendererReturn {
   // 엣지에 랜덤 거리 적용 (한 번만 계산)
   const processedEdges = React.useMemo(
@@ -80,6 +84,7 @@ function useGraphRenderer({
   const offset = React.useRef({ x: 0, y: 0 });
   const scale = React.useRef(initialScale);
   const initializedOffset = React.useRef(false);
+  const isInternalScaleChange = React.useRef(false);
 
   // 인터랙션 상태
   const isDraggingCanvas = React.useRef(false);
@@ -109,6 +114,26 @@ function useGraphRenderer({
 
     nodeMapRef.current = newNodeMap;
   }, [getWidth, getHeight, graphData.nodes, externalNodeMap, processedEdges]);
+
+  // 외부 scale과 동기화
+  React.useEffect(() => {
+    if (externalScale !== undefined) {
+      scale.current = externalScale;
+    }
+
+    // 내부에서 변경한 scale인 경우 offset 재조정 스킵
+    if (isInternalScaleChange.current) {
+      isInternalScaleChange.current = false;
+      return;
+    }
+
+    const width = getWidth();
+    const height = getHeight();
+    offset.current = {
+      x: (width * (1 - scale.current)) / 2,
+      y: (height * (1 - scale.current)) / 2,
+    };
+  }, [externalScale, getWidth, getHeight]);
 
   // 초기 스케일이 0.5일 때 중앙 정렬을 위한 offset 조정
   React.useEffect(() => {
@@ -229,6 +254,33 @@ function useGraphRenderer({
     [onClickNode],
   );
 
+  // 줌 처리 함수 (마우스 위치 기준)
+  const handleZoom = React.useCallback(
+    (mouseX: number, mouseY: number, scaleAmount: number) => {
+      const newScale = Math.max(
+        GRAPH_NUMBER_CONSTANT.MIN_SCALE,
+        Math.min(GRAPH_NUMBER_CONSTANT.MAX_SCALE, scale.current + scaleAmount),
+      );
+
+      const adjustedMouseX = mouseX - offset.current.x;
+      const adjustedMouseY = mouseY - offset.current.y;
+
+      offset.current.x -=
+        (adjustedMouseX / scale.current) * (newScale - scale.current);
+      offset.current.y -=
+        (adjustedMouseY / scale.current) * (newScale - scale.current);
+
+      scale.current = newScale;
+
+      // 외부 scale 상태 업데이트 (내부 변경임을 표시)
+      if (onScaleChange) {
+        isInternalScaleChange.current = true;
+        onScaleChange(newScale);
+      }
+    },
+    [onScaleChange],
+  );
+
   // 휠 이벤트 바인딩
   const bindWheelEvent = React.useCallback(() => {
     const canvas = canvasRef.current;
@@ -239,25 +291,14 @@ function useGraphRenderer({
 
       const { offsetX, offsetY, deltaY } = e;
       const scaleAmount = -deltaY * 0.001;
-      const newScale = Math.max(
-        GRAPH_NUMBER_CONSTANT.MIN_SCALE,
-        Math.min(GRAPH_NUMBER_CONSTANT.MAX_SCALE, scale.current + scaleAmount),
-      );
-
-      const mouseX = offsetX - offset.current.x;
-      const mouseY = offsetY - offset.current.y;
-
-      offset.current.x -= (mouseX / scale.current) * (newScale - scale.current);
-      offset.current.y -= (mouseY / scale.current) * (newScale - scale.current);
-
-      scale.current = newScale;
+      handleZoom(offsetX, offsetY, scaleAmount);
     };
 
     canvas.addEventListener("wheel", handleWheel, { passive: false });
     return () => {
       canvas.removeEventListener("wheel", handleWheel);
     };
-  }, [canvasRef]);
+  }, [canvasRef, handleZoom]);
 
   // drawGraph 함수
   const drawGraph = React.useCallback(
