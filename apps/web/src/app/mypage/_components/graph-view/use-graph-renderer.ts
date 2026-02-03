@@ -84,6 +84,7 @@ function useGraphRenderer({
   const offset = React.useRef({ x: 0, y: 0 });
   const scale = React.useRef(initialScale);
   const initializedOffset = React.useRef(false);
+  const isInternalScaleChange = React.useRef(false);
 
   // 인터랙션 상태
   const isDraggingCanvas = React.useRef(false);
@@ -119,7 +120,20 @@ function useGraphRenderer({
     if (externalScale !== undefined) {
       scale.current = externalScale;
     }
-  }, [externalScale]);
+
+    // 내부에서 변경한 scale인 경우 offset 재조정 스킵
+    if (isInternalScaleChange.current) {
+      isInternalScaleChange.current = false;
+      return;
+    }
+
+    const width = getWidth();
+    const height = getHeight();
+    offset.current = {
+      x: (width * (1 - scale.current)) / 2,
+      y: (height * (1 - scale.current)) / 2,
+    };
+  }, [externalScale, getWidth, getHeight]);
 
   // 초기 스케일이 0.5일 때 중앙 정렬을 위한 offset 조정
   React.useEffect(() => {
@@ -258,8 +272,9 @@ function useGraphRenderer({
 
       scale.current = newScale;
 
-      // 외부 scale 상태 업데이트
+      // 외부 scale 상태 업데이트 (내부 변경임을 표시)
       if (onScaleChange) {
+        isInternalScaleChange.current = true;
         onScaleChange(newScale);
       }
     },
