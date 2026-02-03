@@ -7,7 +7,7 @@ import GraphView from "../_components/graph-view/graph-view";
 import ScaleSlider from "../_components/graph-view/scale-slider";
 import { GraphData } from "../_types/graph-view";
 
-const INITIAL_GRAPH_SCALE = 0.5;
+const INITIAL_GRAPH_SCALE = 1;
 
 function GraphContent({ graphData }: { graphData: GraphData }) {
   const [openModalStatus, setOpenModalStatus] = React.useState(false);
