@@ -124,7 +124,7 @@ function SignUpForm({ signupAction }: SignUpFormProps) {
           </InputGroup>
           {formData.nickname && !validation.nickname && (
             <p className="text-xs mt-1.5 ml-1 text-red-500">
-              {SIGNUP_CONSTANTS.NICKNAME_MIN_LENGTH}~
+              {SIGNUP_CONSTANTS.NICKNAME_MIN_LENGTH} ~{" "}
               {SIGNUP_CONSTANTS.NICKNAME_MAX_LENGTH}자 사이, 공백 없이
               입력해주세요.
             </p>
