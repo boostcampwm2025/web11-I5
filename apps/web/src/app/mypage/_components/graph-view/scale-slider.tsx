@@ -15,7 +15,7 @@ function ScaleSlider({
   minScale = GRAPH_NUMBER_CONSTANT.MIN_SCALE,
   maxScale = GRAPH_NUMBER_CONSTANT.MAX_SCALE,
 }: ScaleSliderProps) {
-  const scaleStep = 0.2;
+  const scaleStep = GRAPH_NUMBER_CONSTANT.BUTTON_SCALE_STEP;
 
   const handleZoomIn = () => {
     const newScale = Math.min(maxScale, scale + scaleStep);
@@ -48,7 +48,7 @@ function ScaleSlider({
           onValueChange={handleSliderChange}
           min={minScale}
           max={maxScale}
-          step={0.05}
+          step={GRAPH_NUMBER_CONSTANT.SLIDER_SCALE_STEP}
           className="h-28"
         />
       </div>
