@@ -13,6 +13,8 @@ interface GraphViewProps {
   zoomEnabled?: boolean;
   showLabels?: boolean;
   initialScale?: number;
+  scale?: number;
+  onScaleChange?: (scale: number) => void;
 }
 
 function GraphView({
@@ -22,6 +24,8 @@ function GraphView({
   zoomEnabled = true,
   showLabels = true,
   initialScale,
+  scale,
+  onScaleChange,
 }: GraphViewProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const { ctx, getWidth, getHeight } = useCanvas2D(canvasRef);
@@ -38,6 +42,8 @@ function GraphView({
     textRenderScale,
     showLabels,
     initialScale,
+    scale,
+    onScaleChange,
   });
 
   // 휠 이벤트 바인딩 (passive: false 필요)
