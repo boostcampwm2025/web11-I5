@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { fetchOthersSubmission } from "../_lib/fetch-others-submission";
 import formatSubmittedAt from "../_lib/format-submitted-at";
 import ScoreGauge from "@/app/reports/[questionId]/_components/feedback/score-gauge";
+import { maskNickname } from "@/lib/mask-nickname";
 
 const parseIntOrNull = (value: string | undefined): number | null => {
   if (value === undefined) return null;
@@ -62,7 +63,7 @@ async function OthersDetailPage({ params }: OthersSubmissionDetailPageProps) {
                 </div>
                 <div className="flex flex-col">
                   <div className="text-lg font-semibold">
-                    {othersSubmissionData.nickname}
+                    {maskNickname(othersSubmissionData.nickname)}
                   </div>
                   <div className="text-sm font-medium text-muted-foreground">
                     제출 일시:{" "}

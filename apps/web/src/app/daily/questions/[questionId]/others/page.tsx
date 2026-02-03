@@ -19,6 +19,7 @@ import { User } from "lucide-react";
 import Link from "next/link";
 import { fetchOthersSubmissions } from "./_lib/fetch-others-submissions";
 import formatSubmittedAt from "./_lib/format-submitted-at";
+import { maskNickname } from "@/lib/mask-nickname";
 import parseIntOrNull from "@/lib/parse-int-or-null";
 import { notFound } from "next/navigation";
 import { ScoreBadge } from "@/components/score-badge/score-badge";
@@ -117,7 +118,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
 
                       <div className="min-w-0">
                         <div className="font-medium truncate">
-                          {submission.nickname}
+                          {maskNickname(submission.nickname)}
                         </div>
                         <div className="text-muted-foreground text-xs">
                           {formatSubmittedAt(submission.submittedAt)}
