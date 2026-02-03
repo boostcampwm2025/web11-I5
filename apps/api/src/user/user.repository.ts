@@ -22,6 +22,10 @@ export class UserRepository {
     return this.repository.findOne({ where: { email } });
   }
 
+  async findOneByGoogleId(googleId: string): Promise<User | null> {
+    return this.repository.findOne({ where: { googleId } });
+  }
+
   async findAll(): Promise<User[]> {
     return this.repository.find();
   }

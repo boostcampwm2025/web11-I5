@@ -15,10 +15,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/table/table";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/breadcrumb/breadcrumb";
 import { User } from "lucide-react";
 import Link from "next/link";
 import { fetchOthersSubmissions } from "./_lib/fetch-others-submissions";
 import formatSubmittedAt from "./_lib/format-submitted-at";
+import { maskNickname } from "@/lib/mask-nickname";
 import parseIntOrNull from "@/lib/parse-int-or-null";
 import { notFound } from "next/navigation";
 import { ScoreBadge } from "@/components/score-badge/score-badge";
@@ -71,7 +80,21 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
   return (
     <>
       <Header />
-      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-15 space-y-6 md:space-y-8 min-h-main">
+      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-8 md:pb-15 space-y-6 md:space-y-8 min-h-main">
+        <Breadcrumb className="md:-ml-1.5 mb-4 md:mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href={`/reports/${questionId}`}>
+                나의 리포트
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>다른 사람 답변</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <div className="mb-8">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <span className="font-medium">
@@ -90,9 +113,13 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>사용자</TableHead>
-              <TableHead className="text-center w-24">점수</TableHead>
-              <TableHead className="w-24 text-center">상세</TableHead>
+              <TableHead scope="col">사용자</TableHead>
+              <TableHead scope="col" className="text-center w-24">
+                점수
+              </TableHead>
+              <TableHead scope="col" className="w-24 text-center">
+                상세
+              </TableHead>
             </TableRow>
           </TableHeader>
 
@@ -117,7 +144,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
 
                       <div className="min-w-0">
                         <div className="font-medium truncate">
-                          {submission.nickname}
+                          {maskNickname(submission.nickname)}
                         </div>
                         <div className="text-muted-foreground text-xs">
                           {formatSubmittedAt(submission.submittedAt)}
@@ -134,6 +161,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
                     <Link
                       href={`/daily/questions/${questionId}/others/${submission.submissionId}`}
                       className="text-sm text-teal-600 hover:text-teal-700 hover:underline"
+                      aria-label={`${submission.nickname}의 답변 보기`}
                     >
                       답변 보기
                     </Link>
@@ -166,12 +194,16 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
                             href={buildPaginationUrl(currentPage)}
                             className="pointer-events-none opacity-50"
                             aria-disabled="true"
+                            tabIndex={-1}
                           />
                         )}
                       </PaginationItem>
 
                       <PaginationItem>
-                        <div className="px-2">
+                        <div
+                          className="px-2"
+                          aria-label={`현재 ${currentPage}페이지, 전체 ${totalPages}페이지`}
+                        >
                           {currentPage} / {totalPages}
                         </div>
                       </PaginationItem>
@@ -186,6 +218,7 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
                             href={buildPaginationUrl(currentPage)}
                             className="pointer-events-none opacity-50"
                             aria-disabled="true"
+                            tabIndex={-1}
                           />
                         )}
                       </PaginationItem>

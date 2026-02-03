@@ -26,9 +26,9 @@ function ReportHeader({ question, highestScore }: ReportHeaderProps) {
           나의 최고 점수 : {highestScore ?? 0}점
         </div>
       </div>
-      <h2 className="text-lg md:text-xl font-bold mb-2 md:mb-3">
+      <h1 className="text-lg md:text-xl font-bold mb-2 md:mb-3">
         {question.title}
-      </h2>
+      </h1>
       <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4 md:mb-6">
         {question.content}
       </p>
@@ -40,7 +40,7 @@ function ReportHeader({ question, highestScore }: ReportHeaderProps) {
           className="font-semibold text-slate-600"
         >
           <Link href={`/daily/questions/${question.id}/others`}>
-            <Users className="w-4 h-4" />
+            <Users className="w-4 h-4" aria-hidden="true" />
             다른 사람 답변 보기
           </Link>
         </Button>

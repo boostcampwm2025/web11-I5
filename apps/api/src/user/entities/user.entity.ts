@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserRole } from './user-role.enum';
+import { AuthProvider } from './auth-provider.enum';
 
 @Entity('users')
 export class User {
@@ -20,8 +21,19 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   profileImage: string | null;
 
-  @Column({ type: 'varchar' })
-  password: string;
+  @Column({ type: 'varchar', nullable: true })
+  password: string | null;
+
+  @Column({ type: 'varchar', nullable: true, unique: true, name: 'google_id' })
+  googleId: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: AuthProvider,
+    default: AuthProvider.LOCAL,
+    name: 'auth_provider',
+  })
+  authProvider: AuthProvider;
 
   @Column({
     type: 'enum',

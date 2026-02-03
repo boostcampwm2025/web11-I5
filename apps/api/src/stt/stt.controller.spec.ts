@@ -30,7 +30,7 @@ describe('SttController', () => {
   };
 
   const mockConfigService = {
-    get: jest.fn(),
+    get: jest.fn().mockReturnValue(undefined),
   };
 
   beforeEach(async () => {

@@ -64,6 +64,8 @@ function Toggle({
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
+            aria-pressed={isSelected}
+            aria-label={option.label}
             className={cn(
               "flex-1 z-20 h-full text-center rounded-md text-sm font-bold transition-colors duration-200 bg-transparent",
               isSelected

@@ -7,6 +7,8 @@ export const GRAPH_NUMBER_CONSTANT = {
   EDGE_STROKE_WIDTH: 2,
   MIN_EDGE_STROKE_WIDTH: 2, // 줌 아웃 시 최소 시각적 굵기 (픽셀 단위)
   MAX_EDGE_STROKE_WIDTH: 2, // 줌 인 시 최대 시각적 굵기 (픽셀 단위)
+  BUTTON_SCALE_STEP: 0.2, // 슬라이더 버튼 클릭시 동작 범위
+  SLIDER_SCALE_STEP: 0.05, // 슬라이더 내부 슬라이드 기능시 동작 범위
 } as const;
 
 export const GRAPH_COLOR_CONSTANT = {
