@@ -15,6 +15,7 @@ import {
 import { QuestionLinkButton } from "./question-link-button";
 import { fetchQuestions } from "../_lib/fetch-questions";
 import { ScoreBadge } from "@/components/score-badge/score-badge";
+import { CategoryBadge } from "@/components/category-badge/category-badge";
 
 interface QuestionsTableBodySectionProps {
   currentPage: number;
@@ -88,22 +89,19 @@ async function QuestionsTableBodySection({
           questions.map((question) => (
             <TableRow key={question.id}>
               <TableCell className="text-muted-foreground hidden sm:table-cell">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs text-muted-foreground/70">
-                    {question.category?.parent?.name ?? "-"}
-                  </span>
-                  <span className="text-xs py-0.5 px-1.5 bg-muted text-muted-foreground rounded font-medium w-fit max-w-24 truncate">
-                    {question.category?.name ?? "-"}
-                  </span>
-                </div>
+                <CategoryBadge
+                  category={question.category?.parent?.name}
+                  subCategory={question.category?.name}
+                  orientation="vertical"
+                />
               </TableCell>
               <TableCell className="whitespace-normal">
                 <QuestionLinkButton question={question} />
-                <div className="sm:hidden text-xs text-muted-foreground mt-1">
-                  {[question.category?.parent?.name, question.category?.name]
-                    .filter(Boolean)
-                    .join(" > ")}
-                </div>
+                <CategoryBadge
+                  category={question.category?.parent?.name}
+                  subCategory={question.category?.name}
+                  className="sm:hidden mt-1 text-muted-foreground"
+                />
               </TableCell>
               <TableCell className="text-center hidden sm:table-cell">
                 {(question.avgImportance ?? 0).toFixed(1)}
