@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { CategoryBadge } from "@/components/category-badge/category-badge";
 
 interface QuestionCardProps {
   title: string;
@@ -31,9 +32,11 @@ export default function QuestionCard({
       </button>
 
       {(parentCategoryName || categoryName) && (
-        <p className="text-gray-500 text-xs md:text-sm mb-2 md:mb-3">
-          {[parentCategoryName, categoryName].filter(Boolean).join(" | ")}
-        </p>
+        <CategoryBadge
+          category={parentCategoryName}
+          subCategory={categoryName}
+          className="mb-2"
+        />
       )}
 
       {isVisible ? (

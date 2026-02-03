@@ -1,6 +1,7 @@
 import { Question } from "@/app/daily/questions/_types/types";
 import RetryButton from "./retry-button";
 import { Button } from "@/components/button/button";
+import { CategoryBadge } from "@/components/category-badge/category-badge";
 import Link from "next/link";
 import { Users } from "lucide-react";
 
@@ -17,11 +18,11 @@ interface ReportHeaderProps {
 function ReportHeader({ question, highestScore }: ReportHeaderProps) {
   return (
     <section className="bg-white border border-gray-200 rounded-xl p-5 md:p-9">
-      <div className="text-gray-500 text-xs md:text-sm mb-2 md:mb-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
-        <div>
-          {question.categoryDisplay}{" "}
-          {question.subCategory && `| ${question.subCategory}`}
-        </div>
+      <div className="mb-2 md:mb-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+        <CategoryBadge
+          category={question.categoryDisplay}
+          subCategory={question.subCategory}
+        />
         <div className="text-xs md:text-sm bg-teal-50 border border-teal-100 text-teal-500 px-2 py-0.5 rounded-sm font-bold w-fit">
           나의 최고 점수 : {highestScore ?? 0}점
         </div>

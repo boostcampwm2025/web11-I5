@@ -13,6 +13,7 @@ import { fetchOthersSubmission } from "../_lib/fetch-others-submission";
 import formatSubmittedAt from "../_lib/format-submitted-at";
 import ScoreGauge from "@/app/reports/[questionId]/_components/feedback/score-gauge";
 import { maskNickname } from "@/lib/mask-nickname";
+import { CategoryBadge } from "@/components/category-badge/category-badge";
 
 const parseIntOrNull = (value: string | undefined): number | null => {
   if (value === undefined) return null;
@@ -66,15 +67,11 @@ async function OthersDetailPage({ params }: OthersSubmissionDetailPageProps) {
         </Breadcrumb>
 
         <div className="mb-8">
-          <div className="flex items-center gap-2 text-base text-muted-foreground mb-2">
-            <span className="font-medium">
-              {othersSubmissionData.question.category?.parent?.name}
-            </span>
-            <span>/</span>
-            <span className="text-base font-medium">
-              {othersSubmissionData.question.category?.name}
-            </span>
-          </div>
+          <CategoryBadge
+            category={othersSubmissionData.question.category?.parent?.name}
+            subCategory={othersSubmissionData.question.category?.name}
+            className="mb-2"
+          />
           <h1 className="text-2xl font-bold mb-2">
             {othersSubmissionData.question.title}
           </h1>
