@@ -43,6 +43,7 @@ function TextInput({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="면접 질문에 답하듯이 지식을 논리적으로 작성해 보세요."
+          aria-label="답변 작성"
           className="min-h-32 md:min-h-40 resize-none text-base"
           maxLength={maxLength}
           disabled={isSubmitting || disabled}

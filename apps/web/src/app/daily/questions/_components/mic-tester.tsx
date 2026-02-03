@@ -129,6 +129,7 @@ export default function MicrophoneTester() {
           <div className="flex items-center gap-3">
             <button
               aria-label={isPlaying ? "일시정지" : "재생"}
+              aria-pressed={isPlaying}
               onClick={isPlaying ? pausePlayback : playRecording}
               className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-teal-500 text-white hover:bg-teal-600 transition-colors shrink-0"
             >

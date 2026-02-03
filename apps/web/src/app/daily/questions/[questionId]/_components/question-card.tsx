@@ -25,6 +25,7 @@ export default function QuestionCard({
         onClick={() => setIsVisible(!isVisible)}
         className="absolute top-3 right-3 md:top-4 md:right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         aria-label={isVisible ? "문제 숨기기" : "문제 보기"}
+        aria-expanded={isVisible}
         type="button"
       >
         {isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}

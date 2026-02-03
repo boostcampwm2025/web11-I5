@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import { Slider as SliderPrimitive } from "radix-ui";
 import { cn } from "@/lib/cn";
+import { Slider as SliderPrimitive } from "radix-ui";
+import * as React from "react";
 
 function Slider({
   className,
@@ -30,18 +30,18 @@ function Slider({
       min={min}
       max={max}
       className={cn(
-        "data-vertical:min-h-40 relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:w-auto data-vertical:flex-col",
+        "data-vertical:min-h-40 relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:w-auto data-vertical:flex-col justify-center",
         className,
       )}
       {...props}
     >
       <SliderPrimitive.Track
         data-slot="slider-track"
-        className="rounded-full data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-full data-vertical:h-full data-vertical:w-1 bg-muted relative grow overflow-hidden"
+        className="rounded-full data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1 bg-muted relative overflow-hidden"
       >
         <SliderPrimitive.Range
           data-slot="slider-range"
-          className="bg-primary absolute select-none data-[orientation=horizontal]:h-full data-vertical:w-full"
+          className="bg-primary absolute select-none data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full data-[orientation=vertical]:bottom-0"
         />
       </SliderPrimitive.Track>
       {Array.from({ length: _values.length }, (_, index) => (

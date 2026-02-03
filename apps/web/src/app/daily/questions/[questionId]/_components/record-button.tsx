@@ -22,6 +22,7 @@ function RecordButton({
   return (
     <motion.button
       aria-label={isRecording ? "녹음 중지" : "녹음 시작"}
+      aria-pressed={isRecording}
       onClick={handleClick}
       whileHover={disabled ? {} : { scale: 1.1 }}
       whileTap={disabled ? {} : { scale: 0.98 }}
