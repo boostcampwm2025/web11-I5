@@ -26,6 +26,10 @@ function maskNickname(nickname: string): string {
     return `${trimmed[0]}*${trimmed[2]}`;
   }
 
+  if (length === 4) {
+    return `${trimmed[0]}*${trimmed[3]}`;
+  }
+
   // 4글자 이상: 앞 2글자 + 마스킹(고정 4개) + 뒤 2글자
   const MASK_LENGTH = 4;
   const asterisks = "*".repeat(MASK_LENGTH);
