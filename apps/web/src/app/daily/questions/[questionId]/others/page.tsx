@@ -23,6 +23,7 @@ import { maskNickname } from "@/lib/mask-nickname";
 import parseIntOrNull from "@/lib/parse-int-or-null";
 import { notFound } from "next/navigation";
 import { ScoreBadge } from "@/components/score-badge/score-badge";
+import { CategoryBadge } from "@/components/category-badge/category-badge";
 
 interface OthersPageProps {
   params: Promise<{ questionId: string }>;
@@ -74,13 +75,11 @@ async function OthersPage({ params, searchParams }: OthersPageProps) {
       <Header />
       <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-15 space-y-6 md:space-y-8 min-h-main">
         <div className="mb-8">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <span className="font-medium">
-              {question.category?.parent?.name}
-            </span>
-            <span>/</span>
-            <span className="font-medium">{question.category?.name}</span>
-          </div>
+          <CategoryBadge
+            category={question.category?.parent?.name}
+            subCategory={question.category?.name}
+            className="mb-2"
+          />
           <h1 className="text-2xl font-bold mb-2">{question.title}</h1>
           <p className="text-muted-foreground">
             총 <span className="font-semibold text-teal-600">{totalCount}</span>
