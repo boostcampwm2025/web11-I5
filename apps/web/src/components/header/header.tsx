@@ -6,6 +6,14 @@ import LogoutButton from "./logout-button";
 import MobileNav from "./mobile-nav";
 import { Button } from "@/components/button/button";
 
+/**
+ * Render the top navigation header containing the brand, primary navigation, and account controls.
+ *
+ * The rendered header shows a logo linked to the homepage, a primary navigation area (hidden on small screens),
+ * and a mobile navigation component. Account controls in the navigation change depending on the user's authentication state.
+ *
+ * @returns The header JSX element with logo, navigation links, and authentication-specific controls
+ */
 async function Header() {
   const isLoggedIn = await hasAccessToken();
 

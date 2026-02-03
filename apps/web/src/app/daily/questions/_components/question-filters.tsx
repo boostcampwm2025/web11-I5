@@ -22,6 +22,22 @@ interface QuestionFiltersProps {
   selectedMinImportance: number | null;
 }
 
+/**
+ * Render filter controls for browsing and searching daily questions.
+ *
+ * Displays category and subcategory buttons, a debounced search input, and segmented controls
+ * for solved status and minimum importance. User interactions update URL query parameters
+ * (removing the `page` parameter) to reflect the current filters.
+ *
+ * @param categories - Available top-level categories to display as filter buttons
+ * @param subCategories - Subcategories for the currently selected category
+ * @param selectedCategoryId - Currently selected category ID, or `null` for all categories
+ * @param selectedSubCategoryId - Currently selected subcategory ID, or `null` for all subcategories
+ * @param searchQuery - Current search query value shown initially in the search input
+ * @param selectedSolvedStatus - Currently selected solved-status filter value (e.g., `"SOLVED"`, `"UNSOLVED"`), or `null` for all
+ * @param selectedMinImportance - Currently selected minimum importance (e.g., `4` or `3.5`), or `null` for all
+ * @returns The rendered filter UI as a JSX element
+ */
 function QuestionFilters({
   categories,
   subCategories,

@@ -34,6 +34,16 @@ interface ToggleProps
   onChange: (value: string) => void;
 }
 
+/**
+ * Renders a two-option toggle control with a sliding selection indicator and built-in ARIA support.
+ *
+ * @param className - Additional class names applied to the outer container
+ * @param size - Visual size variant; one of "default", "sm", or "lg"
+ * @param options - Tuple of two option objects, each containing `label` and `value`
+ * @param value - Currently selected option value
+ * @param onChange - Callback invoked with the newly selected value when an option is clicked
+ * @returns The rendered toggle React element
+ */
 function Toggle({
   className,
   size,

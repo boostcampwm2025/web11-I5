@@ -14,6 +14,15 @@ interface FeedbackSectionProps {
   question: Question;
 }
 
+/**
+ * Render the feedback section for a submission based on its analysis status.
+ *
+ * @param attempt - The attempt number for the submission (displayed as TRIAL #).
+ * @param status - The current analysis status (`"PENDING"`, `"FAILED"`, or other completed statuses) that determines which UI state to render.
+ * @param data - The report details including speech-to-text status, scores, feedback, submissionId, and completion date.
+ * @param question - The question metadata used when retrying speech-to-text.
+ * @returns A JSX element containing the UI for pending, failed, or completed analysis states.
+ */
 function FeedbackSection({
   attempt,
   status,

@@ -12,6 +12,17 @@ interface TextInputProps {
   maxLength?: number;
 }
 
+/**
+ * Renders a controlled text input UI for composing and submitting an answer.
+ *
+ * Displays a textarea with a character counter and a submit button; the button is enabled only when the trimmed input has content and neither `isSubmitting` nor `disabled` are true. Calling the submit button invokes `onSubmit` with the trimmed text.
+ *
+ * @param onSubmit - Callback invoked with the trimmed text when the user submits a non-empty answer
+ * @param isSubmitting - When true, disables input and shows a loading indicator on the submit button
+ * @param disabled - When true, disables input and prevents submission
+ * @param maxLength - Maximum allowed characters for the textarea (used for the input limit and counter)
+ * @returns A JSX element containing the textarea, character count, and submit button
+ */
 function TextInput({
   onSubmit,
   isSubmitting,

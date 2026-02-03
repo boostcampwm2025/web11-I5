@@ -9,6 +9,18 @@ interface RecordButtonProps {
   disabled?: boolean;
 }
 
+/**
+ * Render a responsive record button that reflects and controls the recording state.
+ *
+ * The button visually switches between recording and idle appearances, exposes accessible
+ * labels and pressed state for screen readers, and invokes `onClick` when activated unless
+ * `disabled` is true.
+ *
+ * @param isRecording - Whether recording is active; controls visuals and accessibility state.
+ * @param onClick - Callback invoked when the button is activated (no-op if `disabled`).
+ * @param disabled - When true, prevents interaction and disables hover/tap animations.
+ * @returns A JSX element representing the record control button.
+ */
 function RecordButton({
   isRecording,
   onClick,

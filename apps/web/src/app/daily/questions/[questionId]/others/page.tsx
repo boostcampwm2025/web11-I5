@@ -28,6 +28,17 @@ interface OthersPageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
+/**
+ * Render the page that lists other users' submissions for a specific question.
+ *
+ * Fetches submissions for the provided `questionId`, paginates them (10 items per page),
+ * and renders a table with user, score, and a link to each submission's detail.
+ * Triggers a 404 response when the provided `questionId` is invalid.
+ *
+ * @param params - A promise resolving to route parameters containing `questionId`.
+ * @param searchParams - A promise resolving to query parameters containing optional `page`.
+ * @returns A React element that displays the question metadata, a paginated submissions table, and pagination controls.
+ */
 async function OthersPage({ params, searchParams }: OthersPageProps) {
   const { questionId } = await params;
   const { page } = await searchParams;

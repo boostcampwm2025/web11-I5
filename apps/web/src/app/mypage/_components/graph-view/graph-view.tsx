@@ -15,6 +15,22 @@ interface GraphViewProps {
   initialScale?: number;
 }
 
+/**
+ * Renders an interactive canvas-based graph visualization for the provided graph data.
+ *
+ * The component mounts a canvas, attaches renderer event bindings and an optional wheel
+ * zoom handler, and runs a per-frame draw loop. Node clicks navigate to `/reports/{id}`
+ * unless `clickEventDisabled` is true. The canvas element includes role and dynamic
+ * aria-label describing node and edge counts.
+ *
+ * @param graphData - Graph data containing `nodes` and `edges` to render
+ * @param textRenderScale - Optional scale factor applied when rendering node/edge text
+ * @param clickEventDisabled - If true, node click navigation is disabled
+ * @param zoomEnabled - If true, binds the wheel handler to enable zooming (default: `true`)
+ * @param showLabels - If true, node labels are rendered (default: `true`)
+ * @param initialScale - Optional initial zoom scale for the graph view
+ * @returns The canvas element that displays the interactive graph visualization
+ */
 function GraphView({
   graphData,
   textRenderScale,

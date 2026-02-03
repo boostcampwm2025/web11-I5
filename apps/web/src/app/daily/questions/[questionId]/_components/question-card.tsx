@@ -10,6 +10,15 @@ interface QuestionCardProps {
   parentCategoryName?: string;
 }
 
+/**
+ * Renders a stylized question card with toggleable visibility.
+ *
+ * @param title - The card title displayed when the question is visible.
+ * @param content - The card content displayed when the question is visible.
+ * @param categoryName - Optional category label shown alongside `parentCategoryName` if present.
+ * @param parentCategoryName - Optional parent category label; when provided, both `parentCategoryName` and `categoryName` are shown joined with " | ".
+ * @returns A React element representing the question card.
+ */
 export default function QuestionCard({
   title,
   content,

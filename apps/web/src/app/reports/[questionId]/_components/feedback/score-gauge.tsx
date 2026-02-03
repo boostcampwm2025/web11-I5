@@ -33,6 +33,17 @@ function getScoreColor(score: number) {
   };
 }
 
+/**
+ * Renders a circular score gauge showing a numeric score with a colored progress arc.
+ *
+ * The provided score is clamped to the range 0 to 100. The gauge displays the clamped value as
+ * a circular progress arc and the numeric value centered inside the circle; the visual color
+ * changes based on the clamped score. The wrapper exposes an accessible label containing the
+ * clamped score while the SVG is hidden from assistive technologies.
+ *
+ * @param score - The numeric score to display (values outside 0–100 are clamped)
+ * @returns The JSX element representing the score gauge
+ */
 function ScoreGauge({ score }: ScoreGaugeProps) {
   const clamped = Math.max(0, Math.min(100, score));
   const color = getScoreColor(clamped);

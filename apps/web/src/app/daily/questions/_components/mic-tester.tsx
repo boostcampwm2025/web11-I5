@@ -22,6 +22,13 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
+/**
+ * Renders a microphone test UI that lets the user record, play back, seek, and retry audio while handling device/permission/browser errors.
+ *
+ * The component manages recording state, playback controls (play/pause, seek), displays a waveform, shows contextual status text, and renders error UI when microphone access is denied, absent, or unsupported.
+ *
+ * @returns The React element containing the microphone tester interface.
+ */
 export default function MicrophoneTester() {
   const {
     status,

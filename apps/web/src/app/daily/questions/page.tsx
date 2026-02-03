@@ -31,6 +31,12 @@ interface QuestionListPageProps {
   }>;
 }
 
+/**
+ * Renders the question list page: parses and normalizes incoming query parameters, fetches root and selected category data, and displays the header, total count, filter controls, and paginated questions table.
+ *
+ * @param searchParams - A promise resolving to an object with optional query fields: `page`, `categoryId`, `subCategoryId`, `search`, `solvedStatus`, and `minImportance` (all string values as received from the URL).
+ * @returns The page's JSX element containing the header, total count section, filters, and questions table populated according to the provided query parameters.
+ */
 async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   const {
     page,

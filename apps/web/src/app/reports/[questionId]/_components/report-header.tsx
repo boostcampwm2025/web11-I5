@@ -14,6 +14,13 @@ interface ReportHeaderProps {
   highestScore?: number;
 }
 
+/**
+ * Render a report header that displays a question's metadata, title, content, and action controls.
+ *
+ * @param question - The question data to display; includes categoryDisplay and optional subCategory which, if present, will be shown alongside the category.
+ * @param highestScore - The user's highest score for this question; when `undefined` or `null` the displayed value defaults to `0`.
+ * @returns A JSX element containing the styled report header section with metadata, title, content, divider, and action buttons.
+ */
 function ReportHeader({ question, highestScore }: ReportHeaderProps) {
   return (
     <section className="bg-white border border-gray-200 rounded-xl p-5 md:p-9">

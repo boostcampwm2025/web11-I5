@@ -9,6 +9,14 @@ interface MobileNavProps {
   isLoggedIn: boolean;
 }
 
+/**
+ * Render a responsive mobile navigation toggle and sliding menu that shows links based on authentication state.
+ *
+ * The component provides a hamburger/close toggle, closes the menu when the overlay is clicked or the Escape key is pressed, and conditionally renders "마이페이지" and "로그아웃" when `isLoggedIn` is true or "로그인" when false.
+ *
+ * @param isLoggedIn - Whether the current user is authenticated; controls which authenticated links are shown.
+ * @returns The mobile navigation JSX element containing the toggle button and the conditional sliding menu.
+ */
 function MobileNav({ isLoggedIn }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
 

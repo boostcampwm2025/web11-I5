@@ -11,6 +11,15 @@ interface CollapsibleHistoryProps {
   selectedId: number;
 }
 
+/**
+ * Renders a responsive, collapsible history sidebar for report attempts with mobile toggle and backdrop.
+ *
+ * The sidebar opens by default on large viewports (>= 1024px) and can be toggled on small viewports; when open on mobile it prevents body scrolling. It displays a header with the total count and a scrollable list of history entries.
+ *
+ * @param history - Array of history items to display in the sidebar; each item provides identifiers and display data for a single attempt.
+ * @param selectedId - The currently selected submissionId; used to mark the corresponding history item as selected.
+ * @returns The rendered collapsible history sidebar element.
+ */
 function CollapsibleHistory({ history, selectedId }: CollapsibleHistoryProps) {
   const [isOpen, setIsOpen] = React.useState(false);
 

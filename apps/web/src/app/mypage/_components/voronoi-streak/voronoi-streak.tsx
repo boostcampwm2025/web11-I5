@@ -26,6 +26,20 @@ interface CellData {
   cluster: number;
 }
 
+/**
+ * Render an interactive Voronoi-based streak visualization over the provided image.
+ *
+ * Displays Voronoi cells computed from seeded/randomized points and K-means clusters,
+ * colors cells corresponding to recent streaks (first `streakCount` clusters), and
+ * dims the rest. When the user hovers a colored cell, a tooltip near the pointer
+ * shows the corresponding submission's title and submission date (formatted as
+ * "YYYY년 M월 D일").
+ *
+ * @param streakCount - Number of clusters to highlight as active streaks
+ * @param imageSrc - Source URL of the background image used to compute cell colors
+ * @param yearlyAnswerSubmissions - Array of submission metadata indexed by cluster; used to populate tooltip content
+ * @returns A JSX element containing the canvas-based Voronoi visualization and an optional hover tooltip
+ */
 function VoronoiStreak({
   streakCount,
   imageSrc,

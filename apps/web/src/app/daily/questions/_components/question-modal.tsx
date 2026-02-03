@@ -13,6 +13,16 @@ interface QuestionModalProps {
   onClose: () => void;
 }
 
+/**
+ * Render a modal dialog presenting a question with controls to choose voice or text answer modes.
+ *
+ * The modal handles overlay clicks and Escape to close, provides an interactive toggle between
+ * "voice" and "text" answer flows, and exposes actions to close or start answering.
+ *
+ * @param question - The question to display inside the modal; when falsy the component renders `null`.
+ * @param onClose - Callback invoked when the modal should be closed (overlay click, Escape key, or Close button).
+ * @returns The modal element for the provided `question`, or `null` if `question` is falsy.
+ */
 function QuestionModal({ question, onClose }: QuestionModalProps) {
   const [answerMode, setAnswerMode] = React.useState<string>("voice");
 
