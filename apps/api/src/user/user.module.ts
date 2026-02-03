@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailModule } from 'src/mail/mail.module';
 import { ObjectStorageModule } from 'src/object-storage/object-storage.module';
@@ -13,7 +13,7 @@ import { UserService } from './user.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, AnswerSubmission, Question]),
-    AuthModule,
+    forwardRef(() => AuthModule),
     ObjectStorageModule,
     MailModule,
   ],

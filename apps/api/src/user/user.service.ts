@@ -20,9 +20,11 @@ import { AnswerSubmission } from '../answer-submission/entities/answer-submissio
 import { EditUserRequestDto } from './dtos/request/edit-user.request.dto';
 import { SolvedProblemDto } from './dtos/response/solved-problem.dto';
 import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
+import { AuthProvider } from './entities/auth-provider.enum';
 import { UserRole } from './entities/user-role.enum';
 import { User } from './entities/user.entity';
 import { UserRepository } from './user.repository';
+import { GoogleProfile } from '../auth/strategies/google.strategy';
 import {
   hashPassword,
   isHashedPassword,
@@ -165,17 +167,89 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
       throw new NotFoundException('유저를 찾을 수 없습니다.');
     }
 
-    if (!user.password || !verifyPassword(password, user.password)) {
+    // OAuth 사용자인 경우 비밀번호 로그인 불가
+    if (!user.password) {
+      throw new UnauthorizedException(
+        '이 계정은 소셜 로그인으로 가입되었습니다. Google 로그인을 이용해주세요.',
+      );
+    }
+
+    if (!verifyPassword(password, user.password)) {
       throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
     }
 
     // 레거시 평문 비밀번호였으면 로그인 성공 시 해시로 업그레이드
-    if (user.password && !isHashedPassword(user.password)) {
+    if (!isHashedPassword(user.password)) {
       user.password = hashPassword(password);
       await this.userRepository.save(user);
     }
 
     return user;
+  }
+
+  /**
+   * Google OAuth 사용자 찾기 또는 생성
+   * @param profile Google OAuth 프로필
+   * @returns 사용자 엔티티
+   */
+  async findOrCreateGoogleUser(profile: GoogleProfile): Promise<User> {
+    // 1. googleId로 사용자 검색
+    const existingUserByGoogleId = await this.userRepository.findOneByGoogleId(
+      profile.googleId,
+    );
+    if (existingUserByGoogleId) {
+      return existingUserByGoogleId;
+    }
+
+    // 2. email로 사용자 검색 (계정 연동 처리)
+    const existingUserByEmail = await this.userRepository.findOneByEmail(
+      profile.email,
+    );
+
+    if (existingUserByEmail) {
+      // LOCAL 사용자면 Google 계정 연동
+      existingUserByEmail.googleId = profile.googleId;
+      return this.userRepository.save(existingUserByEmail);
+    }
+
+    // 3. 새 사용자 생성
+    const nickname = await this.generateUniqueNickname(profile.displayName);
+
+    const newUser = await this.userRepository.create({
+      email: profile.email,
+      nickname,
+      googleId: profile.googleId,
+      profileImage: profile.profileImage,
+      password: null,
+      authProvider: AuthProvider.GOOGLE,
+      totalPoint: 0,
+      totalScore: 0,
+      role: UserRole.USER,
+    });
+
+    return newUser;
+  }
+
+  /**
+   * 고유한 닉네임 생성
+   * 중복 시 숫자 suffix 추가
+   */
+  private async generateUniqueNickname(baseName: string): Promise<string> {
+    // 공백 제거 및 최대 20자 제한
+    let nickname = baseName.replace(/\s+/g, '').substring(0, 20);
+    if (!nickname) {
+      nickname = 'User';
+    }
+
+    let suffix = 0;
+    let candidateNickname = nickname;
+
+    while (await this.userRepository.findOneByNickname(candidateNickname)) {
+      suffix++;
+      candidateNickname = `${nickname.substring(0, 17)}${suffix}`;
+    }
+
+    return candidateNickname;
   }
 
   async getCurrentUser(userId: number): Promise<User> {
@@ -184,14 +258,21 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    // profileImage의 objectKey를 S3 URL로 변환
-    if (user.profileImage) {
+    // profileImage의 objectKey를 S3 URL로 변환 (외부 URL인 경우 그대로 사용)
+    if (user.profileImage && !this.isExternalUrl(user.profileImage)) {
       user.profileImage = await this.objectStorageService.createPresignedGetUrl(
         user.profileImage,
       );
     }
 
     return user;
+  }
+
+  /**
+   * 외부 URL인지 확인 (Google 프로필 이미지 등)
+   */
+  private isExternalUrl(url: string): boolean {
+    return url.startsWith('http://') || url.startsWith('https://');
   }
 
   /**
@@ -379,8 +460,11 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
           this.cleanupOldProfileImage(oldProfileImageKey);
         }
 
-        // profileImage를 objectKey에서 URL로 변환
-        if (savedUser.profileImage) {
+        // profileImage를 objectKey에서 URL로 변환 (외부 URL인 경우 그대로 사용)
+        if (
+          savedUser.profileImage &&
+          !this.isExternalUrl(savedUser.profileImage)
+        ) {
           savedUser.profileImage =
             await this.objectStorageService.createPresignedGetUrl(
               savedUser.profileImage,
@@ -407,8 +491,8 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
       }
     }
 
-    // profileImage를 objectKey에서 URL로 변환
-    if (userInfo.profileImage) {
+    // profileImage를 objectKey에서 URL로 변환 (외부 URL인 경우 그대로 사용)
+    if (userInfo.profileImage && !this.isExternalUrl(userInfo.profileImage)) {
       userInfo.profileImage =
         await this.objectStorageService.createPresignedGetUrl(
           userInfo.profileImage,

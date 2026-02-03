@@ -58,7 +58,7 @@ function LoginForm({ loginAction, defaultEmail = "" }: LoginFormProps) {
             id="password"
             type="password"
             name="password"
-            placeholder="***********"
+            placeholder="비밀번호를 입력해주세요"
           />
         </InputGroup>
       </div>

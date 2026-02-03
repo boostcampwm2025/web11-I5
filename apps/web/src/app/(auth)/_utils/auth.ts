@@ -206,16 +206,41 @@ async function signupAction(
   redirect("/login");
 }
 
-async function sendVerifyMail(email: string) {
+export interface SendVerifyMailResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+async function sendVerifyMail(email: string): Promise<SendVerifyMailResult> {
   try {
-    return await apiPost<{ message: string }>("/api/users/mail-verification", {
-      email,
-    });
+    const result = await apiPost<{ message: string }>(
+      "/api/users/mail-verification",
+      { email },
+    );
+    return {
+      success: true,
+      message: result.message || "인증 코드가 전송되었습니다.",
+    };
   } catch (error) {
     logger.error("인증 메일 보내기 요청 실패", {
       error: error instanceof Error ? error.message : String(error),
     });
-    throw error;
+
+    if (error instanceof ApiError) {
+      if (error.status === 409) {
+        return { success: false, error: "이미 가입된 이메일입니다." };
+      }
+      return { success: false, error: error.getUserMessage() };
+    }
+
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "인증 코드 전송에 실패했습니다.",
+    };
   }
 }
 
