@@ -34,12 +34,7 @@ function CategoryBadge({
         <span className="text-slate-300 text-xs">/</span>
       )}
       {subCategory && (
-        <span
-          className={cn(
-            "inline-flex items-center px-2 py-0.5 text-xs font-medium bg-teal-50 text-teal-600 rounded-md",
-            isVertical && "max-w-28 truncate",
-          )}
-        >
+        <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-teal-50 text-teal-600 rounded-md">
           {subCategory}
         </span>
       )}
