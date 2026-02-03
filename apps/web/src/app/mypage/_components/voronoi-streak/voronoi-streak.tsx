@@ -228,7 +228,12 @@ function VoronoiStreak({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <canvas className="w-full h-full" ref={canvasRef} />
+      <canvas
+        className="w-full h-full"
+        ref={canvasRef}
+        role="img"
+        aria-label={`연간 학습 스트릭 시각화: 총 ${streakCount}개의 문제 해결`}
+      />
       {hoveredInfo && (
         <div
           ref={tooltipRef}

@@ -55,7 +55,15 @@ function GraphView({
   // 애니메이션 루프
   useAnimationFrame(drawGraph);
 
-  return <canvas ref={canvasRef} className="w-full h-full" {...bindEvents} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full h-full"
+      role="img"
+      aria-label={`지식 그래프: ${graphData.nodes.length}개의 질문, ${graphData.edges.length}개의 연결`}
+      {...bindEvents}
+    />
+  );
 }
 
 export default GraphView;

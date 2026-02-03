@@ -38,8 +38,16 @@ function ScoreGauge({ score }: ScoreGaugeProps) {
   const color = getScoreColor(clamped);
 
   return (
-    <div className="relative w-20 h-20 md:w-25 md:h-25 shrink-0">
-      <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+    <div
+      className="relative w-20 h-20 md:w-25 md:h-25 shrink-0"
+      role="img"
+      aria-label={`총점 ${clamped}점`}
+    >
+      <svg
+        className="w-full h-full -rotate-90"
+        viewBox="0 0 36 36"
+        aria-hidden="true"
+      >
         <circle
           className="fill-none stroke-slate-100 stroke-3"
           cx="18"
