@@ -61,6 +61,7 @@
     "eslint-config-next": "16.1.0",
     "eslint-plugin-storybook": "^10.1.11",
     "jsdom": "^27.4.0",
+    "msw": "^2.12.7",
     "storybook": "^10.1.11",
     "tailwindcss": "^4",
     "typescript": "^5.9.2",
