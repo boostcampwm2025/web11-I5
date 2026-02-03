@@ -89,4 +89,32 @@ test.describe("문제 리스트 페이지", () => {
       page.getByText("HTTP와 HTTPS의 차이점은 무엇인가요?"),
     ).toBeVisible();
   });
+
+  test("카테고리 선택 시 서브 카테고리(중분류)가 표시되어야 한다", async ({
+    page,
+  }) => {
+    // 네트워크 카테고리 클릭
+    await page.getByRole("button", { name: "네트워크" }).click();
+
+    // 세부 주제 라벨 표시 확인
+    await expect(page.getByText("세부 주제")).toBeVisible();
+
+    // 서브 카테고리 버튼들 표시 확인
+    await expect(page.getByRole("button", { name: "전체" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "TCP/IP" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "HTTP", exact: true }),
+    ).toBeVisible();
+  });
+
+  test("다른 카테고리 선택 시 해당 서브 카테고리가 표시되어야 한다", async ({
+    page,
+  }) => {
+    // 운영체제 카테고리 클릭
+    await page.getByRole("button", { name: "운영체제" }).click();
+
+    // 서브 카테고리 버튼들 표시 확인
+    await expect(page.getByRole("button", { name: "프로세스" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "메모리" })).toBeVisible();
+  });
 });
