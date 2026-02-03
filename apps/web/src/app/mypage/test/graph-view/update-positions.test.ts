@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
+import NodeMap from "../../_components/graph-view/node-map";
 import {
   GRAPH_NUMBER_CONSTANT,
   PHISICS_CONSTANT,
 } from "../../_constants/graph-view-constant";
-import NodeMap from "../../_components/graph-view/node-map";
 import updatePositions from "../../_lib/graph-view/update-positions";
 import { GraphNode, NodeType } from "../../_types/graph-view";
 
@@ -284,7 +284,7 @@ describe("updatePositions 함수 test", () => {
     expect(node3.y).toBe(node3InitialY);
   });
 
-  it("속도가 정확히 임계값일 때는 0으로 설정되지 않아야한다.", () => {
+  it("감쇠 후 속도가 정확히 임계값일 때는 0으로 설정되지 않아야한다.", () => {
     const graphNodes: GraphNode[] = [
       {
         id: 1,
@@ -300,15 +300,16 @@ describe("updatePositions 함수 test", () => {
     const node1 = nodes.get(1)!;
     node1.x = 50;
     node1.y = 50;
-    // 임계값과 동일한 속도
-    node1.vx = GRAPH_NUMBER_CONSTANT.VELOCITY_THRESHOLD;
+    // 감쇠 후 임계값이 되도록 초기 속도 설정
+    node1.vx =
+      GRAPH_NUMBER_CONSTANT.VELOCITY_THRESHOLD / PHISICS_CONSTANT.DAMPING;
     node1.vy = 0;
     node1.fx = null;
     node1.fy = null;
 
     updatePositions(nodes);
 
-    // 속도가 임계값과 같으므로 0이 되지 않아야 함
+    // 감쇠 후 속도가 임계값과 같으므로 0이 되지 않아야 함
     expect(node1.vx).not.toBe(0);
   });
 });
