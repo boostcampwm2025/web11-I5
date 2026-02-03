@@ -6,6 +6,8 @@ import { Button } from "@/components/button/button";
 import { CheckCircle2, LoaderCircle, TextAlignStart } from "lucide-react";
 
 interface TextInputProps {
+  questionTitle: string;
+  questionContent: string;
   onSubmit: (text: string) => void;
   isSubmitting: boolean;
   disabled?: boolean;
@@ -13,6 +15,8 @@ interface TextInputProps {
 }
 
 function TextInput({
+  questionTitle,
+  questionContent,
   onSubmit,
   isSubmitting,
   disabled = false,
@@ -31,7 +35,15 @@ function TextInput({
   };
 
   return (
-    <div className="p-4 md:p-6 flex flex-col gap-3 md:gap-4">
+    <div className="px-4 md:px-6 py-8 md:py-10 flex flex-col gap-3 md:gap-4">
+      <div className="text-center">
+        <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3">
+          {questionTitle}
+        </h3>
+        <p className="text-muted-foreground text-sm md:text-base">
+          {questionContent}
+        </p>
+      </div>
       <div className="flex items-center gap-2">
         <TextAlignStart className="w-4 h-4 text-teal-400" />
         <span className="text-sm text-muted-foreground font-medium">

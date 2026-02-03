@@ -26,6 +26,8 @@ import { AUDIO_CONFIG } from "../_constants/audio-config-constant";
 import { formatTime } from "../_lib/format-time";
 
 interface VoiceInputProps {
+  questionTitle: string;
+  questionContent: string;
   maxDurationSeconds?: number;
   onSubmitSuccess: (assetId: number, durationMs: number) => Promise<void>;
   onError: (message: string) => void;
@@ -34,9 +36,11 @@ interface VoiceInputProps {
   disabled?: boolean;
 }
 
-type RecordingState = "idle" | "recording" | "recorded";
+type RecordingState = "idle" | "countdown" | "recording" | "recorded";
 
 function VoiceInput({
+  questionTitle,
+  questionContent,
   maxDurationSeconds = 300,
   onSubmitSuccess,
   onError,
@@ -68,6 +72,28 @@ function VoiceInput({
     stop: stopTickTock,
     ready: tickTockReady,
   } = useAudio("/ticking.wav", { volume: 0.5, loop: true });
+
+  const [countdown, setCountdown] = React.useState<number | null>(null);
+  const isCountingDown = countdown !== null;
+
+  React.useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      setCountdown(null);
+      if (dingReady) {
+        playDing();
+      }
+      startRecording();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown(countdown - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown, dingReady, playDing, startRecording]);
 
   const WARNING_SECONDS = 10;
   const isInWarningZone =
@@ -110,17 +136,16 @@ function VoiceInput({
     }
   };
 
-  const recordingState: RecordingState = isRecording
-    ? "recording"
-    : hasRecorded
-      ? "recorded"
-      : "idle";
+  const recordingState: RecordingState = isCountingDown
+    ? "countdown"
+    : isRecording
+      ? "recording"
+      : hasRecorded
+        ? "recorded"
+        : "idle";
 
   const handleStartRecording = () => {
-    if (dingReady) {
-      setTimeout(() => playDing(), 100);
-    }
-    startRecording();
+    setCountdown(3);
   };
 
   const handleSubmit = async () => {
@@ -166,12 +191,15 @@ function VoiceInput({
     status === "no_device";
 
   return (
-    <div className="min-h-80 md:h-100 flex flex-col items-center justify-center py-4 md:py-0">
+    <div className="flex flex-col items-center justify-center py-8 md:py-10">
+      <CountdownOverlay countdown={countdown} />
       {isStatusError ? (
         <StatusError status={status} />
       ) : (
         <>
           <StatusMessage
+            questionTitle={questionTitle}
+            questionContent={questionContent}
             state={recordingState}
             elapsedSeconds={elapsedSeconds}
             maxDurationSeconds={maxDurationSeconds}
@@ -223,11 +251,11 @@ function VoiceInput({
           </div>
 
           <div className="flex items-center justify-center h-20 md:h-24">
-            {recordingState !== "recorded" ? (
+            {recordingState !== "recorded" && recordingState !== "countdown" ? (
               <RecordButton
                 isRecording={isRecording}
                 onClick={isRecording ? stopRecording : handleStartRecording}
-                disabled={isSubmitting || disabled}
+                disabled={isSubmitting || disabled || isCountingDown}
               />
             ) : (
               <div className="flex items-center gap-2 md:gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -309,18 +337,22 @@ function StatusError({ status }: StatusErrorProps) {
 }
 
 interface StatusMessageProps {
+  questionTitle: string;
+  questionContent: string;
   state: RecordingState;
   elapsedSeconds: number;
   maxDurationSeconds: number;
 }
 
 function StatusMessage({
+  questionContent,
+  questionTitle,
   state,
   elapsedSeconds,
   maxDurationSeconds,
 }: StatusMessageProps) {
   return (
-    <div className="h-16 md:h-20 text-center px-4">
+    <div className="text-center px-4">
       {state === "recording" && (
         <div className="animate-in fade-in">
           <div className="text-4xl md:text-5xl font-semibold tabular-nums text-center tracking-tight flex items-end justify-center gap-1">
@@ -338,10 +370,10 @@ function StatusMessage({
       {state === "idle" && (
         <div>
           <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3">
-            답변 시작
+            {questionTitle}
           </h3>
           <p className="text-muted-foreground text-sm md:text-base">
-            버튼을 눌러 녹음을 시작하세요.
+            {questionContent}
           </p>
         </div>
       )}
@@ -356,6 +388,22 @@ function StatusMessage({
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+function CountdownOverlay({ countdown }: { countdown: number | null }) {
+  if (countdown === null) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center animate-in fade-in duration-200">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div
+        key={countdown}
+        className="relative text-8xl md:text-9xl font-bold text-teal-300 tabular-nums animate-countdown-spring"
+      >
+        {countdown}
+      </div>
     </div>
   );
 }
