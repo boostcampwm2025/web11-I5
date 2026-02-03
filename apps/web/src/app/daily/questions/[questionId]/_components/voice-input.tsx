@@ -75,6 +75,12 @@ function VoiceInput({
   React.useEffect(() => {
     if (countdown === null) return;
 
+    // disabled 또는 isSubmitting 상태면 카운트다운 취소
+    if (disabled || isSubmitting) {
+      setCountdown(null);
+      return;
+    }
+
     if (countdown === 0) {
       setCountdown(null);
       if (dingReady) {
@@ -89,7 +95,7 @@ function VoiceInput({
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [countdown, dingReady, playDing, startRecording]);
+  }, [countdown, dingReady, playDing, startRecording, disabled, isSubmitting]);
 
   const WARNING_SECONDS = 10;
   const isInWarningZone =
