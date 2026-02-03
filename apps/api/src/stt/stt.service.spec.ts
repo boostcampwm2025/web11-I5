@@ -8,8 +8,10 @@ const mockFetch = jest.fn();
 
 describe('SttService', () => {
   let service: SttService;
+  let originalFetch: typeof global.fetch;
 
   beforeEach(async () => {
+    originalFetch = global.fetch;
     global.fetch = mockFetch;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -40,6 +42,7 @@ describe('SttService', () => {
   });
 
   afterEach(() => {
+    global.fetch = originalFetch;
     jest.clearAllMocks();
   });
 
