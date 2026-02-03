@@ -47,18 +47,23 @@ function MailVerificationModal({
     setIsError(false);
     setIsSending(true);
 
-    const result = await sendVerifyMail(email);
+    try {
+      const result = await sendVerifyMail(email);
 
-    if (result.success) {
-      setMessage(result.message || "인증 코드가 전송되었습니다.");
-      setHasSentMail(true);
-      setTimerKey((prev) => prev + 1);
-    } else {
+      if (result.success) {
+        setMessage(result.message || "인증 코드가 전송되었습니다.");
+        setHasSentMail(true);
+        setTimerKey((prev) => prev + 1);
+      } else {
+        setIsError(true);
+        setMessage(result.error || "인증 코드 전송에 실패했습니다.");
+      }
+    } catch {
       setIsError(true);
-      setMessage(result.error || "인증 코드 전송에 실패했습니다.");
+      setMessage("인증 코드 전송에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSending(false);
     }
-
-    setIsSending(false);
   };
 
   return (
