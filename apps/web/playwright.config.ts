@@ -78,6 +78,7 @@ export default defineConfig({
     timeout: 120 * 1000,
     env: {
       USE_MSW: "true",
+      API_URL: "http://localhost:8000",
     },
   },
 });
