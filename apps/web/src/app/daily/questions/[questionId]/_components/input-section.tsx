@@ -14,16 +14,12 @@ import VoiceInput from "./voice-input";
 import TextInput from "./text-input";
 
 interface InputSectionProps {
-  questionTitle: string;
-  questionContent: string;
   initialInputMode: "voice" | "text";
   questionId: number;
   maxDurationSeconds?: number;
 }
 
 function InputSection({
-  questionContent,
-  questionTitle,
   initialInputMode,
   questionId,
   maxDurationSeconds = 300,
@@ -109,8 +105,6 @@ function InputSection({
 
       <TabsContent value="voice">
         <VoiceInput
-          questionTitle={questionTitle}
-          questionContent={questionContent}
           maxDurationSeconds={maxDurationSeconds}
           onSubmitSuccess={handleAssetSubmit}
           onError={handleError}
@@ -125,8 +119,6 @@ function InputSection({
 
       <TabsContent value="text">
         <TextInput
-          questionTitle={questionTitle}
-          questionContent={questionContent}
           onSubmit={handleTextSubmit}
           isSubmitting={isSubmitting}
           disabled={!!submissionId}

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Header from "@/components/header/header";
+import QuestionCard from "./_components/question-card";
 import { getQuestion } from "./_lib/question-api";
 import InputSection from "./_components/input-section";
 
@@ -29,12 +30,13 @@ async function DailyQuestionPage({
     <>
       <Header />
       <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-6 md:py-15 space-y-4 md:space-y-8 min-h-main overflow-x-hidden">
-        <InputSection
-          questionContent={question.content}
-          questionTitle={question.title}
-          initialInputMode={mode}
-          questionId={question.id}
+        <QuestionCard
+          title={question.title}
+          content={question.content}
+          categoryName={question.category?.name}
+          parentCategoryName={question.category?.parent?.name}
         />
+        <InputSection initialInputMode={mode} questionId={question.id} />
         <div data-boostad-zone className="h-20"></div>
       </main>
     </>

@@ -26,8 +26,6 @@ import { AUDIO_CONFIG } from "../_constants/audio-config-constant";
 import { formatTime } from "../_lib/format-time";
 
 interface VoiceInputProps {
-  questionTitle: string;
-  questionContent: string;
   maxDurationSeconds?: number;
   onSubmitSuccess: (assetId: number, durationMs: number) => Promise<void>;
   onError: (message: string) => void;
@@ -39,8 +37,6 @@ interface VoiceInputProps {
 type RecordingState = "idle" | "countdown" | "recording" | "recorded";
 
 function VoiceInput({
-  questionTitle,
-  questionContent,
   maxDurationSeconds = 300,
   onSubmitSuccess,
   onError,
@@ -198,8 +194,6 @@ function VoiceInput({
       ) : (
         <>
           <StatusMessage
-            questionTitle={questionTitle}
-            questionContent={questionContent}
             state={recordingState}
             elapsedSeconds={elapsedSeconds}
             maxDurationSeconds={maxDurationSeconds}
@@ -207,7 +201,7 @@ function VoiceInput({
 
           <div className="max-w-sm w-full px-12">
             {hasRecorded ? (
-              <div className="flex items-center gap-2 md:gap-3 h-32 md:h-40">
+              <div className="flex items-center gap-2 md:gap-3 h-20 md:h-30">
                 <Button
                   type="button"
                   size="icon-lg"
@@ -246,7 +240,7 @@ function VoiceInput({
                 </div>
               </div>
             ) : (
-              <Waveform historyRef={historyRef} className="h-20 md:h-40" />
+              <Waveform historyRef={historyRef} className="h-20 md:h-30" />
             )}
           </div>
 
@@ -337,16 +331,12 @@ function StatusError({ status }: StatusErrorProps) {
 }
 
 interface StatusMessageProps {
-  questionTitle: string;
-  questionContent: string;
   state: RecordingState;
   elapsedSeconds: number;
   maxDurationSeconds: number;
 }
 
 function StatusMessage({
-  questionContent,
-  questionTitle,
   state,
   elapsedSeconds,
   maxDurationSeconds,
@@ -354,22 +344,14 @@ function StatusMessage({
   const showIdle = state === "idle" || state === "countdown";
 
   return (
-    <div className="text-center px-4 min-h-30 md:min-h-35 flex items-center justify-center">
+    <div className="text-center px-4 flex items-center justify-center">
       {state === "recording" && (
         <div
           key="recording"
           className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-3"
         >
-          <div className="space-y-1">
-            <h3 className="text-base md:text-lg font-semibold text-foreground/80">
-              {questionTitle}
-            </h3>
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {questionContent}
-            </p>
-          </div>
           <div className="pt-1">
-            <div className="text-4xl md:text-5xl font-semibold tabular-nums text-center tracking-tight flex items-end justify-center gap-1">
+            <div className="text-4xl md:text-4xl font-semibold tabular-nums text-center tracking-tight flex items-end justify-center gap-1">
               <div>{formatTime(elapsedSeconds)} </div>
               <div className="text-base md:text-lg text-muted-foreground font-normal">
                 / {formatTime(maxDurationSeconds)}
@@ -385,10 +367,10 @@ function StatusMessage({
       {showIdle && (
         <div key="idle">
           <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3">
-            {questionTitle}
+            답변 시작
           </h3>
           <p className="text-muted-foreground text-sm md:text-base">
-            {questionContent}
+            버튼을 눌러 녹음을 시작하세요.
           </p>
         </div>
       )}
