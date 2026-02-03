@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { SttController } from './stt.controller';
 import { AnswerSubmissionService } from '../answer-submission/answer-submission.service';
 import { AnswerEvaluationService } from '../answer-evaluation/answer-evaluation.service';
@@ -28,6 +29,10 @@ describe('SttController', () => {
     callWithSchema: jest.fn(),
   };
 
+  const mockConfigService = {
+    get: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SttController],
@@ -43,6 +48,10 @@ describe('SttController', () => {
         {
           provide: LlmService,
           useValue: mockLlmService,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     })
