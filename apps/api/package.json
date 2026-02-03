@@ -42,6 +42,7 @@
     "@nestjs/swagger": "^11.2.4",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.11",
+    "@repo/types": "workspace:*",
     "@willsoto/nestjs-prometheus": "^6.0.2",
     "aws-sdk": "^2.1693.0",
     "class-transformer": "^0.5.1",

@@ -15,6 +15,7 @@
     "chromatic": "npx chromatic --project-token=chpt_4cfbab0f11a8be9"
   },
   "dependencies": {
+    "@repo/types": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-progress": "^1.1.8",
