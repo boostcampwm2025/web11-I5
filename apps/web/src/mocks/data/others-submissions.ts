@@ -1,4 +1,7 @@
-import { PaginatedSubmissionDTO } from "@/app/daily/questions/[questionId]/others/_types/types";
+import {
+  OthersSubmissionDTO,
+  PaginatedSubmissionDTO,
+} from "@/app/daily/questions/[questionId]/others/_types/types";
 
 export const mockOthersSubmissions: PaginatedSubmissionDTO = {
   question: {
@@ -89,4 +92,85 @@ export const mockOthersSubmissionsEmpty: PaginatedSubmissionDTO = {
   pageSize: 10,
   currentPage: 1,
   totalPages: 0,
+};
+
+export const mockOthersSubmissionDetail: OthersSubmissionDTO = {
+  nickname: "김철수",
+  question: {
+    id: 1,
+    title: "TCP와 UDP의 차이점을 설명하세요",
+    content:
+      "TCP와 UDP의 주요 차이점에 대해 연결 방식, 신뢰성, 속도 측면에서 설명해주세요.",
+    ttsUrl: null,
+    avgScore: 85,
+    avgImportance: 4.5,
+    categoryId: 11,
+    category: {
+      id: 11,
+      name: "TCP/IP",
+      depth: 1,
+      parentId: 1,
+      parent: {
+        id: 1,
+        name: "네트워크",
+        depth: 0,
+        parentId: null,
+      },
+    },
+    score: null,
+  },
+  submission: {
+    id: 101,
+    questionId: 1,
+    submittedAt: "2025-01-15T10:30:00Z",
+    audioAssetId: 1001,
+    evaluationStatus: "completed",
+    sttStatus: "completed",
+    inputType: "voice",
+    answerContent:
+      "TCP는 연결 지향 프로토콜로, 3-way handshake를 통해 연결을 설정합니다. 데이터 전송의 신뢰성을 보장하며, 순서대로 데이터를 전달합니다. 반면 UDP는 비연결 지향 프로토콜로, 연결 설정 없이 데이터를 전송합니다. 신뢰성은 낮지만 속도가 빠르며, 실시간 스트리밍이나 게임에 적합합니다.",
+    totalScore: 95,
+    duration: 45,
+  },
+  keywords: ["TCP", "UDP", "3-way handshake", "연결 지향", "비연결 지향"],
+};
+
+export const mockOthersSubmissionDetailNoAnswer: OthersSubmissionDTO = {
+  nickname: "이영희",
+  question: {
+    id: 1,
+    title: "TCP와 UDP의 차이점을 설명하세요",
+    content:
+      "TCP와 UDP의 주요 차이점에 대해 연결 방식, 신뢰성, 속도 측면에서 설명해주세요.",
+    ttsUrl: null,
+    avgScore: 85,
+    avgImportance: 4.5,
+    categoryId: 11,
+    category: {
+      id: 11,
+      name: "TCP/IP",
+      depth: 1,
+      parentId: 1,
+      parent: {
+        id: 1,
+        name: "네트워크",
+        depth: 0,
+        parentId: null,
+      },
+    },
+    score: null,
+  },
+  submission: {
+    id: 102,
+    questionId: 1,
+    submittedAt: "2025-01-14T14:20:00Z",
+    audioAssetId: 1002,
+    evaluationStatus: "completed",
+    sttStatus: "failed",
+    inputType: "voice",
+    answerContent: "",
+    totalScore: 88,
+    duration: 30,
+  },
+  keywords: [],
 };
