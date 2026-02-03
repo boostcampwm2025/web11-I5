@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get("error");
 
   if (error) {
-    redirect(`/login?error=${error}`);
+    redirect(`/login?error=${encodeURIComponent(error)}`);
   }
 
   if (token) {
