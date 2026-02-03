@@ -27,7 +27,12 @@ function FeedbackSection({
     return (
       <section className="p-5 md:p-9 transition-all duration-300">
         <div className="flex flex-col items-center justify-center py-8 md:py-12 gap-4 md:gap-6">
-          <div className="w-10 h-10 md:w-14 md:h-14 border-4 border-[#4FD1C5] border-t-transparent rounded-full animate-spin" />
+          <div
+            role="status"
+            aria-live="polite"
+            aria-label="분석 중"
+            className="w-10 h-10 md:w-14 md:h-14 border-4 border-[#4FD1C5] border-t-transparent rounded-full animate-spin"
+          />
 
           <div className="text-center px-4">
             <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-2 md:mb-3">
@@ -56,7 +61,10 @@ function FeedbackSection({
       <section className="p-5 md:p-9 transition-all duration-300">
         <div className="flex flex-col items-center justify-center py-8 md:py-12 gap-4 md:gap-6">
           <div className="w-10 h-10 md:w-14 md:h-14 bg-red-50 rounded-full flex items-center justify-center">
-            <AlertCircle className="w-6 h-6 md:w-8 md:h-8 text-red-500" />
+            <AlertCircle
+              className="w-6 h-6 md:w-8 md:h-8 text-red-500"
+              aria-hidden="true"
+            />
           </div>
 
           <div className="text-center px-4">

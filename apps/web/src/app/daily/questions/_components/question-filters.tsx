@@ -132,6 +132,7 @@ function QuestionFilters({
         <InputGroup>
           <InputGroupInput
             placeholder="문제 제목 검색"
+            aria-label="문제 제목 검색"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
@@ -146,6 +147,7 @@ function QuestionFilters({
             풀이 상태
           </div>
           <SegmentedControl
+            aria-label="풀이 상태"
             options={[
               { label: "전체", value: "" },
               { label: "푼 문제", value: "SOLVED" },
@@ -164,6 +166,7 @@ function QuestionFilters({
             중요도
           </div>
           <SegmentedControl
+            aria-label="중요도"
             options={[
               { label: "전체", value: "" },
               { label: "4.0 이상", value: "4" },
