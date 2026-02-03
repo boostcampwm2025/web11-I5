@@ -1,4 +1,12 @@
 import Header from "@/components/header/header";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/breadcrumb/breadcrumb";
 import { User } from "lucide-react";
 import { notFound } from "next/navigation";
 import { fetchOthersSubmission } from "../_lib/fetch-others-submission";
@@ -35,7 +43,27 @@ async function OthersDetailPage({ params }: OthersSubmissionDetailPageProps) {
   return (
     <>
       <Header />
-      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-15 space-y-6 md:space-y-8 min-h-main">
+      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-8 md:pb-15 space-y-6 md:space-y-8 min-h-main">
+        <Breadcrumb className="mb-4 md:mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href={`/reports/${questionId}`}>
+                나의 리포트
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href={`/daily/questions/${questionId}/others`}>
+                다른 사람 답변
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>답변 상세</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <div className="mb-8">
           <div className="flex items-center gap-2 text-base text-muted-foreground mb-2">
             <span className="font-medium">
