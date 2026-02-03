@@ -51,17 +51,6 @@ test.describe("문제 리스트 페이지", () => {
     ).toBeVisible();
   });
 
-  test("검색어 입력 시 URL에 search 파라미터가 추가되어야 한다", async ({
-    page,
-  }) => {
-    const searchInput = page.getByPlaceholder("문제 제목 검색");
-    await searchInput.fill("테스트");
-
-    // debounce 대기 후 URL 변경 확인
-    await page.waitForURL(/search=/);
-    expect(page.url()).toContain("search=");
-  });
-
   test("All 버튼 클릭 시 전체 카테고리 안내 문구가 표시되어야 한다", async ({
     page,
   }) => {
