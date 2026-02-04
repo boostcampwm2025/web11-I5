@@ -54,7 +54,7 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
               .filter((h) => h.status === "PENDING")
               .map((h) => h.submissionId)}
           />
-          <div data-boostad-zone className="h-20"></div>
+          <div data-boostad-zone className="h-20 overflow-x-hidden"></div>
         </div>
 
         <CollapsibleHistory
