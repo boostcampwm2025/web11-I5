@@ -21,8 +21,6 @@ function HistoryAccordion({ history, selectedId }: HistoryAccordionProps) {
     setOpenValue(is5xlUp ? "history" : "");
   }, [is5xlUp]);
 
-  console.log(is5xlUp);
-
   const renderStatus = (item: ReportHistoryItem) => {
     switch (item.status) {
       case "COMPLETED":
