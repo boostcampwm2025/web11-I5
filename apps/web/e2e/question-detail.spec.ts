@@ -183,13 +183,11 @@ test.describe("문제 상세 페이지", () => {
       const textarea = page.getByPlaceholder(
         "면접 질문에 답하듯이 지식을 논리적으로 작성해 보세요.",
       );
-      await textarea.fill("테스트 답변입니다.");
-
-      // textarea 값이 입력됐는지 먼저 확인 (React 상태 업데이트 대기)
-      await expect(textarea).toHaveValue("테스트 답변입니다.");
+      await textarea.click();
+      await textarea.pressSequentially("테스트 답변입니다.");
 
       const submitButton = page.getByRole("button", { name: "답변 제출" });
-      await expect(submitButton).toBeEnabled({ timeout: 10000 });
+      await expect(submitButton).toBeEnabled();
     });
 
     test("공백만 입력하면 제출 버튼이 비활성화되어야 한다", async ({
