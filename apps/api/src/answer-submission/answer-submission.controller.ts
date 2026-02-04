@@ -99,6 +99,42 @@ export class AnswerSubmissionController {
     );
   }
 
+  @Get('batch-status')
+  @ApiOperation({
+    summary: '여러 제출 건의 처리 상태를 한 번에 조회',
+    description:
+      '여러 submission ID의 STT/평가 처리 상태를 한 번에 조회합니다. 폴링 최적화를 위해 사용됩니다.',
+  })
+  @ApiQuery({
+    name: 'ids',
+    description: '조회할 submission ID 목록 (콤마로 구분)',
+    example: '1,2,3',
+    required: true,
+  })
+  @ApiOkResponse({
+    description: '조회 성공',
+    schema: {
+      type: 'object',
+      example: {
+        '123': {
+          status: 'PROCESSING',
+          step: 'STT',
+          message: '음성을 텍스트로 변환 중입니다...',
+        },
+        '124': {
+          status: 'COMPLETED',
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다',
+  })
+  async getBatchStatus(@UserId() userId: number, @Query('ids') ids: string) {
+    const idArray = ids.split(',').map((id) => parseInt(id.trim(), 10));
+    return await this.answerSubmissionService.getBatchStatus(userId, idArray);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: '제출 답안 상세 조회',
