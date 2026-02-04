@@ -1,4 +1,9 @@
 import { categoryHandlers } from "./category-handlers";
 import { questionHandlers } from "./question-handlers";
+import { authHandlers } from "./auth-handlers";
 
-export const handlers = [...categoryHandlers, ...questionHandlers];
+export const handlers = [
+  ...categoryHandlers,
+  ...questionHandlers,
+  ...authHandlers,
+];
