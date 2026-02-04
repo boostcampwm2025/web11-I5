@@ -1,4 +1,6 @@
 import { apiGet } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/sentry-logger";
 import { OthersSubmissionDTO } from "../_types/types";
 
 interface FetchOthersSubmissionsParams {
@@ -9,12 +11,23 @@ interface FetchOthersSubmissionsParams {
 async function fetchOthersSubmission(
   params: FetchOthersSubmissionsParams,
 ): Promise<OthersSubmissionDTO> {
-  const searchParams = new URLSearchParams();
-  const queryString = searchParams.toString();
   const endpoint = `/questions/${params.questionId}/others/${params.submissionId}`;
-  const url = `${endpoint}${queryString ? `?${queryString}` : ""}`;
 
-  return apiGet<OthersSubmissionDTO>(url);
+  try {
+    return await apiGet<OthersSubmissionDTO>(endpoint);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("다른 사람 답변 단건 조회 실패", {
+        questionId: params.questionId,
+        submissionId: params.submissionId,
+        status: error.status,
+        errorType: error.getErrorType(),
+        serverMessage: error.getServerMessage(),
+        requestId: error.getRequestId(),
+      });
+    }
+    throw error;
+  }
 }
 
 export { fetchOthersSubmission };

@@ -1,43 +1,42 @@
+import { apiGet } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/sentry-logger";
 import { Category } from "../_types/types";
 
 async function fetchRootCategories(): Promise<Category[]> {
-  const apiUrl = process.env.API_URL;
-  if (!apiUrl) {
-    throw new Error("API_URL environment variable is not defined");
+  try {
+    return await apiGet<Category[]>("/categories/roots");
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error("카테고리 목록 조회 실패", {
+        status: error.status,
+        errorType: error.getErrorType(),
+        serverMessage: error.getServerMessage(),
+        requestId: error.getRequestId(),
+      });
+    }
+    throw error;
   }
-
-  const response = await fetch(`${apiUrl}/categories/roots`, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch categories: ${response.statusText}`);
-  }
-
-  return await response.json();
 }
 
 async function fetchCategoryTree(categoryId: number): Promise<Category | null> {
-  const apiUrl = process.env.API_URL;
-  if (!apiUrl) {
-    throw new Error("API_URL environment variable is not defined");
-  }
-
-  const response = await fetch(
-    `${apiUrl}/categories/tree-by-id/${categoryId}`,
-    {
-      cache: "no-store",
-    },
-  );
-
-  if (!response.ok) {
-    if (response.status === 404) {
+  try {
+    return await apiGet<Category>(`/categories/tree-by-id/${categoryId}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.isNotFound()) {
       return null;
     }
-    throw new Error(`Failed to fetch category tree: ${response.statusText}`);
+    if (error instanceof ApiError) {
+      logger.error("카테고리 트리 조회 실패", {
+        categoryId,
+        status: error.status,
+        errorType: error.getErrorType(),
+        serverMessage: error.getServerMessage(),
+        requestId: error.getRequestId(),
+      });
+    }
+    throw error;
   }
-
-  return await response.json();
 }
 
 export { fetchCategoryTree, fetchRootCategories };

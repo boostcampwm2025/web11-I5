@@ -2,6 +2,7 @@
 
 import { EvaluationDTO } from "../../_types/evaluation-dto";
 import { apiGet } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/sentry-logger";
 
 async function fetchEvaluation(
@@ -10,9 +11,15 @@ async function fetchEvaluation(
   try {
     return await apiGet<EvaluationDTO>(`/answer-evaluation/${submissionId}`);
   } catch (error) {
-    logger.error("평가 결과 조회 실패", {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    if (error instanceof ApiError) {
+      logger.error("평가 결과 조회 실패", {
+        submissionId,
+        status: error.status,
+        errorType: error.getErrorType(),
+        serverMessage: error.getServerMessage(),
+        requestId: error.getRequestId(),
+      });
+    }
     return null; // mapToReportDetail이 null을 처리함
   }
 }
