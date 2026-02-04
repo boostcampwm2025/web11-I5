@@ -47,7 +47,7 @@ function ReportTabs({
       ? evaluation.feedback.extractedKeywords
       : [];
 
-  // 베이스: 이 문제 전체 그래프가 있으면 사용, 없으면 제출 그래프만 사용
+  // 베이스: 전체 누적 그래프가 있으면 사용, 없으면 제출 그래프만 사용
   const graphData =
     fullGraphForQuestion != null && fullGraphForQuestion.nodes.length > 0
       ? fullGraphForQuestion
@@ -152,7 +152,7 @@ function ReportTabs({
       </TabsContent>
 
       <TabsContent value="graph">
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden">
           {hasGraph ? (
             <div className="relative w-full h-80 md:h-96">
               <GraphView
