@@ -143,19 +143,26 @@ export class GraphController {
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    const submissionIds = rawIds
-      .map((s) => parseInt(s, 10))
-      .filter((n) => Number.isFinite(n));
+    if (rawIds.some((s) => !/^\d+$/.test(s))) {
+      throw new BadRequestException(
+        '유효하지 않은 제출 ID가 포함되어 있습니다.',
+      );
+    }
+    const submissionIds = rawIds.map((s) => Number(s));
+    const uniqueIds = Array.from(new Set(submissionIds));
 
-    if (submissionIds.length === 0) {
+    if (uniqueIds.length === 0) {
       throw new BadRequestException('유효한 제출 ID가 없습니다.');
+    }
+    if (uniqueIds.length !== submissionIds.length) {
+      throw new BadRequestException('중복된 제출 ID가 포함되어 있습니다.');
     }
 
     const submissions = await this.answerSubmissionRepository.find({
-      where: submissionIds.map((id) => ({ id })),
+      where: uniqueIds.map((id) => ({ id })),
     });
 
-    if (submissions.length !== submissionIds.length) {
+    if (submissions.length !== uniqueIds.length) {
       throw new NotFoundException('일부 제출을 찾을 수 없습니다.');
     }
 
@@ -164,6 +171,6 @@ export class GraphController {
       throw new ForbiddenException('본인의 제출만 조회할 수 있습니다.');
     }
 
-    return await this.graphService.getGraphBySubmissionIds(submissionIds);
+    return await this.graphService.getGraphBySubmissionIds(uniqueIds);
   }
 }
