@@ -183,7 +183,8 @@ test.describe("문제 상세 페이지", () => {
       const textarea = page.getByPlaceholder(
         "면접 질문에 답하듯이 지식을 논리적으로 작성해 보세요.",
       );
-      await textarea.fill("테스트 답변입니다.");
+      await textarea.click();
+      await textarea.pressSequentially("테스트 답변입니다.");
 
       const submitButton = page.getByRole("button", { name: "답변 제출" });
       await expect(submitButton).toBeEnabled();
