@@ -10,14 +10,19 @@ interface RetryButtonProps {
   question: Question;
   className?: string;
   children?: React.ReactNode;
+  size?: "default" | "sm" | "lg";
 }
 
-function RetryButton({ question, children }: RetryButtonProps) {
+function RetryButton({ question, children, size }: RetryButtonProps) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   return (
     <>
-      <Button className="font-semibold" onClick={() => setIsModalOpen(true)}>
+      <Button
+        className="font-semibold"
+        size={size}
+        onClick={() => setIsModalOpen(true)}
+      >
         {children ?? (
           <>
             <RotateCcw className="w-4 h-4" />

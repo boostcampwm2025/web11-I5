@@ -40,7 +40,7 @@ async function MyPage() {
   return (
     <>
       <Header />
-      <div className="w-full px-4 md:px-8 pt-8 md:pt-15 pb-16 md:pb-25 max-w-4xl flex flex-col gap-6 md:gap-10 min-h-main">
+      <div className="w-full px-4 md:px-8 pt-8 md:pt-15 pb-16 md:pb-25 max-w-7xl flex flex-col gap-6 md:gap-10 min-h-main">
         <UserStatsCard
           nickname={userData.nickname}
           email={userData.email || "@test123"} // 추후 작업에서 해당 부분 email 리턴하도록 수정 필요.

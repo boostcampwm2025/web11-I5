@@ -19,7 +19,7 @@ async function Home() {
   return (
     <>
       <Header />
-      <main className="w-full h-full flex flex-col bg-white overflow-x-hidden">
+      <main className="w-full h-full  flex flex-col bg-white overflow-x-hidden">
         <section className="w-full min-h-[calc(100svh-64px)] relative flex justify-center items-center overflow-hidden">
           <div
             className={cn(

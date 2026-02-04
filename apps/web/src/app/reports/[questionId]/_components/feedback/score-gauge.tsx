@@ -74,10 +74,7 @@ function ScoreGauge({ score }: ScoreGaugeProps) {
             color.text,
           ].join(" ")}
         >
-          {clamped}
-        </span>
-        <span className="text-[0.5rem] font-extrabold text-slate-400 mt-0.5">
-          TOTAL
+          {clamped}점
         </span>
       </div>
     </div>

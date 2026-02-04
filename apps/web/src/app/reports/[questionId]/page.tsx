@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Header from "@/components/header/header";
 import ReportHeader from "./_components/report-header";
-import CollapsibleHistory from "./_components/history/collapsible-history";
+import HistoryAccordion from "./_components/history/history-accordion";
 import { getReportPageData } from "./_lib/services/page-data";
 import ReportRefresh from "./_components/report-refresh";
 import ReportTabs from "./_components/report-tabs";
@@ -37,30 +37,39 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
   return (
     <>
       <Header />
-      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-6 md:py-15 flex gap-4 lg:gap-8 min-h-main">
-        <div className="flex flex-col flex-1 min-w-0">
-          <div className="mb-8 md:mb-14">
-            <ReportHeader question={question} highestScore={highestScore} />
-          </div>
-
-          <ReportTabs
-            selectedAttempt={selectedAttempt}
-            evaluation={evaluation}
-            question={question}
-          />
-
-          <ReportRefresh
-            pendingSubmissionIds={history
-              .filter((h) => h.status === "PENDING")
-              .map((h) => h.submissionId)}
-          />
-          <div data-boostad-zone className="h-20 overflow-x-hidden"></div>
+      <main className="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-15 min-h-main">
+        <div className="mb-6 md:mb-10">
+          <ReportHeader question={question} highestScore={highestScore} />
         </div>
 
-        <CollapsibleHistory
-          history={history}
-          selectedId={selectedAttempt.submissionId}
+        <div className="flex flex-col xl:flex-row-reverse xl:gap-8">
+          {/* 히스토리 사이드바: xl 이상에서 왼쪽 고정 */}
+          <aside className="mb-6 xl:mb-0 xl:w-80 xl:shrink-0">
+            <HistoryAccordion
+              history={history}
+              selectedId={selectedAttempt.submissionId}
+            />
+          </aside>
+
+          {/* 메인 콘텐츠 */}
+          <div
+            key={selectedAttempt.submissionId}
+            className="flex-1 min-w-0 animate-in fade-in duration-200"
+          >
+            <ReportTabs
+              selectedAttempt={selectedAttempt}
+              evaluation={evaluation}
+              question={question}
+            />
+          </div>
+        </div>
+
+        <ReportRefresh
+          pendingSubmissionIds={history
+            .filter((h) => h.status === "PENDING")
+            .map((h) => h.submissionId)}
         />
+        <div data-boostad-zone className="h-20 overflow-x-hidden"></div>
       </main>
     </>
   );
