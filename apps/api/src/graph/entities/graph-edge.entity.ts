@@ -39,6 +39,12 @@ export class GraphEdge {
   targetId: number;
 
   /**
+   * 이 엣지를 생성한 제출 ID (제출별 그래프 스냅샷 조회용)
+   */
+  @Column({ name: 'submission_id', type: 'int', nullable: true })
+  submissionId: number | null;
+
+  /**
    * 출발 노드 관계
    */
   @ManyToOne(() => GraphNode)
