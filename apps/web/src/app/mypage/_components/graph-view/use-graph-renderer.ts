@@ -101,14 +101,19 @@ function useGraphRenderer({
   const nodeMapRef = React.useRef<NodeMap | null>(externalNodeMap || null);
 
   // 그래프 데이터가 바뀌면 NodeMap 무효화 (다른 시도 선택 시 등)
-  const graphKey = React.useMemo(
-    () =>
-      `${graphData.nodes
-        .map((n) => n.id)
-        .sort((a, b) => a - b)
-        .join(",")}|${graphData.edges.length}`,
-    [graphData.nodes, graphData.edges],
-  );
+  const graphKey = React.useMemo(() => {
+    const nodeKey = graphData.nodes
+      .map((n) => n.id)
+      .sort((a, b) => a - b)
+      .join(",");
+    const edgeKey = graphData.edges
+      .map((e) => e.id)
+      .sort((a, b) => a - b)
+      .join(",");
+    return `${nodeKey}|${edgeKey}`;
+  }, [graphData.nodes, graphData.edges]);
+
+  // graphKey가 변경되면 NodeMap 초기화 (새 그래프로 재시작)
   React.useEffect(() => {
     nodeMapRef.current = null;
   }, [graphKey]);
