@@ -16,6 +16,7 @@ import { GraphNode } from './graph-node.entity';
  */
 @Entity('graph_edges')
 @Index(['userId', 'sourceId', 'targetId'], { unique: true })
+@Index(['submissionId'])
 export class GraphEdge {
   @PrimaryGeneratedColumn()
   id: number;
