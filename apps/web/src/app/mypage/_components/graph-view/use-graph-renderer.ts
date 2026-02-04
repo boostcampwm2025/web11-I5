@@ -1,7 +1,9 @@
 import * as React from "react";
 import { GRAPH_NUMBER_CONSTANT } from "../../_constants/graph-view-constant";
 import { addRandomEdgeDistance } from "../../_lib/graph-view/add-random-edge-distance";
-import drawGraphView from "../../_lib/graph-view/draw-graph-view";
+import drawGraphView, {
+  type GraphHighlightSets,
+} from "../../_lib/graph-view/draw-graph-view";
 import {
   GraphData,
   GraphEdge,
@@ -43,6 +45,8 @@ export interface UseGraphRendererOptions {
   initialScale?: number; // scale의 초기값만 저장
   scale?: number; // 외부에서 scale 조정할 때 사용
   onScaleChange?: (scale: number) => void;
+  /** 제출에서 추가된 노드·엣지 하이라이트용 (리포트 탭 등) */
+  highlight?: GraphHighlightSets | null;
 }
 
 export interface GraphRendererReturn {
@@ -73,6 +77,7 @@ function useGraphRenderer({
   initialScale = 0.5,
   scale: externalScale,
   onScaleChange,
+  highlight = null,
 }: UseGraphRendererOptions): GraphRendererReturn {
   // 엣지에 랜덤 거리 적용 (한 번만 계산)
   const processedEdges = React.useMemo(
@@ -94,6 +99,19 @@ function useGraphRenderer({
 
   // NodeMap 관리
   const nodeMapRef = React.useRef<NodeMap | null>(externalNodeMap || null);
+
+  // 그래프 데이터가 바뀌면 NodeMap 무효화 (다른 시도 선택 시 등)
+  const graphKey = React.useMemo(
+    () =>
+      `${graphData.nodes
+        .map((n) => n.id)
+        .sort((a, b) => a - b)
+        .join(",")}|${graphData.edges.length}`,
+    [graphData.nodes, graphData.edges],
+  );
+  React.useEffect(() => {
+    nodeMapRef.current = null;
+  }, [graphKey]);
 
   // NodeMap 변경 콜백 throttle 용
   const shouldNotify = React.useRef(true);
@@ -346,6 +364,7 @@ function useGraphRenderer({
         hoveredNodeId.current,
         textRenderScale,
         showLabels,
+        highlight,
       );
 
       // NodeMap 변경 콜백 (throttle 처리 - 100ms 마다)
@@ -367,6 +386,7 @@ function useGraphRenderer({
       textRenderScale,
       showLabels,
       onNodeMapChange,
+      highlight,
     ],
   );
 
