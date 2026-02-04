@@ -26,7 +26,7 @@ function HistoryAccordion({ history, selectedId }: HistoryAccordionProps) {
       case "COMPLETED":
         return (
           <span className="text-sm font-bold text-slate-700">
-            {item.totalScore}점
+            {item.totalScore == null ? "점수 없음" : `${item.totalScore}점`}
           </span>
         );
       case "PENDING":
