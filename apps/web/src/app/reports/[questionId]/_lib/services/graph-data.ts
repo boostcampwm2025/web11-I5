@@ -20,6 +20,20 @@ async function getReportGraph(submissionId: number): Promise<GraphData | null> {
 }
 
 /**
+ * 전체 그래프를 조회한다. 실패 시 null 반환.
+ */
+async function getReportFullGraph(): Promise<GraphData | null> {
+  try {
+    return await apiGet<GraphData>("/graph");
+  } catch (error) {
+    logger.warn("전체 그래프 조회 실패", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+/**
  * 여러 제출 ID까지의 누적 그래프를 조회한다.
  * (이전 제출을 볼 때 그 시점의 그래프 모양 표시용). 실패 시 null 반환.
  */
@@ -77,6 +91,7 @@ function filterGraphByQuestionId(
 
 export {
   getReportGraph,
+  getReportFullGraph,
   getReportGraphBySubmissionIds,
   filterGraphByQuestionId,
 };
