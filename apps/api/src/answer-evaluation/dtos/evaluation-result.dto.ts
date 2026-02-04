@@ -11,7 +11,8 @@ import {
   CoverageEval,
   DepthEval,
   LogicEval,
-} from '../answer-evaluation.constants';
+} from '@repo/types';
+import type { ScoreDetails } from '@repo/types';
 
 export class EvaluationResultDto {
   @IsEnum(CoreConceptEval)
@@ -47,12 +48,7 @@ export class EvaluationResultDto {
 
   @IsOptional()
   @IsObject()
-  scoreDetails?: {
-    coreConcept: number;
-    coverage: number;
-    logic: number;
-    depth: number;
-  };
+  scoreDetails?: ScoreDetails;
 
   @IsOptional()
   @IsNumber()

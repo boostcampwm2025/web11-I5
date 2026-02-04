@@ -11,7 +11,9 @@ import {
   CoverageEval,
   LogicEval,
   DepthEval,
-} from '../answer-evaluation.constants';
+  ScoreDetails,
+  DetailAnalysis,
+} from '@repo/types';
 import { AnswerSubmission } from '../../answer-submission/entities/answer-submission.entity';
 
 @Entity('answer_evaluations')
@@ -26,20 +28,10 @@ export class AnswerEvaluation {
   feedbackMessage: string | null;
 
   @Column({ name: 'detail_analysis', type: 'jsonb', nullable: true })
-  detailAnalysis: {
-    coreConcept: string;
-    coverage: string;
-    logic: string;
-    depth: string;
-  } | null;
+  detailAnalysis: DetailAnalysis | null;
 
   @Column({ name: 'score_details', type: 'jsonb', nullable: true })
-  scoreDetails: {
-    coreConcept: number;
-    coverage: number;
-    logic: number;
-    depth: number;
-  } | null;
+  scoreDetails: ScoreDetails | null;
 
   @Column({
     name: 'core_concept_eval',
