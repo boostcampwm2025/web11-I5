@@ -1,13 +1,13 @@
 import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import Header from "@/components/header/header";
+import StaticHeader from "@/components/header/header";
 import { NotFoundLogger } from "@/app/_components/not-found-logger";
 
 async function NotFound() {
   return (
     <>
       <NotFoundLogger pageName="Question Detail Page" />
-      <Header />
+      <StaticHeader />
       <main className="flex flex-col items-center justify-center flex-1 w-full gap-6 px-4">
         <div className="p-8 w-full text-center space-y-6">
           <h1 className="flex items-center justify-center gap-3 text-6xl font-bold text-gray-300">
