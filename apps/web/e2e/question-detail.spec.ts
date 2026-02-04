@@ -185,8 +185,11 @@ test.describe("문제 상세 페이지", () => {
       );
       await textarea.fill("테스트 답변입니다.");
 
+      // textarea 값이 입력됐는지 먼저 확인 (React 상태 업데이트 대기)
+      await expect(textarea).toHaveValue("테스트 답변입니다.");
+
       const submitButton = page.getByRole("button", { name: "답변 제출" });
-      await expect(submitButton).toBeEnabled();
+      await expect(submitButton).toBeEnabled({ timeout: 10000 });
     });
 
     test("공백만 입력하면 제출 버튼이 비활성화되어야 한다", async ({
