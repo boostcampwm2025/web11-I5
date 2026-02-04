@@ -1,10 +1,12 @@
 "use client";
 
+import * as React from "react";
 import * as Accordion from "@radix-ui/react-accordion";
 import Link from "next/link";
 import { AlertCircle, ChevronDown, History } from "lucide-react";
 import { Spinner } from "@/components/spinner/spinner";
 import { ReportHistoryItem } from "../../_types/report-detail";
+import useMediaQuery from "@/hooks/use-media-query";
 
 interface HistoryAccordionProps {
   history: ReportHistoryItem[];
@@ -12,6 +14,15 @@ interface HistoryAccordionProps {
 }
 
 function HistoryAccordion({ history, selectedId }: HistoryAccordionProps) {
+  const is5xlUp = useMediaQuery("(min-width: 1280px)");
+  const [openValue, setOpenValue] = React.useState<"" | "history">("");
+
+  React.useEffect(() => {
+    setOpenValue(is5xlUp ? "history" : "");
+  }, [is5xlUp]);
+
+  console.log(is5xlUp);
+
   const renderStatus = (item: ReportHistoryItem) => {
     switch (item.status) {
       case "COMPLETED":
@@ -44,7 +55,8 @@ function HistoryAccordion({ history, selectedId }: HistoryAccordionProps) {
       type="single"
       collapsible
       className="bg-white border border-gray-200 rounded-xl overflow-hidden"
-      defaultValue="history"
+      value={openValue}
+      onValueChange={(v) => setOpenValue((v as "" | "history") ?? "")}
     >
       <Accordion.Item value="history">
         {/* 헤더 (토글 버튼) */}
