@@ -277,6 +277,7 @@ export class AnswerEvaluationService {
             submission.questionId,
             questionEntity.title,
             result.extractedKeywords,
+            submission.id,
           )
           .catch((error) => {
             this.logger.error(

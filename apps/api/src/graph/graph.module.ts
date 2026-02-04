@@ -5,9 +5,13 @@ import { GraphEdge } from './entities/graph-edge.entity';
 import { GraphController } from './graph.controller';
 import { GraphService } from './graph.service';
 import { AuthModule } from '../auth/auth.module';
+import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([GraphNode, GraphEdge]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([GraphNode, GraphEdge, AnswerSubmission]),
+    AuthModule,
+  ],
   controllers: [GraphController],
   providers: [GraphService],
   exports: [GraphService, TypeOrmModule],

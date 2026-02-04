@@ -22,8 +22,14 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
     ? parsedSubmissionId
     : undefined;
 
-  const { question, history, evaluation, highestScore } =
-    await getReportPageData(Number(questionId), validSubmissionId);
+  const {
+    question,
+    history,
+    evaluation,
+    highestScore,
+    submissionGraph,
+    fullGraphForQuestion,
+  } = await getReportPageData(Number(questionId), validSubmissionId);
 
   // submissionId가 없거나 유효하지 않으면 최신 submission으로 fallback
   const selectedAttempt = validSubmissionId
@@ -47,6 +53,8 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
             selectedAttempt={selectedAttempt}
             evaluation={evaluation}
             question={question}
+            submissionGraph={submissionGraph}
+            fullGraphForQuestion={fullGraphForQuestion}
           />
 
           <ReportRefresh
