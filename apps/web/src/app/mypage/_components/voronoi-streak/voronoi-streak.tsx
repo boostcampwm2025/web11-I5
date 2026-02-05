@@ -9,9 +9,9 @@ import {
   VORONOI_COLOR_CONSTANT,
   VORONOI_NUMBER_CONSTANT,
 } from "../../_constants/voronoi-constant";
-import computeCells from "../../_lib/compute-cells";
-import generateRandomPoint from "../../_lib/generate-random-point";
-import lloydRelaxation from "../../_lib/lloyd-relaxation";
+import computeCells from "../../_lib/voronoi-streak/compute-cells";
+import generateRandomPoint from "../../_lib/voronoi-streak/generate-random-point";
+import lloydRelaxation from "../../_lib/voronoi-streak/lloyd-relaxation";
 import { YearlyAnswerSubmissions } from "../../_types/streak";
 
 interface VoronoiStreakProps {
@@ -228,7 +228,12 @@ function VoronoiStreak({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <canvas className="w-full h-full" ref={canvasRef} />
+      <canvas
+        className="w-full h-full"
+        ref={canvasRef}
+        role="img"
+        aria-label={`연간 학습 스트릭 시각화: 총 ${streakCount}개의 문제 해결`}
+      />
       {hoveredInfo && (
         <div
           ref={tooltipRef}

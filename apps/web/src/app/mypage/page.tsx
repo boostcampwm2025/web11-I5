@@ -86,7 +86,7 @@ async function MyPage() {
             <SolvedContent solvedProblems={problems} />
           </TabsContent>
         </Tabs>
-        <div data-boostad-zone></div>
+        <div data-boostad-zone className="overflow-x-hidden"></div>
       </div>
     </>
   );

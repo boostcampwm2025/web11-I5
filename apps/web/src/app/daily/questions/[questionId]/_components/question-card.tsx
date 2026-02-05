@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { CategoryBadge } from "@/components/category-badge/category-badge";
 
 interface QuestionCardProps {
   title: string;
@@ -24,15 +25,18 @@ export default function QuestionCard({
         onClick={() => setIsVisible(!isVisible)}
         className="absolute top-3 right-3 md:top-4 md:right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         aria-label={isVisible ? "문제 숨기기" : "문제 보기"}
+        aria-expanded={isVisible}
         type="button"
       >
         {isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
 
       {(parentCategoryName || categoryName) && (
-        <p className="text-gray-500 text-xs md:text-sm mb-2 md:mb-3">
-          {[parentCategoryName, categoryName].filter(Boolean).join(" | ")}
-        </p>
+        <CategoryBadge
+          category={parentCategoryName}
+          subCategory={categoryName}
+          className="mb-2"
+        />
       )}
 
       {isVisible ? (

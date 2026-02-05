@@ -48,8 +48,9 @@ function CollapsibleHistory({ history, selectedId }: CollapsibleHistoryProps) {
           onClick={() => setIsOpen(true)}
           className="lg:hidden fixed right-0 top-20 z-30 flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white pl-3 pr-2 py-3 rounded-l-xl shadow-lg transition-all hover:pr-3 group"
           aria-label="시도 히스토리 열기"
+          aria-expanded={isOpen}
         >
-          <History className="w-4 h-4" />
+          <History className="w-4 h-4" aria-hidden="true" />
           <span className="text-sm font-semibold whitespace-nowrap">
             히스토리
           </span>
@@ -62,6 +63,8 @@ function CollapsibleHistory({ history, selectedId }: CollapsibleHistoryProps) {
       {/* 모바일 백드롭 */}
       {isOpen && (
         <div
+          role="presentation"
+          aria-hidden="true"
           className="lg:hidden fixed inset-0 bg-black/20 z-30"
           onClick={() => setIsOpen(false)}
         />
@@ -80,7 +83,7 @@ function CollapsibleHistory({ history, selectedId }: CollapsibleHistoryProps) {
         <div className="w-64 lg:w-60 h-full lg:h-fit lg:max-h-[calc(100vh-10rem)] flex flex-col bg-white rounded-l-2xl lg:rounded-2xl border border-slate-200 shadow-lg lg:shadow-none">
           <div className="p-4 border-b border-slate-200 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-teal-500" />
+              <History className="w-4 h-4 text-teal-500" aria-hidden="true" />
               <span className="font-bold text-sm text-slate-900">
                 시도 히스토리
               </span>
@@ -95,7 +98,7 @@ function CollapsibleHistory({ history, selectedId }: CollapsibleHistoryProps) {
               className="lg:hidden -mr-2 h-8 w-8"
               aria-label="닫기"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
 

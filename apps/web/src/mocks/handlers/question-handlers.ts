@@ -6,6 +6,7 @@ import {
   mockOthersSubmissionDetail,
   mockOthersSubmissionDetailNoAnswer,
 } from "../data/others-submissions";
+import { mockReportQuestion } from "../data/reports";
 
 const API_URL = process.env.API_URL || "http://localhost:8000";
 
@@ -47,5 +48,26 @@ export const questionHandlers = [
 
     // 기본적으로 제출 목록이 있는 데이터 반환
     return HttpResponse.json(mockOthersSubmissions);
+  }),
+  // 단일 문제 조회
+  http.get(`${API_URL}/questions/:id`, ({ params }) => {
+    const { id } = params;
+
+    // 리포트 페이지용 mock 데이터
+    if (Number(id) === 1) {
+      return HttpResponse.json(mockReportQuestion);
+    }
+
+    // 기본 mock 문제 목록에서 검색
+    const question = mockQuestions.questions.find((q) => q.id === Number(id));
+
+    if (!question) {
+      return HttpResponse.json(
+        { message: "Question not found" },
+        { status: 404 },
+      );
+    }
+
+    return HttpResponse.json(question);
   }),
 ];

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { GraphNode } from './entities/graph-node.entity';
 import { GraphEdge } from './entities/graph-edge.entity';
 import {
@@ -79,6 +79,105 @@ export class GraphService {
   }
 
   /**
+   * 특정 제출에서 추가된 그래프(노드·엣지)만 조회한다.
+   * 해당 제출 시 생성된 엣지와 그 엣지의 양 끝 노드를 반환한다.
+   *
+   * @param submissionId - 제출 ID
+   * @returns 해당 제출에서 추가된 서브그래프 (nodes, edges)
+   */
+  async getGraphBySubmissionId(
+    submissionId: number,
+  ): Promise<GraphResponseDto> {
+    const edges = await this.graphEdgeRepository.find({
+      where: { submissionId },
+    });
+
+    if (edges.length === 0) {
+      return { nodes: [], edges: [] };
+    }
+
+    const nodeIds = new Set<number>();
+    for (const edge of edges) {
+      nodeIds.add(edge.sourceId);
+      nodeIds.add(edge.targetId);
+    }
+
+    const nodes = await this.graphNodeRepository.find({
+      where: { id: In(Array.from(nodeIds)) },
+    });
+
+    const nodeDtos: GraphNodeDto[] = nodes.map((node) => ({
+      id: node.id,
+      type: node.type,
+      label: node.label,
+      questionId: node.questionId,
+    }));
+
+    const edgeDtos: GraphEdgeDto[] = edges.map((edge) => ({
+      id: edge.id,
+      sourceId: edge.sourceId,
+      targetId: edge.targetId,
+    }));
+
+    return {
+      nodes: nodeDtos,
+      edges: edgeDtos,
+    };
+  }
+
+  /**
+   * 여러 제출 ID에 해당하는 누적 그래프를 조회한다.
+   * 해당 제출들에서 추가된 모든 엣지와 그 엣지의 양 끝 노드를 반환한다.
+   * (이전 제출을 볼 때 "그 시점까지의 그래프 모양" 표시용)
+   *
+   * @param submissionIds - 제출 ID 배열 (시간순으로 정렬된 것이어야 함)
+   * @returns 누적 서브그래프 (nodes, edges)
+   */
+  async getGraphBySubmissionIds(
+    submissionIds: number[],
+  ): Promise<GraphResponseDto> {
+    if (!submissionIds?.length) {
+      return { nodes: [], edges: [] };
+    }
+
+    const edges = await this.graphEdgeRepository.find({
+      where: { submissionId: In(submissionIds) },
+    });
+
+    if (edges.length === 0) {
+      return { nodes: [], edges: [] };
+    }
+
+    const nodeIds = new Set<number>();
+    for (const edge of edges) {
+      nodeIds.add(edge.sourceId);
+      nodeIds.add(edge.targetId);
+    }
+
+    const nodes = await this.graphNodeRepository.find({
+      where: { id: In(Array.from(nodeIds)) },
+    });
+
+    const nodeDtos: GraphNodeDto[] = nodes.map((node) => ({
+      id: node.id,
+      type: node.type,
+      label: node.label,
+      questionId: node.questionId,
+    }));
+
+    const edgeDtos: GraphEdgeDto[] = edges.map((edge) => ({
+      id: edge.id,
+      sourceId: edge.sourceId,
+      targetId: edge.targetId,
+    }));
+
+    return {
+      nodes: nodeDtos,
+      edges: edgeDtos,
+    };
+  }
+
+  /**
    * userId로 학습한 question_id 목록을 조회한다
    * @param userId - 유저 ID
    * @returns question_id 배열
@@ -104,18 +203,20 @@ export class GraphService {
    * 로직:
    * 1. 문제 노드 생성 또는 재사용 (userId, questionId로 기존 노드 확인)
    * 2. 각 키워드에 대해 키워드 노드 생성 또는 재사용 (userId, label로 유니크 제약 활용)
-   * 3. 문제-키워드 간 엣지 생성 (중복 방지)
+   * 3. 문제-키워드 간 엣지 생성 (중복 방지, submissionId 기록)
    *
    * @param userId - 사용자 ID
    * @param questionId - 문제 ID
    * @param questionTitle - 문제 제목
    * @param keywords - 추출된 키워드 배열
+   * @param submissionId - 이 평가에 해당하는 제출 ID (제출별 그래프 조회용)
    */
   async createGraphFromEvaluation(
     userId: number,
     questionId: number,
     questionTitle: string,
     keywords: string[],
+    submissionId: number,
   ): Promise<void> {
     // 키워드가 없으면 그래프 생성하지 않음
     if (!keywords || keywords.length === 0) {
@@ -215,6 +316,7 @@ export class GraphService {
               userId: userId,
               sourceId: sourceId,
               targetId: targetId,
+              submissionId: submissionId,
             });
             await manager.save(GraphEdge, edge);
           }

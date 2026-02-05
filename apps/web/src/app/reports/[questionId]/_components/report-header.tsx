@@ -1,6 +1,7 @@
 import { Question } from "@/app/daily/questions/_types/types";
 import RetryButton from "./retry-button";
 import { Button } from "@/components/button/button";
+import { CategoryBadge } from "@/components/category-badge/category-badge";
 import Link from "next/link";
 import { Users } from "lucide-react";
 
@@ -17,18 +18,18 @@ interface ReportHeaderProps {
 function ReportHeader({ question, highestScore }: ReportHeaderProps) {
   return (
     <section className="bg-white border border-gray-200 rounded-xl p-5 md:p-9">
-      <div className="text-gray-500 text-xs md:text-sm mb-2 md:mb-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
-        <div>
-          {question.categoryDisplay}{" "}
-          {question.subCategory && `| ${question.subCategory}`}
-        </div>
+      <div className="mb-2 md:mb-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+        <CategoryBadge
+          category={question.categoryDisplay}
+          subCategory={question.subCategory}
+        />
         <div className="text-xs md:text-sm bg-teal-50 border border-teal-100 text-teal-500 px-2 py-0.5 rounded-sm font-bold w-fit">
           나의 최고 점수 : {highestScore ?? 0}점
         </div>
       </div>
-      <h2 className="text-lg md:text-xl font-bold mb-2 md:mb-3">
+      <h1 className="text-lg md:text-xl font-bold mb-2 md:mb-3">
         {question.title}
-      </h2>
+      </h1>
       <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4 md:mb-6">
         {question.content}
       </p>
@@ -40,7 +41,7 @@ function ReportHeader({ question, highestScore }: ReportHeaderProps) {
           className="font-semibold text-slate-600"
         >
           <Link href={`/daily/questions/${question.id}/others`}>
-            <Users className="w-4 h-4" />
+            <Users className="w-4 h-4" aria-hidden="true" />
             다른 사람 답변 보기
           </Link>
         </Button>

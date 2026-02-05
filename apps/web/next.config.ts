@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  transpilePackages: ["msw"],
 };
 
 export default withSentryConfig(nextConfig, {
