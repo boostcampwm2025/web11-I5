@@ -1,7 +1,7 @@
 "use client";
 
-import { useCanvas2D } from "@/hooks/use-canvas-2d";
 import useAnimationFrame from "@/hooks/use-animation-frame";
+import { useCanvas2D } from "@/hooks/use-canvas-2d";
 import * as React from "react";
 import { GraphData } from "../../_types/graph-view";
 import useGraphRenderer from "./use-graph-renderer";
@@ -74,7 +74,7 @@ function GraphView({
   return (
     <canvas
       ref={canvasRef}
-      className="w-full h-full"
+      className="w-full h-full touch-none"
       role="img"
       aria-label={`지식 그래프: ${graphData.nodes.length}개의 질문, ${graphData.edges.length}개의 연결`}
       {...bindEvents}

@@ -128,14 +128,6 @@ function useGraphRenderer({
   // NodeMap 변경 콜백 throttle 용
   const shouldNotify = React.useRef(true);
 
-  // 모바일 환경에서 캔버스 터치시 스크롤 동작을 멈추기
-  React.useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    canvas.style.touchAction = "none";
-  }, [canvasRef]);
-
   // NodeMap 초기화 및 물리엔진 미리 동작
   React.useEffect(() => {
     const width = getWidth();
