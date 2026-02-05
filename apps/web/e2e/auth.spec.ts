@@ -18,7 +18,7 @@ test.describe("회원가입 시나리오", () => {
     page,
   }) => {
     await page.getByLabel("이름").fill("홍 길동");
-    await expect(page.getByText("공백 없이 입력해주세요")).toBeVisible();
+    await expect(page.getByText(/공백 없이 입력해주세요/)).toBeVisible();
     await expect(
       page.getByRole("button", { name: "회원가입하기" }),
     ).toBeDisabled();
@@ -40,8 +40,7 @@ test.describe("회원가입 시나리오", () => {
     page,
   }) => {
     await page.getByLabel("이름").fill("테스트유저");
-    await expect(page.getByText("공백 없이 입력해주세요")).toBeHidden();
-
+    await expect(page.getByText(/공백 없이 입력해주세요/)).toBeVisible();
     await page.getByLabel("이메일").fill("test@example.com");
 
     const verifyBtn = page.getByRole("button", { name: "이메일 인증하기" });
@@ -76,6 +75,7 @@ test.describe("회원가입 시나리오", () => {
     await termsCheckbox.check({ force: true });
     await expect(termsCheckbox).toBeChecked();
 
+    await expect(page.getByText("이메일 인증 완료")).toBeVisible();
     const submitBtn = page.getByRole("button", { name: "회원가입하기" });
     await expect(submitBtn).toBeEnabled();
 
