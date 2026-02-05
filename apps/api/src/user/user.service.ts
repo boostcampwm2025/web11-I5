@@ -17,6 +17,7 @@ import { ObjectStorageService } from 'src/object-storage/object-storage.service'
 import { QueryFailedError, Repository } from 'typeorm';
 import { EvaluationStatus } from '../answer-evaluation/answer-evaluation.constants';
 import { AnswerSubmission } from '../answer-submission/entities/answer-submission.entity';
+import { GoogleProfile } from '../auth/strategies/google.strategy';
 import { EditUserRequestDto } from './dtos/request/edit-user.request.dto';
 import { SolvedProblemDto } from './dtos/response/solved-problem.dto';
 import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
@@ -24,7 +25,6 @@ import { AuthProvider } from './entities/auth-provider.enum';
 import { UserRole } from './entities/user-role.enum';
 import { User } from './entities/user.entity';
 import { UserRepository } from './user.repository';
-import { GoogleProfile } from '../auth/strategies/google.strategy';
 import {
   hashPassword,
   isHashedPassword,
@@ -327,6 +327,7 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
       .createQueryBuilder('submission')
       .innerJoinAndSelect('submission.question', 'question')
       .leftJoinAndSelect('question.category', 'category')
+      .leftJoinAndSelect('category.parent', 'parentCategory')
       .where('submission.id IN (:...submissionIds)', { submissionIds })
       .orderBy('submission.submittedAt', 'DESC'); // 최신 풀이순 정렬
 
@@ -342,6 +343,7 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
       questionId: submission.questionId,
       title: submission.question?.title ?? '',
       category: submission.question?.category?.name ?? '미분류',
+      parentCategory: submission.question?.category?.parent?.name ?? '미분류',
       completedAt: submission.submittedAt.toISOString(),
       reportId: submission.id,
       score: submission.score,
