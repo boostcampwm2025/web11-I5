@@ -45,11 +45,17 @@ const mockQueryBuilder = {
   where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
+  skip: jest.fn().mockReturnThis(),
+  take: jest.fn().mockReturnThis(),
+  getCount: jest.fn(),
   getMany: jest.fn(),
 };
 
 const mockAnswerSubmissionRepository = {
   createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
+  manager: {
+    query: jest.fn(),
+  },
 };
 
 describe('UserService', () => {
@@ -315,10 +321,15 @@ describe('UserService', () => {
         },
       ] as unknown as AnswerSubmission[];
 
+      mockAnswerSubmissionRepository.manager.query.mockResolvedValue([
+        { id: 1 },
+      ]);
+      mockQueryBuilder.getCount.mockResolvedValue(1);
       mockQueryBuilder.getMany.mockResolvedValue(mockSubmissions);
 
       const result = await service.getSolvedProblems(userId);
 
+      expect(mockAnswerSubmissionRepository.manager.query).toHaveBeenCalled();
       expect(
         mockAnswerSubmissionRepository.createQueryBuilder,
       ).toHaveBeenCalledWith('submission');
@@ -327,6 +338,9 @@ describe('UserService', () => {
       expect(result.problems[0].title).toBe('질문1');
       expect(result.problems[0].category).toBe('카테고리A');
       expect(result.totalCount).toBe(1);
+      expect(result.currentPage).toBe(1);
+      expect(result.pageSize).toBe(10);
+      expect(result.totalPages).toBe(1);
     });
   });
 
