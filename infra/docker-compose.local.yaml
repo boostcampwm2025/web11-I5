@@ -6,6 +6,9 @@ services:
     env_file:
       - ../apps/api/.env
     environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-malmanhae}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -25,6 +28,12 @@ services:
     restart: unless-stopped
     env_file:
       - ../apps/api/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      DB_NAME: ${POSTGRES_DB:-malmanhae}
     depends_on:
       db:
         condition: service_healthy
@@ -55,8 +64,8 @@ services:
     ports:
       - "3001:3000"
     environment:
-      GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
-      GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
     depends_on:
       - prometheus
     networks:
@@ -68,7 +77,8 @@ services:
     restart: unless-stopped
     ports:
       - "3100:3100"
-    command: ["-config.file=/etc/loki/local-config.yaml"]
+    command:
+      - "-config.file=/etc/loki/local-config.yaml"
     volumes:
       - ./loki-config.local.yaml:/etc/loki/local-config.yaml:ro
     networks:
