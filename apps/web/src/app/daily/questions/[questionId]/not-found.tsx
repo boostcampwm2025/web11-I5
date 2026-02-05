@@ -1,6 +1,6 @@
 import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import StaticHeader from "@/components/header/header";
+import StaticHeader from "@/components/header/static-header";
 import { NotFoundLogger } from "@/app/_components/not-found-logger";
 
 async function NotFound() {
