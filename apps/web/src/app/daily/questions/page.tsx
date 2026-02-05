@@ -76,7 +76,7 @@ async function QuestionListPage({ searchParams }: QuestionListPageProps) {
   return (
     <>
       <Header />
-      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-15 space-y-6 md:space-y-8 min-h-main">
+      <main className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-15 space-y-6 md:space-y-8 min-h-main">
         <div className="mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold mb-1">문제 리스트</h1>
           <Suspense fallback={<TotalCountLoadingFallback />}>

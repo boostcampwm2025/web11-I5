@@ -61,7 +61,7 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-xl md:rounded-2xl w-full h-full max-w-5xl max-h-[90vh] md:max-h-5/6 shadow-xl overflow-hidden relative"
+            className="bg-white rounded-xl md:rounded-2xl w-full h-full max-w-7xl max-h-[90vh] md:max-h-5/6 shadow-xl overflow-hidden relative"
           >
             <div className="absolute right-4 top-4 z-10">
               <ScaleSlider scale={scale} onScaleChange={setScale} />

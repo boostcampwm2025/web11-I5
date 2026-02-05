@@ -98,13 +98,11 @@ function FeedbackSection({
     <section className="p-5 md:p-9 transition-all duration-300">
       <div className="flex justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
         <div>
-          <div className="text-xs md:text-sm font-extrabold text-zinc-400 tracking-widest uppercase mb-1">
+          <div className="text-xs md:text-sm font-bold text-muted-foreground tracking-widest uppercase mb-1">
             TRIAL #{attempt}
           </div>
-          <h2 className="text-xl md:text-2xl font-bold text-zinc-900 mb-1">
-            분석 리포트
-          </h2>
-          <div className="text-xs md:text-sm text-zinc-400">
+          <h2 className="text-xl md:text-2xl font-bold mb-1">분석 리포트</h2>
+          <div className="text-xs md:text-sm text-muted-foreground">
             {data.date} 완료
           </div>
         </div>
