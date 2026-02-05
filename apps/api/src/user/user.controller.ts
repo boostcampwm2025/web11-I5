@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Patch,
   Post,
+  Query,
   Res,
   UseGuards,
   UsePipes,
@@ -15,6 +16,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -27,6 +29,7 @@ import { CreateUserRequestDto } from './dtos/request/create-user.request.dto';
 import { EditUserRequestDto } from './dtos/request/edit-user.request.dto';
 import { LoginRequestDto } from './dtos/request/login.request.dto';
 import { RequestVerificationCodeRequestDto } from './dtos/request/request-verification-code.request.dto';
+import { SolvedProblemsQueryDto } from './dtos/request/solved-problems-query.dto';
 import { UserPresignedUrlRequestDto } from './dtos/request/user-presigned-url.request.dto';
 import { LoginResponseDto } from './dtos/response/login.response.dto';
 import { SolvedProblemsListResponseDto } from './dtos/response/solved-problems-list-response.dto';
@@ -38,6 +41,13 @@ const USER_CONTROLLER_VALIDATION_PIPE = new ValidationPipe({
   transform: true,
   whitelist: true,
   forbidNonWhitelisted: true,
+});
+
+/** 쿼리 파라미터 검증용 (Swagger 등 외부 요청에서 추가 파라미터 허용) */
+const QUERY_VALIDATION_PIPE = new ValidationPipe({
+  transform: true,
+  whitelist: true,
+  forbidNonWhitelisted: false,
 });
 
 @ApiTags('users')
@@ -233,6 +243,20 @@ export class UserController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: '페이지 번호 (기본값: 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'size',
+    required: false,
+    type: Number,
+    description: '페이지 크기 (기본값: 10)',
+    example: 10,
+  })
   @ApiResponse({
     status: 200,
     description: '푼 문제 목록 조회 성공',
@@ -242,10 +266,16 @@ export class UserController {
     status: 401,
     description: '로그인이 필요합니다',
   })
+  @UsePipes(QUERY_VALIDATION_PIPE)
   async getSolvedProblems(
     @UserId() userId: number,
+    @Query() query: SolvedProblemsQueryDto,
   ): Promise<SolvedProblemsListResponseDto> {
-    return await this.userService.getSolvedProblems(userId);
+    return await this.userService.getSolvedProblems(
+      userId,
+      query.page ?? 1,
+      query.size ?? 10,
+    );
   }
 
   @Post('presigned-url')

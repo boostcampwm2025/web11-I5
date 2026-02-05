@@ -276,80 +276,85 @@ export class UserService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * 채점 및 AI 피드백이 완료된 문제 목록 조회
+   * 채점·피드백 완료된 제출 중 문제별 최근 제출 ID 목록 조회 (raw SQL)
+   */
+  private async findLatestSolvedSubmissionIds(
+    userId: number,
+  ): Promise<number[]> {
+    const rows = await this.answerSubmissionRepository.manager.query<
+      { id: number }[]
+    >(
+      `
+      SELECT DISTINCT ON (sub.question_id) sub.id
+      FROM answer_submissions sub
+      INNER JOIN answer_evaluations eval ON eval.submission_id = sub.id
+      WHERE sub.user_id = $1
+        AND sub.evaluation_status = $2
+        AND eval.feedback_message IS NOT NULL
+      ORDER BY sub.question_id, sub.submitted_at DESC
+    `,
+      [userId, EvaluationStatus.COMPLETED],
+    );
+    return Array.isArray(rows) ? rows.map((row) => row.id) : [];
+  }
+
+  /**
+   * 채점 및 AI 피드백이 완료된 문제 목록 조회 (페이지네이션 적용)
    * @param userId 사용자 ID
-   * @returns 푼 문제 목록 및 총 갯수
+   * @param page 페이지 번호 (기본값: 1)
+   * @param size 페이지 크기 (기본값: 10)
+   * @returns 푼 문제 목록 및 페이지네이션 정보
    */
   async getSolvedProblems(
     userId: number,
+    page: number = 1,
+    size: number = 10,
   ): Promise<SolvedProblemsListResponseDto> {
-    // 채점 및 피드백이 완료된 제출 내역 조회
-    const submissions = await this.answerSubmissionRepository
+    const submissionIds = await this.findLatestSolvedSubmissionIds(userId);
+
+    if (submissionIds.length === 0) {
+      return {
+        problems: [],
+        totalCount: 0,
+        currentPage: page,
+        pageSize: size,
+        totalPages: 0,
+      };
+    }
+
+    // 조회된 제출 ID로 상세 정보 조회 (페이지네이션 적용)
+    const queryBuilder = this.answerSubmissionRepository
       .createQueryBuilder('submission')
-      .innerJoin(
-        'answer_evaluations',
-        'evaluation',
-        'evaluation.submission_id = submission.id',
-      )
       .innerJoinAndSelect('submission.question', 'question')
       .leftJoinAndSelect('question.category', 'category')
-      .where('submission.user_id = :userId', { userId })
-      .andWhere('submission.evaluation_status = :status', {
-        status: EvaluationStatus.COMPLETED,
-      })
-      .andWhere('evaluation.feedback_message IS NOT NULL')
-      .orderBy('submission.score', 'DESC')
-      .getMany();
+      .where('submission.id IN (:...submissionIds)', { submissionIds })
+      .orderBy('submission.submittedAt', 'DESC'); // 최신 풀이순 정렬
 
-    // 문제별로 가장 최근 제출 내역만 선택
-    const problemMap = new Map<
-      number,
-      {
-        submissionId: number;
-        questionId: number;
-        title: string;
-        category: string;
-        completedAt: Date;
-        score: number;
-      }
-    >();
+    // 전체 개수 조회 (페이지네이션 적용 전)
+    const totalCount = await queryBuilder.getCount();
 
-    submissions.forEach((submission) => {
-      const questionId = submission.questionId;
-      const existing = problemMap.get(questionId);
+    // 페이지네이션 적용
+    const skip = (page - 1) * size;
+    const submissions = await queryBuilder.skip(skip).take(size).getMany();
 
-      if (!existing || submission.submittedAt > existing.completedAt) {
-        const categoryName = submission.question?.category?.name ?? '미분류';
+    // DTO 변환
+    const problems: SolvedProblemDto[] = submissions.map((submission) => ({
+      questionId: submission.questionId,
+      title: submission.question?.title ?? '',
+      category: submission.question?.category?.name ?? '미분류',
+      completedAt: submission.submittedAt.toISOString(),
+      reportId: submission.id,
+      score: submission.score,
+    }));
 
-        problemMap.set(questionId, {
-          submissionId: submission.id,
-          questionId,
-          title: submission.question?.title ?? '',
-          category: categoryName,
-          completedAt: submission.submittedAt,
-          score: submission.score,
-        });
-      }
-    });
-
-    // DTO 변환 및 정렬
-    const problems: SolvedProblemDto[] = Array.from(problemMap.values())
-      .map((data) => ({
-        questionId: data.questionId,
-        title: data.title,
-        category: data.category,
-        completedAt: data.completedAt.toISOString(),
-        reportId: data.submissionId,
-        score: data.score,
-      }))
-      .sort(
-        (a, b) =>
-          new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime(),
-      );
+    const totalPages = Math.ceil(totalCount / size);
 
     return {
       problems,
-      totalCount: problems.length,
+      totalCount,
+      currentPage: page,
+      pageSize: size,
+      totalPages,
     };
   }
 
