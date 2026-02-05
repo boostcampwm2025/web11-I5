@@ -106,17 +106,23 @@ async function OthersDetailPage({ params }: OthersSubmissionDetailPageProps) {
               </div>
             </div>
             {othersSubmissionData.submission.answerContent ? (
-              <p className="text-sm md:text-base leading-relaxed text-slate-700 whitespace-pre-wrap border-y border-slate-200 py-6">
+              <p
+                data-testid="answer-content"
+                className="text-sm md:text-base leading-relaxed text-slate-700 whitespace-pre-wrap border-y border-slate-200 py-6"
+              >
                 {othersSubmissionData.submission.answerContent}
               </p>
             ) : (
-              <p className="py-4 text-sm text-center text-slate-400">
+              <p
+                data-testid="no-answer-message"
+                className="py-4 text-sm text-center text-slate-400"
+              >
                 저장된 답변이 없습니다.
               </p>
             )}
 
             {othersSubmissionData.keywords.length > 0 && (
-              <div className="mt-6">
+              <div data-testid="keywords-section" className="mt-6">
                 <h4 className="font-semibold text-sm text-slate-400 uppercase tracking-wider mb-3">
                   CORE KEYWORDS
                 </h4>
@@ -124,6 +130,7 @@ async function OthersDetailPage({ params }: OthersSubmissionDetailPageProps) {
                   {othersSubmissionData.keywords.map((keyword, index) => (
                     <span
                       key={index}
+                      data-testid="keyword-badge"
                       className="px-2 py-1.5 bg-slate-100 text-slate-700 text-xs md:text-sm font-medium rounded-md"
                     >
                       <span className="text-slate-400 font-semibold">#</span>{" "}
