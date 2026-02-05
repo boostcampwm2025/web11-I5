@@ -1,3 +1,4 @@
+import { CategoryBadge } from "@/components/category-badge/category-badge";
 import {
   Pagination,
   PaginationContent,
@@ -83,9 +84,11 @@ function SolvedContent({
             solvedProblems.map((problem) => (
               <TableRow key={problem.questionId}>
                 <TableCell className="hidden sm:table-cell">
-                  <span className="text-xs md:text-sm py-1 px-2 bg-muted text-muted-foreground rounded-sm font-medium">
-                    {problem.category}
-                  </span>
+                  <CategoryBadge
+                    category={problem.parentCategory}
+                    subCategory={problem.category}
+                    orientation="vertical"
+                  />
                 </TableCell>
                 <TableCell className="whitespace-normal">
                   <Link
