@@ -1,4 +1,5 @@
 import { apiGet } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/sentry-logger";
 import { SolvedProblemsResDto } from "../../_types/solved-problem";
 
@@ -22,9 +23,14 @@ async function fetchSolvedProblems(
   try {
     return await apiGet<SolvedProblemsResDto>(`${baseUrl}?${queryString}`);
   } catch (error) {
-    logger.error("풀이 문제 목록 조회 실패", {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    if (error instanceof ApiError) {
+      logger.error("풀이 문제 목록 조회 실패", {
+        status: error.status,
+        errorType: error.getErrorType(),
+        serverMessage: error.getServerMessage(),
+        requestId: error.getRequestId(),
+      });
+    }
     throw error;
   }
 }

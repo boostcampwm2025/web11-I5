@@ -1,4 +1,5 @@
 import { apiGet } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/sentry-logger";
 import {
   StreakCountDto,
@@ -14,9 +15,14 @@ async function fetchStreaks(): Promise<StreaksDTO> {
     ]);
     return { ...streakCount, ...sequencyDailyCount };
   } catch (error) {
-    logger.error("스트릭 조회 실패", {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    if (error instanceof ApiError) {
+      logger.error("스트릭 조회 실패", {
+        status: error.status,
+        errorType: error.getErrorType(),
+        serverMessage: error.getServerMessage(),
+        requestId: error.getRequestId(),
+      });
+    }
     throw error;
   }
 }

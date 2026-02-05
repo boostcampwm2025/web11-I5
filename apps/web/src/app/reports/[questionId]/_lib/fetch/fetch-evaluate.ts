@@ -1,6 +1,7 @@
 "use server";
 
 import { apiPost } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { logger } from "@/lib/sentry-logger";
 
 async function reEvaluate(submissionId: number): Promise<boolean> {
@@ -10,9 +11,15 @@ async function reEvaluate(submissionId: number): Promise<boolean> {
     });
     return true;
   } catch (error) {
-    logger.error("재채점 요청 실패", {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    if (error instanceof ApiError) {
+      logger.error("재채점 요청 실패", {
+        submissionId,
+        status: error.status,
+        errorType: error.getErrorType(),
+        serverMessage: error.getServerMessage(),
+        requestId: error.getRequestId(),
+      });
+    }
     return false;
   }
 }
