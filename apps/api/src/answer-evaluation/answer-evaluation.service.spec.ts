@@ -274,6 +274,7 @@ describe('AnswerEvaluationService', () => {
         10, // questionId
         'Test Question', // questionTitle
         ['React', 'Hook'], // keywords
+        1, // submissionId
       );
     });
 

@@ -74,7 +74,9 @@ export function StarRating(props: StarRatingProps) {
 
   const currentVisualValue = parseFloat(inputValue);
   const safeValue = isNaN(currentVisualValue) ? 0 : currentVisualValue;
-  const fillWidthPercent = (Math.min(safeValue, max) / max) * 100;
+  const threshold = 0.05;
+  const displayPercent =
+    safeValue >= max - threshold ? 100 : (safeValue / max) * 100;
 
   return (
     <div className={cn("relative inline-flex items-center gap-3", className)}>
@@ -83,7 +85,8 @@ export function StarRating(props: StarRatingProps) {
         style={{ width: "160px", height: "32px" }}
         className={cn(
           "relative cursor-pointer touch-none select-none",
-          readOnly && "cursor-default",
+          "after:absolute after:-inset-4 after:content-[''] after:z-20",
+          readOnly && "cursor-default after:hidden",
         )}
         {...eventHandlers}
       >
@@ -102,7 +105,7 @@ export function StarRating(props: StarRatingProps) {
         {/* Layer 2: 전경 (노란 별) */}
         <div
           className="absolute inset-y-0 left-0 overflow-hidden z-10 transition-[width] duration-75 ease-linear"
-          style={{ width: `${fillWidthPercent}%` }}
+          style={{ width: `${displayPercent}%` }}
         >
           <div
             style={{ width: "160px" }}
