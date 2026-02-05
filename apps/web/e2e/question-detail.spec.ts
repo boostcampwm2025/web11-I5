@@ -56,7 +56,7 @@ test.describe("문제 상세 페이지", () => {
       ).not.toBeVisible();
     });
 
-    test("문제 보기 버튼을 클릭하면 문제가 다시 표시되어야 한다", async ({
+    test("문제 숨기기 버튼 클릭 후 문제 보기 버튼 클릭하면 문제가 다시 표시되어야한다", async ({
       page,
     }) => {
       await page.goto("/daily/questions/1");
