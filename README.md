@@ -15,6 +15,8 @@
 - 개념 간 연결 구조를 파악하기 어려워 전체적인 CS 지식 체계를 세우기 힘듭니다.
 - 학습을 꾸준히 이어갈 동기화 루틴이 부족해, 일정 시점 이후 학습이 중단됩니다.
 
+<br />
+
 ## 🛠️ 이 불편함을 이렇게 해결합니다
 
 ### 🎙️ 음성 답변으로 설명하기
@@ -29,6 +31,8 @@
 
 ![speech](https://github.com/user-attachments/assets/483df25f-4420-4cdd-8b7f-9fb659160933)
 
+<br />
+
 ### 🤖 AI 채점으로 CS 실력 확인
 
 - 루브릭 기반 평가를 통해 답변을 정량적으로 점수화합니다.
@@ -37,6 +41,8 @@
 [🔗 CS 답변을 정량화하기 위한 루브릭 기반 AI 채점 설계](https://github.com/boostcampwm2025/web11-MMH/wiki/CS-%EB%8B%B5%EB%B3%80%EC%9D%84-%EC%A0%95%EB%9F%89%ED%99%94%ED%95%98%EA%B8%B0-%EC%9C%84%ED%95%9C-%EB%A3%A8%EB%B8%8C%EB%A6%AD-%EA%B8%B0%EB%B0%98-AI-%EC%B1%84%EC%A0%90-%EC%84%A4%EA%B3%84)
 
 ![reports](https://github.com/user-attachments/assets/b0e67df3-08e3-40a7-aaaf-f8e81bf9206a)
+
+<br />
 
 ### 🧠 나의 답변으로 완성되는 지식 그래프
 
@@ -49,6 +55,8 @@
 
 ![graph](https://github.com/user-attachments/assets/94a3ac5e-51e0-46c6-817c-eb20ea161db4)
 
+<br />
+
 ### 🖼️ 명화 스트릭으로 학습 지속
 
 - 문제를 하나씩 풀수록 셀이 채워지며 그림이 점진적으로 완성됩니다.
@@ -57,6 +65,8 @@
 [🔗 보로노이 알고리즘으로 구현한 학습 스트릭 시스템](https://github.com/boostcampwm2025/web11-MMH/wiki/%EB%B3%B4%EB%A1%9C%EB%85%B8%EC%9D%B4-%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%EC%9C%BC%EB%A1%9C-%EA%B5%AC%ED%98%84%ED%95%9C-%ED%95%99%EC%8A%B5-%EC%8A%A4%ED%8A%B8%EB%A6%AD-%EC%8B%9C%EC%8A%A4%ED%85%9C)
 
 ![streak](https://github.com/user-attachments/assets/5bfbdaef-a173-4c03-a3db-1aa8c1750688)
+
+<br />
 
 ## 🚀 로컬에서 실행하기
 
@@ -80,6 +90,8 @@ pnpm dev
 ```
 
 환경변수 관련해서 더 자세한 내용은 [위키](https://github.com/boostcampwm2025/web11-MMH/wiki/%ED%99%98%EA%B2%BD%EB%B3%80%EC%88%98-%EC%B6%94%EA%B0%80%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95)에서 확인해주세요!
+
+<br />
 
 ## 🧩 기술 스택
 
@@ -140,6 +152,8 @@ pnpm dev
         </tr>
     </tbody>
 </table>
+
+<br />
 
 ## 👥 팀원 소개
 
