@@ -46,5 +46,5 @@ COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 EXPOSE 8000
 
 # 애플리케이션 실행
-CMD ["node", "apps/api/dist/apps/api/src/main.js"]
+CMD ["node", "apps/api/dist/main.js"]
 

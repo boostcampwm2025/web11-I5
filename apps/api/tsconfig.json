@@ -22,7 +22,9 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@repo/types": ["../../packages/types/src"]
+      "@repo/types": ["../../packages/types/dist"]
     }
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "migrations", "test"]
 }
