@@ -114,53 +114,57 @@ function SolvedContent({
             ))
           )}
         </TableBody>
-        <TableFooter>
-          <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={1} className="hidden sm:table-cell">
-              <span className="text-muted-foreground text-sm">
-                {startIndex} - {endIndex} / 총 {totalCount}개
-              </span>
-            </TableCell>
-            <TableCell colSpan={3} className="sm:text-right">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
-                <span className="text-muted-foreground text-sm sm:hidden">
+        {totalCount > 0 && (
+          <TableFooter>
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={1} className="hidden sm:table-cell">
+                <span className="text-muted-foreground text-sm">
                   {startIndex} - {endIndex} / 총 {totalCount}개
                 </span>
-                <Pagination className="justify-center sm:justify-end">
-                  <PaginationContent>
-                    <PaginationItem>
-                      {currentPage > 1 ? (
-                        <PaginationPrevious href={buildUrl(currentPage - 1)} />
-                      ) : (
-                        <PaginationPrevious
-                          href={buildUrl(currentPage)}
-                          className="pointer-events-none opacity-50"
-                          aria-disabled="true"
-                        />
-                      )}
-                    </PaginationItem>
-                    <PaginationItem>
-                      <div className="px-2">
-                        {currentPage} / {totalPages}
-                      </div>
-                    </PaginationItem>
-                    <PaginationItem>
-                      {currentPage < totalPages ? (
-                        <PaginationNext href={buildUrl(currentPage + 1)} />
-                      ) : (
-                        <PaginationNext
-                          href={buildUrl(currentPage)}
-                          className="pointer-events-none opacity-50"
-                          aria-disabled="true"
-                        />
-                      )}
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
+              </TableCell>
+              <TableCell colSpan={3} className="sm:text-right">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
+                  <span className="text-muted-foreground text-sm sm:hidden">
+                    {startIndex} - {endIndex} / 총 {totalCount}개
+                  </span>
+                  <Pagination className="justify-center sm:justify-end">
+                    <PaginationContent>
+                      <PaginationItem>
+                        {currentPage > 1 ? (
+                          <PaginationPrevious
+                            href={buildUrl(currentPage - 1)}
+                          />
+                        ) : (
+                          <PaginationPrevious
+                            href={buildUrl(currentPage)}
+                            className="pointer-events-none opacity-50"
+                            aria-disabled="true"
+                          />
+                        )}
+                      </PaginationItem>
+                      <PaginationItem>
+                        <div className="px-2">
+                          {currentPage} / {totalPages}
+                        </div>
+                      </PaginationItem>
+                      <PaginationItem>
+                        {currentPage < totalPages ? (
+                          <PaginationNext href={buildUrl(currentPage + 1)} />
+                        ) : (
+                          <PaginationNext
+                            href={buildUrl(currentPage)}
+                            className="pointer-events-none opacity-50"
+                            aria-disabled="true"
+                          />
+                        )}
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        )}
       </Table>
     </>
   );
