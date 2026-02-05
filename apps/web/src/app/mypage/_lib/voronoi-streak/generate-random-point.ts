@@ -1,5 +1,5 @@
 import { randomLcg } from "d3-random";
-import { VORONOI_NUMBER_CONSTANT } from "../_constants/voronoi-constant";
+import { VORONOI_NUMBER_CONSTANT } from "../../_constants/voronoi-constant";
 
 function generateRandomPoint(width: number, height: number) {
   const lcg = randomLcg(VORONOI_NUMBER_CONSTANT.SEED);

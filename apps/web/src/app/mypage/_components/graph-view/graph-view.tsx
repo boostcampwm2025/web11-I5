@@ -1,7 +1,7 @@
 "use client";
 
-import { useCanvas2D } from "@/hooks/use-canvas-2d";
 import useAnimationFrame from "@/hooks/use-animation-frame";
+import { useCanvas2D } from "@/hooks/use-canvas-2d";
 import * as React from "react";
 import { GraphData } from "../../_types/graph-view";
 import useGraphRenderer from "./use-graph-renderer";
@@ -15,6 +15,9 @@ interface GraphViewProps {
   initialScale?: number;
   scale?: number;
   onScaleChange?: (scale: number) => void;
+  /** 이 제출에서 추가된 노드·엣지 ID (기존 그래프 위에 하이라이트) */
+  highlightNodeIds?: number[];
+  highlightEdgeIds?: number[];
 }
 
 function GraphView({
@@ -26,9 +29,21 @@ function GraphView({
   initialScale,
   scale,
   onScaleChange,
+  highlightNodeIds,
+  highlightEdgeIds,
 }: GraphViewProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const { ctx, getWidth, getHeight } = useCanvas2D(canvasRef);
+
+  const highlight = React.useMemo(() => {
+    if (highlightNodeIds == null && highlightEdgeIds == null) {
+      return null;
+    }
+    return {
+      nodeIds: new Set(highlightNodeIds ?? []),
+      edgeIds: new Set(highlightEdgeIds ?? []),
+    };
+  }, [highlightNodeIds, highlightEdgeIds]);
 
   const { bindEvents, bindWheelEvent, drawGraph } = useGraphRenderer({
     canvasRef,
@@ -44,6 +59,7 @@ function GraphView({
     initialScale,
     scale,
     onScaleChange,
+    highlight,
   });
 
   // 휠 이벤트 바인딩 (passive: false 필요)
@@ -58,7 +74,7 @@ function GraphView({
   return (
     <canvas
       ref={canvasRef}
-      className="w-full h-full"
+      className="w-full h-full touch-none"
       role="img"
       aria-label={`지식 그래프: ${graphData.nodes.length}개의 질문, ${graphData.edges.length}개의 연결`}
       {...bindEvents}

@@ -246,7 +246,7 @@ function useRecorder(options: UseRecorderOptions = {}) {
     });
   }, []);
 
-  const startRecording = React.useCallback(async () => {
+  const startRecording = React.useCallback(async (onStart?: () => void) => {
     try {
       // 초기화
       recordedBlobRef.current = null;
@@ -262,6 +262,9 @@ function useRecorder(options: UseRecorderOptions = {}) {
 
       setStatus("ready");
       setIsRecording(true);
+
+      // 녹음이 실제로 시작된 후 콜백 호출
+      onStart?.();
     } catch (error) {
       logger.error("녹음 시작 실패", {
         error: error instanceof Error ? error.message : String(error),

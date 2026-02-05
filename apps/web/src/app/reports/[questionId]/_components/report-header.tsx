@@ -17,35 +17,33 @@ interface ReportHeaderProps {
 
 function ReportHeader({ question, highestScore }: ReportHeaderProps) {
   return (
-    <section className="bg-white border border-gray-200 rounded-xl p-5 md:p-9">
-      <div className="mb-2 md:mb-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+    <section>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
         <CategoryBadge
           category={question.categoryDisplay}
           subCategory={question.subCategory}
         />
-        <div className="text-xs md:text-sm bg-teal-50 border border-teal-100 text-teal-500 px-2 py-0.5 rounded-sm font-bold w-fit">
-          나의 최고 점수 : {highestScore ?? 0}점
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/daily/questions/${question.id}/others`}>
+              <Users className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">다른 사람 답변</span>
+              <span className="sm:hidden">다른 답변</span>
+            </Link>
+          </Button>
+          <RetryButton question={question} size="sm" />
         </div>
       </div>
-      <h1 className="text-lg md:text-xl font-bold mb-2 md:mb-3">
-        {question.title}
-      </h1>
-      <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4 md:mb-6">
+
+      <h1 className="text-xl md:text-2xl font-bold mb-2">{question.title}</h1>
+
+      <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-3">
         {question.content}
       </p>
-      <hr className="border-gray-200 mb-4 md:mb-6" />
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:justify-end">
-        <Button
-          variant="outline"
-          asChild
-          className="font-semibold text-slate-600"
-        >
-          <Link href={`/daily/questions/${question.id}/others`}>
-            <Users className="w-4 h-4" aria-hidden="true" />
-            다른 사람 답변 보기
-          </Link>
-        </Button>
-        <RetryButton question={question} />
+
+      <div className="text-sm text-teal-600 font-semibold">
+        나의 최고 점수:{" "}
+        <span className="text-teal-700">{highestScore ?? 0}점</span>
       </div>
     </section>
   );

@@ -29,7 +29,7 @@ async function DailyQuestionPage({
   return (
     <>
       <Header />
-      <main className="w-full max-w-4xl mx-auto px-4 md:px-8 py-6 md:py-15 space-y-4 md:space-y-8 min-h-main overflow-x-hidden">
+      <main className="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-15 space-y-4 md:space-y-8 min-h-main overflow-x-hidden">
         <QuestionCard
           title={question.title}
           content={question.content}
@@ -37,7 +37,7 @@ async function DailyQuestionPage({
           parentCategoryName={question.category?.parent?.name}
         />
         <InputSection initialInputMode={mode} questionId={question.id} />
-        <div data-boostad-zone className="h-20"></div>
+        <div data-boostad-zone className="h-20 overflow-x-hidden"></div>
       </main>
     </>
   );

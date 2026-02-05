@@ -31,13 +31,12 @@
 
 ![speech](https://github.com/user-attachments/assets/483df25f-4420-4cdd-8b7f-9fb659160933)
 
-
 ### 🤖 AI 채점으로 CS 실력 확인
 
 - 루브릭 기반 평가를 통해 답변을 정량적으로 점수화합니다.
 - 총점과 세부 점수를 통해 현재 CS 이해 수준을 확인할 수 있습니다.
 
-[🔗 CS 답변을 정량화하기 위한 루브릭 기반 AI 채점 설계](https://github.com/boostcampwm2025/web11-MMH/wiki/CS-%EB%8B%B5%EB%B3%80%EC%9D%84-%EC%A0%95%EB%9F%89%ED%99%94%ED%95%98%EA%B8%B0-%EC%9C%84%ED%95%9C-%EB%A3%A8%EB%B8%8C%EB%A6%AD-%EA%B8%B0%EB%B0%98-AI-%EC%B2%B4%EC%A0%90-%EC%84%A4%EA%B3%84)
+[🔗 CS 답변을 정량화하기 위한 루브릭 기반 AI 채점 설계](https://github.com/boostcampwm2025/web11-MMH/wiki/CS-%EB%8B%B5%EB%B3%80%EC%9D%84-%EC%A0%95%EB%9F%89%ED%99%94%ED%95%98%EA%B8%B0-%EC%9C%84%ED%95%9C-%EB%A3%A8%EB%B8%8C%EB%A6%AD-%EA%B8%B0%EB%B0%98-AI-%EC%B1%84%EC%A0%90-%EC%84%A4%EA%B3%84)
 
 ![reports](https://github.com/user-attachments/assets/b0e67df3-08e3-40a7-aaaf-f8e81bf9206a)
 
