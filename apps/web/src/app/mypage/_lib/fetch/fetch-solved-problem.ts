@@ -1,10 +1,26 @@
 import { apiGet } from "@/lib/api-client";
 import { logger } from "@/lib/sentry-logger";
-import { SolvedProblemResDto } from "../../_types/solved-problem";
+import { SolvedProblemsResDto } from "../../_types/solved-problem";
 
-async function fetchSolvedProblem(): Promise<SolvedProblemResDto> {
+interface FetchSolvedProblemParams {
+  page?: number;
+  size?: number;
+}
+async function fetchSolvedProblems(
+  params: FetchSolvedProblemParams = {},
+): Promise<SolvedProblemsResDto> {
+  const searchParams = new URLSearchParams();
+  if (params.page) {
+    searchParams.set("page", params.page.toString());
+  }
+  if (params.size) {
+    searchParams.set("size", params.size.toString());
+  }
+
+  const queryString = searchParams.toString();
+  const baseUrl = "/api/users/solved-problems";
   try {
-    return await apiGet<SolvedProblemResDto>("/api/users/solved-problems");
+    return await apiGet<SolvedProblemsResDto>(`${baseUrl}?${queryString}`);
   } catch (error) {
     logger.error("풀이 문제 목록 조회 실패", {
       error: error instanceof Error ? error.message : String(error),
@@ -13,4 +29,4 @@ async function fetchSolvedProblem(): Promise<SolvedProblemResDto> {
   }
 }
 
-export { fetchSolvedProblem };
+export { fetchSolvedProblems };

@@ -18,9 +18,15 @@ export class SolvedProblemDto {
 
   @ApiProperty({
     description: '문제 분류(카테고리)',
-    example: '프론트엔드',
+    example: 'JavaScript',
   })
   category: string;
+
+  @ApiProperty({
+    description: '문제 분류(상위 카테고리)',
+    example: '프론트엔드',
+  })
+  parentCategory: string;
 
   @ApiProperty({
     description: '풀이 완료 시각 (ISO-8601 포맷)',

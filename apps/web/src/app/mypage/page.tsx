@@ -13,27 +13,44 @@ import GraphContent from "./_contents/graph-content";
 import SolvedContent from "./_contents/solved-content";
 import StreakContent from "./_contents/streak-content";
 import { fetchGraph } from "./_lib/fetch/fetch-graph";
-import { fetchSolvedProblem } from "./_lib/fetch/fetch-solved-problem";
+import { fetchSolvedProblems } from "./_lib/fetch/fetch-solved-problem";
 import { fetchStreaks } from "./_lib/fetch/fetch-streaks";
 import { fetchUserInfo } from "./_lib/fetch/fetch-user-info";
 
-async function MyPage() {
+async function MyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const parsedPage = parseInt(resolvedSearchParams.page || "1", 10);
+  const currentPage =
+    Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
+
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
   }
+
   const [userData, graphData, streakData, solvedData] = await Promise.all([
     fetchUserInfo(),
     fetchGraph(),
     fetchStreaks(),
-    fetchSolvedProblem(),
+    fetchSolvedProblems({ page: currentPage, size: 10 }),
   ]);
+
   const {
     submittedQuestionCount,
     yearlyAnswerSubmissions,
     consecutiveDayCount,
   } = streakData;
-  const { problems, totalCount } = solvedData;
+  const {
+    problems,
+    totalCount,
+    currentPage: solvedCurrentPage,
+    totalPages,
+    pageSize,
+  } = solvedData;
 
   // Refactor Todo: 365개 전부 채웠을 때 새로운 그림으로 전환하기
   const imageSrc = "/starry-night.jpg";
@@ -83,7 +100,13 @@ async function MyPage() {
             className="w-full px-4 md:px-8 pb-4 md:pb-8"
             value="solvedList"
           >
-            <SolvedContent solvedProblems={problems} />
+            <SolvedContent
+              solvedProblems={problems}
+              currentPage={solvedCurrentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              pageSize={pageSize}
+            />
           </TabsContent>
         </Tabs>
         <div data-boostad-zone className="overflow-x-hidden"></div>
