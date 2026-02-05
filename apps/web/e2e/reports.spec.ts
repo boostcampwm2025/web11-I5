@@ -53,15 +53,15 @@ test.describe("리포트 페이지", () => {
     page,
   }) => {
     // 최고 점수 표시 확인 (mockSubmissions 중 최고 점수는 85점)
-    await expect(page.getByText("나의 최고 점수 : 85점")).toBeVisible();
+    await expect(page.getByText(/나의 최고 점수.*85점/)).toBeVisible();
   });
 
   test("다른 사람 답변 보기 버튼을 클릭하면 다른 사람 답변 리스트 페이지로 이동해야 한다.", async ({
     page,
   }) => {
-    // 버튼 확인
+    // 버튼 확인 (반응형: sm 이상에서 "다른 사람 답변", 미만에서 "다른 답변")
     const othersButton = page.getByRole("link", {
-      name: "다른 사람 답변 보기",
+      name: /다른.*답변/,
     });
     await expect(othersButton).toBeVisible();
 
@@ -354,6 +354,10 @@ test.describe("리포트 페이지", () => {
   test("리포트 페이지 사이드에서 문제 시도 히스토리를 확인할 수 있어야 한다.", async ({
     page,
   }) => {
+    // 히스토리 아코디언 열기
+    const accordionTrigger = page.getByRole("button", { name: /내 제출/ });
+    await accordionTrigger.click();
+
     // 히스토리 항목들이 표시되는지 확인
     await expect(page.getByText(/TRIAL #\d+/).first()).toBeVisible();
 
@@ -366,17 +370,19 @@ test.describe("리포트 페이지", () => {
   test("히스토리에서 완료된 시도는 점수를, 진행 중인 시도는 스피너를, 실패한 시도는 에러 아이콘을 표시해야 한다.", async ({
     page,
   }) => {
+    // 히스토리 아코디언 열기 (기본 닫힘 상태일 수 있음)
+    const accordionTrigger = page.getByRole("button", { name: /내 제출/ });
+    await accordionTrigger.click();
+
     // 완료된 시도 - 점수 표시 (Submission ID 1: 85점)
-    await expect(page.getByText("85").first()).toBeVisible();
+    await expect(page.getByText("85점").first()).toBeVisible();
 
-    // 진행 중인 시도 - 스피너 (Submission ID 3, 4)
-    const spinnerCount = await page
-      .locator('[role="status"][aria-label="분석 중"]')
-      .count();
-    expect(spinnerCount).toBeGreaterThan(0);
+    // 진행 중인 시도 - "분석 중" 텍스트 (Submission ID 3, 4)
+    const pendingCount = await page.getByText("분석 중").count();
+    expect(pendingCount).toBeGreaterThan(0);
 
-    // 실패한 시도 - 에러 아이콘 (Submission ID 5, 6)
-    const failedCount = await page.locator('[aria-label="실패"]').count();
+    // 실패한 시도 - "실패" 텍스트 (Submission ID 5, 6)
+    const failedCount = await page.getByText("실패").count();
     expect(failedCount).toBeGreaterThan(0);
   });
 
@@ -389,6 +395,10 @@ test.describe("리포트 페이지", () => {
 
     // 현재 URL 확인
     expect(page.url()).toContain("attempt=1");
+
+    // 히스토리 아코디언 열기
+    const accordionTrigger = page.getByRole("button", { name: /내 제출/ });
+    await accordionTrigger.click();
 
     // 히스토리에서 다른 TRIAL 항목 찾기 (두 번째 항목)
     const historyLinks = page.getByRole("link", { name: /TRIAL #/ });
