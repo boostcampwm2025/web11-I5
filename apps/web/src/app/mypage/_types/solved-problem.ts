@@ -7,7 +7,10 @@ export interface SolvedProblem {
   score: number;
 }
 
-export interface SolvedProblemResDto {
+export interface SolvedProblemsResDto {
   problems: SolvedProblem[];
   totalCount: number;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
 }
