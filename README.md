@@ -1,7 +1,7 @@
 # 말만해
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/f4ee6cd3-3622-4f7c-b729-f842cb3a971d" width="80%">
+  <img src="https://github.com/user-attachments/assets/d6ad76ea-e6ad-4ee2-b47b-488435f148fa" width="80%">
 </p>
 
 <div align="center">
