@@ -1,6 +1,12 @@
-export type AnalysisStatus = "COMPLETED" | "PENDING" | "FAILED";
-export type STTStatus = "PENDING" | "IN_PROGRESS" | "DONE" | "FAILED";
-export type EvaluationStatus = AnalysisStatus;
+import type {
+  EvaluationStatus,
+  STTStatus,
+  InputType,
+  ScoreDetails,
+} from "@repo/types";
+
+export type AnalysisStatus = EvaluationStatus;
+export type { STTStatus, InputType, EvaluationStatus };
 
 export interface FeedbackResult {
   feedbackMessage: string;
@@ -8,18 +14,13 @@ export interface FeedbackResult {
   coverageReason: string;
   logicReason: string;
   depthReason: string;
-  scoreDetails: {
-    coreConcept: number;
-    coverage: number;
-    logic: number;
-    depth: number;
-  };
+  scoreDetails: ScoreDetails;
   extractedKeywords: string[];
 }
 
 export interface BaseReportDetail {
   submissionId: number;
-  inputType: "VOICE" | "TEXT";
+  inputType: InputType;
   questionId: number;
   date: string;
   duration: string;

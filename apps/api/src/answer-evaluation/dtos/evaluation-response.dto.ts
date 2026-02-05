@@ -4,9 +4,11 @@ import {
   CoverageEval,
   LogicEval,
   DepthEval,
-} from '../answer-evaluation.constants';
+  ScoreDetails,
+  DetailAnalysis,
+} from '@repo/types';
 
-class ScoreDetailsDto {
+class ScoreDetailsDto implements ScoreDetails {
   @ApiProperty({ description: '핵심 개념 점수', example: 50 })
   coreConcept: number;
 
@@ -20,7 +22,7 @@ class ScoreDetailsDto {
   depth: number;
 }
 
-class DetailAnalysisDto {
+class DetailAnalysisDto implements DetailAnalysis {
   @ApiProperty({
     description: '핵심 개념 분석 멘트',
     example: '핵심 개념이 정확하게 이해되었습니다.',

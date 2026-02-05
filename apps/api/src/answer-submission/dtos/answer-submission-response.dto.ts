@@ -1,6 +1,5 @@
-import { EvaluationStatus } from 'src/answer-evaluation/answer-evaluation.constants';
-import { InputType, ProcessStatus } from '../answer-submission.constants';
 import { ApiProperty } from '@nestjs/swagger';
+import { EvaluationStatus, InputType, ProcessStatus } from '@repo/types';
 
 export class AnswerSubmissionResponseDto {
   @ApiProperty({ description: '제출 ID', example: 1 })

@@ -7,14 +7,10 @@ import {
   JoinColumn,
   OneToOne,
 } from 'typeorm';
-import {
-  QuizMode,
-  InputType,
-  ProcessStatus,
-} from '../answer-submission.constants';
+import { QuizMode } from '../answer-submission.constants';
+import { InputType, ProcessStatus, EvaluationStatus } from '@repo/types';
 import { Question } from '../../question/entities/question.entity';
 import { AudioAsset } from '../../uploads/entities/audio-asset.entity';
-import { EvaluationStatus } from '../../answer-evaluation/answer-evaluation.constants';
 
 @Entity('answer_submissions')
 class AnswerSubmission {
