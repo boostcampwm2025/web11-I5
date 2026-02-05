@@ -5,6 +5,9 @@ function lloydRelaxation(
   points: [number, number][],
 ) {
   const newPoints: [number, number][] = [];
+  if (points.length === 1) {
+    return points;
+  }
   for (let i = 0; i < points.length; i++) {
     const polygon = voronoi.cellPolygon(i);
     // 점이 일직선상 존재하거나 남은 점 2개 이하면 polygon = null
