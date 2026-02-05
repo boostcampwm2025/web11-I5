@@ -1,7 +1,68 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
+
+const setupAuthMocks = async (page: Page) => {
+  await page.route("**/api/users/signup", async (route) => {
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({ message: "회원가입 성공", user: { id: 1 } }),
+    });
+  });
+
+  await page.route("**/api/emails/send", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ message: "전송됨" }),
+    });
+  });
+
+  await page.route("**/api/emails/verify", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ code: "PASS" }),
+    });
+  });
+
+  await page.route("**/api/users/login", async (route) => {
+    const postData = route.request().postDataJSON();
+
+    if (postData.email === "wrong@example.com") {
+      await route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({
+          message: "이메일 또는 비밀번호가 불일치합니다.",
+        }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        accessToken: "mock-jwt-token",
+        user: { email: postData.email, nickname: "테스트유저" },
+      }),
+    });
+  });
+
+  await page.route("**/api/users/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        user: { id: 1, email: "test@example.com", nickname: "테스트유저" },
+      }),
+    });
+  });
+};
 
 test.describe("회원가입 시나리오", () => {
   test.beforeEach(async ({ page }) => {
+    await setupAuthMocks(page);
     await page.goto("/signup");
   });
 
@@ -73,7 +134,6 @@ test.describe("회원가입 시나리오", () => {
 
     await codeInput.fill("123456");
     await codeInput.press("Tab");
-
     await expect(codeInput).toHaveValue("123456");
 
     const modalConfirmBtn = page
@@ -95,8 +155,8 @@ test.describe("회원가입 시나리오", () => {
 
     await expect(page.getByText("비밀번호가 일치하지 않습니다")).toBeHidden();
 
-    const termsCheckbox = page.getByLabel("서비스 이용약관");
-    await termsCheckbox.check({ force: true });
+    const termsCheckbox = page.locator("#terms");
+    await termsCheckbox.click({ force: true });
     await expect(termsCheckbox).toBeChecked();
 
     const submitBtn = page.getByRole("button", { name: "회원가입하기" });
@@ -109,6 +169,7 @@ test.describe("회원가입 시나리오", () => {
 
 test.describe("로그인 페이지 시나리오", () => {
   test.beforeEach(async ({ page }) => {
+    await setupAuthMocks(page);
     await page.goto("/login");
   });
 
