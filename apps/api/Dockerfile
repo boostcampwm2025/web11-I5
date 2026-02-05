@@ -35,6 +35,10 @@ ENV NODE_ENV=production
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 
+# packages/types 빌드 결과물
+COPY --from=builder /app/packages/types/dist ./packages/types/dist
+COPY --from=builder /app/packages/types/package.json ./packages/types/package.json
+
 # 빌드 결과값
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
@@ -42,5 +46,5 @@ COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 EXPOSE 8000
 
 # 애플리케이션 실행
-CMD ["node", "apps/api/dist/src/main"]
+CMD ["node", "apps/api/dist/apps/api/src/main.js"]
 
