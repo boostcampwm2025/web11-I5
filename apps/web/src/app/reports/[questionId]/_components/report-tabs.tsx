@@ -20,10 +20,11 @@ interface ReportTabsProps {
 }
 
 function ReportTabs({
-  submissionGraph,
+  submissionGraph: initialSubmissionGraph,
   fullGraphForQuestion,
 }: ReportTabsProps) {
-  const { history, evaluations, selectedSubmissionId } = useReportStatus();
+  const { history, evaluations, graphs, selectedSubmissionId } =
+    useReportStatus();
 
   // Context에서 선택된 submission 찾기
   const selectedAttempt = history.find(
@@ -32,6 +33,10 @@ function ReportTabs({
 
   // Context에서 evaluation 가져오기
   const currentEvaluation = evaluations.get(selectedSubmissionId);
+
+  // Context에서 그래프 가져오기
+  const submissionGraph =
+    graphs.get(selectedSubmissionId) ?? initialSubmissionGraph;
 
   // 데이터가 없는 경우 로딩 상태 표시
   if (!selectedAttempt || !currentEvaluation) {

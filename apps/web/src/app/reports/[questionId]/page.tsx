@@ -53,6 +53,7 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
         <ReportStatusProvider
           initialHistory={history}
           initialEvaluation={evaluation}
+          initialGraph={submissionGraph}
           selectedSubmissionId={selectedAttempt.submissionId}
           question={question}
         >
