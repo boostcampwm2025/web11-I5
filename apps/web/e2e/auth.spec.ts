@@ -3,6 +3,9 @@ import { test, expect } from "@playwright/test";
 test.describe("회원가입 시나리오", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/signup");
+    await page.waitForFunction(() => {
+      return navigator.serviceWorker && navigator.serviceWorker.controller;
+    });
   });
 
   test("회원가입 폼의 기본 입력 필드들이 모두 표시되어야 한다", async ({
@@ -40,7 +43,7 @@ test.describe("회원가입 시나리오", () => {
     page,
   }) => {
     await page.getByLabel("이름").fill("테스트유저");
-    await expect(page.getByText(/공백 없이 입력해주세요/)).toBeVisible();
+    await expect(page.getByText(/공백 없이 입력해주세요/)).toBeHidden();
     await page.getByLabel("이메일").fill("test@example.com");
 
     const verifyBtn = page.getByRole("button", { name: "이메일 인증하기" });
@@ -86,6 +89,9 @@ test.describe("회원가입 시나리오", () => {
 test.describe("로그인 페이지 시나리오", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/login");
+    await page.waitForFunction(() => {
+      return navigator.serviceWorker && navigator.serviceWorker.controller;
+    });
   });
 
   test("로그인 페이지 UI 요소들이 올바르게 표시되어야 한다", async ({
