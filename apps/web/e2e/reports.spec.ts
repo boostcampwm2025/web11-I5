@@ -45,7 +45,7 @@ test.describe("리포트 페이지", () => {
 
     // 문제 내용 확인
     await expect(
-      page.getByText("네트워크 프로토콜인 TCP와 UDP의 차이점을 설명해주세요."),
+      page.getByText("TCP와 UDP는 전송 계층의 프로토콜입니다."),
     ).toBeVisible();
   });
 
