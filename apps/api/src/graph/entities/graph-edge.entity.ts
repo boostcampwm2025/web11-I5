@@ -16,6 +16,7 @@ import { GraphNode } from './graph-node.entity';
  */
 @Entity('graph_edges')
 @Index(['userId', 'sourceId', 'targetId'], { unique: true })
+@Index(['submissionId'])
 export class GraphEdge {
   @PrimaryGeneratedColumn()
   id: number;
@@ -37,6 +38,12 @@ export class GraphEdge {
    */
   @Column({ name: 'target_id', type: 'int' })
   targetId: number;
+
+  /**
+   * 이 엣지를 생성한 제출 ID (제출별 그래프 스냅샷 조회용)
+   */
+  @Column({ name: 'submission_id', type: 'int', nullable: true })
+  submissionId: number | null;
 
   /**
    * 출발 노드 관계
