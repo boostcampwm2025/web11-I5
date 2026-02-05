@@ -1,8 +1,6 @@
 # 말만해
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/d6ad76ea-e6ad-4ee2-b47b-488435f148fa" width="80%">
-</p>
+<img src="https://github.com/user-attachments/assets/d6ad76ea-e6ad-4ee2-b47b-488435f148fa">
 
 <div align="center">
   <h4>말로 설명하며 배우는 AI 기반 CS 학습 플랫폼</h4> 
