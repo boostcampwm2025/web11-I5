@@ -28,6 +28,16 @@ build
 dist
 *.tsbuildinfo
 
+# Migration compiled outputs
+apps/api/migrations/*.js
+apps/api/migrations/*.d.ts
+apps/api/migrations/*.js.map
+
+# Compiled files in src folders (should only contain .ts)
+packages/types/src/**/*.js
+packages/types/src/**/*.d.ts
+packages/types/src/**/*.js.map
+
 
 # Debug
 npm-debug.log*
