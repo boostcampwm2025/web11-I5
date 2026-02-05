@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/button/button";
-import { BarChart3, Expand } from "lucide-react";
+import { BarChart3, Expand, XIcon } from "lucide-react";
 import * as React from "react";
 import GraphView from "../_components/graph-view/graph-view";
 import ScaleSlider from "../_components/graph-view/scale-slider";
@@ -63,7 +63,16 @@ function GraphContent({ graphData }: { graphData: GraphData }) {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-xl md:rounded-2xl w-full h-full max-w-7xl max-h-[90vh] md:max-h-5/6 shadow-xl overflow-hidden relative"
           >
-            <div className="absolute right-4 top-4 z-10">
+            <div className="absolute right-4 top-4 z-10 flex flex-col items-center gap-5 ">
+              <Button
+                onClick={handleModalToggle}
+                size="icon"
+                variant="outline"
+                aria-label="그래프 모달 제거"
+                className="md:hidden"
+              >
+                <XIcon className="text-muted-foreground" />
+              </Button>
               <ScaleSlider scale={scale} onScaleChange={setScale} />
             </div>
             <div className="w-full h-full">
