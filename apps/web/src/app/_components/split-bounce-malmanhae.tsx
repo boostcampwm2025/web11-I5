@@ -63,7 +63,7 @@ export function SplitBounceMalManHae({ className }: { className?: string }) {
             <motion.div
               className={cn(
                 "pointer-events-none absolute left-1/2 -translate-x-1/2",
-                "-top-10 sm:-top-12 md:-top-14 lg:-top-18 xl:-top-24",
+                "-top-10 sm:-top-12 md:-top-16 lg:-top-20 xl:-top-24",
                 "text-teal-400",
               )}
               initial={{
@@ -87,8 +87,7 @@ export function SplitBounceMalManHae({ className }: { className?: string }) {
               }}
             >
               <svg
-                width="97"
-                height="81"
+                className="w-10 h-8 sm:w-12 sm:h-10 md:w-16 md:h-13 lg:w-20 lg:h-16 xl:w-24 xl:h-20"
                 viewBox="0 0 97 81"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
