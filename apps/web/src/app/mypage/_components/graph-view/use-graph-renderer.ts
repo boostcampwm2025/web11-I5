@@ -1,7 +1,9 @@
 import * as React from "react";
 import { GRAPH_NUMBER_CONSTANT } from "../../_constants/graph-view-constant";
 import { addRandomEdgeDistance } from "../../_lib/graph-view/add-random-edge-distance";
-import drawGraphView from "../../_lib/graph-view/draw-graph-view";
+import drawGraphView, {
+  type GraphHighlightSets,
+} from "../../_lib/graph-view/draw-graph-view";
 import {
   GraphData,
   GraphEdge,
@@ -43,6 +45,8 @@ export interface UseGraphRendererOptions {
   initialScale?: number; // scale의 초기값만 저장
   scale?: number; // 외부에서 scale 조정할 때 사용
   onScaleChange?: (scale: number) => void;
+  /** 제출에서 추가된 노드·엣지 하이라이트용 (리포트 탭 등) */
+  highlight?: GraphHighlightSets | null;
 }
 
 export interface GraphRendererReturn {
@@ -51,6 +55,9 @@ export interface GraphRendererReturn {
     onMouseMove: (e: React.MouseEvent<HTMLCanvasElement>) => void;
     onMouseUp: (e: React.MouseEvent<HTMLCanvasElement>) => void;
     onMouseLeave: (e: React.MouseEvent<HTMLCanvasElement>) => void;
+    onTouchStart: (e: React.TouchEvent<HTMLCanvasElement>) => void;
+    onTouchMove: (e: React.TouchEvent<HTMLCanvasElement>) => void;
+    onTouchEnd: (e: React.TouchEvent<HTMLCanvasElement>) => void;
   };
   bindWheelEvent: () => () => void;
   drawGraph: (deltaTime: number) => void;
@@ -73,6 +80,7 @@ function useGraphRenderer({
   initialScale = 0.5,
   scale: externalScale,
   onScaleChange,
+  highlight = null,
 }: UseGraphRendererOptions): GraphRendererReturn {
   // 엣지에 랜덤 거리 적용 (한 번만 계산)
   const processedEdges = React.useMemo(
@@ -92,8 +100,30 @@ function useGraphRenderer({
   const dragStart = React.useRef({ x: 0, y: 0 });
   const hoveredNodeId = React.useRef<number | null>(null);
 
+  // 터치 인터랙션 상태
+  const lastTouchDistance = React.useRef<number | null>(null);
+  const touchStartNodeId = React.useRef<number | null>(null);
+
   // NodeMap 관리
   const nodeMapRef = React.useRef<NodeMap | null>(externalNodeMap || null);
+
+  // 그래프 데이터가 바뀌면 NodeMap 무효화 (다른 시도 선택 시 등)
+  const graphKey = React.useMemo(() => {
+    const nodeKey = graphData.nodes
+      .map((n) => n.id)
+      .sort((a, b) => a - b)
+      .join(",");
+    const edgeKey = graphData.edges
+      .map((e) => e.id)
+      .sort((a, b) => a - b)
+      .join(",");
+    return `${nodeKey}|${edgeKey}`;
+  }, [graphData.nodes, graphData.edges]);
+
+  // graphKey가 변경되면 NodeMap 초기화 (새 그래프로 재시작)
+  React.useEffect(() => {
+    nodeMapRef.current = null;
+  }, [graphKey]);
 
   // NodeMap 변경 콜백 throttle 용
   const shouldNotify = React.useRef(true);
@@ -281,6 +311,149 @@ function useGraphRenderer({
     [onScaleChange],
   );
 
+  // 두 터치 포인트 간 거리 계산
+  const getTouchDistance = (touches: React.TouchList): number => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // 두 터치 포인트의 중점 계산
+  const getTouchCenter = (
+    touches: React.TouchList,
+  ): { x: number; y: number } => {
+    return {
+      x: (touches[0].clientX + touches[1].clientX) / 2,
+      y: (touches[0].clientY + touches[1].clientY) / 2,
+    };
+  };
+
+  // 터치 시작 핸들러
+  const handleTouchStart = React.useCallback(
+    (e: React.TouchEvent<HTMLCanvasElement>) => {
+      e.preventDefault();
+
+      if (e.touches.length === 1) {
+        // 단일 터치: 마우스 다운과 동일
+        const touch = e.touches[0];
+        dragStart.current = { x: touch.clientX, y: touch.clientY };
+
+        const { x, y } = convertCursorToCanvasCoords(
+          touch.clientX,
+          touch.clientY,
+        );
+        const clickedNode = findNodeAtPosition(x, y);
+
+        if (clickedNode) {
+          draggedNodeId.current = clickedNode.id;
+          touchStartNodeId.current = clickedNode.id;
+          nodeMapRef.current?.setNodeFixedCoords(clickedNode.id, x, y);
+        } else {
+          isDraggingCanvas.current = true;
+        }
+      } else if (e.touches.length === 2) {
+        // 핀치 줌 시작
+        lastTouchDistance.current = getTouchDistance(e.touches);
+
+        // 노드 드래그 중이었으면 종료
+        if (draggedNodeId.current !== null) {
+          nodeMapRef.current?.clearNodeFixedCoords(draggedNodeId.current);
+          draggedNodeId.current = null;
+        }
+        isDraggingCanvas.current = false;
+      }
+    },
+    [convertCursorToCanvasCoords, findNodeAtPosition],
+  );
+
+  // 터치 이동 핸들러
+  const handleTouchMove = React.useCallback(
+    (e: React.TouchEvent<HTMLCanvasElement>) => {
+      e.preventDefault();
+
+      if (e.touches.length === 1) {
+        // 단일 터치: 마우스 무브와 동일
+        const touch = e.touches[0];
+        const { x, y } = convertCursorToCanvasCoords(
+          touch.clientX,
+          touch.clientY,
+        );
+
+        if (draggedNodeId.current !== null) {
+          nodeMapRef.current?.setNodeFixedCoords(draggedNodeId.current, x, y);
+        } else if (isDraggingCanvas.current) {
+          const dx = touch.clientX - dragStart.current.x;
+          const dy = touch.clientY - dragStart.current.y;
+
+          offset.current.x += dx;
+          offset.current.y += dy;
+
+          dragStart.current = { x: touch.clientX, y: touch.clientY };
+        }
+      } else if (e.touches.length === 2) {
+        // 핀치 줌(터치스크린으로 확대/축소 동작) 처리
+        const currentDistance = getTouchDistance(e.touches);
+        if (lastTouchDistance.current !== null) {
+          const distanceRatio = currentDistance / lastTouchDistance.current;
+          const scaleAmount = (distanceRatio - 1) * scale.current;
+
+          const center = getTouchCenter(e.touches);
+          const canvas = canvasRef.current;
+          if (canvas) {
+            const rect = canvas.getBoundingClientRect();
+            handleZoom(center.x - rect.left, center.y - rect.top, scaleAmount);
+          }
+        }
+        lastTouchDistance.current = currentDistance;
+      }
+    },
+    [convertCursorToCanvasCoords, handleZoom, canvasRef],
+  );
+
+  // 터치 종료 핸들러
+  const handleTouchEnd = React.useCallback(
+    (e: React.TouchEvent<HTMLCanvasElement>) => {
+      e.preventDefault();
+
+      // 클릭 이벤트 처리 (단일 터치로 노드를 탭한 경우)
+      if (
+        e.touches.length === 0 &&
+        e.changedTouches.length === 1 &&
+        touchStartNodeId.current !== null &&
+        draggedNodeId.current !== null
+      ) {
+        const touch = e.changedTouches[0];
+
+        const dx = touch.clientX - dragStart.current.x;
+        const dy = touch.clientY - dragStart.current.y;
+
+        // 노드 드래그하여 이동한 거리 5px 미만이면 터치로 처리
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 5 && onClickNode) {
+          const questionId = nodeMapRef.current?.getNode(
+            touchStartNodeId.current,
+          )?.questionId;
+          if (questionId) {
+            onClickNode(questionId);
+          }
+        }
+      }
+
+      // 모든 터치가 종료되면 상태 초기화
+      if (e.touches.length === 0) {
+        if (draggedNodeId.current !== null) {
+          nodeMapRef.current?.clearNodeFixedCoords(draggedNodeId.current);
+        }
+        draggedNodeId.current = null;
+        touchStartNodeId.current = null;
+        isDraggingCanvas.current = false;
+        lastTouchDistance.current = null;
+      }
+    },
+    [onClickNode],
+  );
+
   // 휠 이벤트 바인딩
   const bindWheelEvent = React.useCallback(() => {
     const canvas = canvasRef.current;
@@ -346,6 +519,7 @@ function useGraphRenderer({
         hoveredNodeId.current,
         textRenderScale,
         showLabels,
+        highlight,
       );
 
       // NodeMap 변경 콜백 (throttle 처리 - 100ms 마다)
@@ -367,6 +541,7 @@ function useGraphRenderer({
       textRenderScale,
       showLabels,
       onNodeMapChange,
+      highlight,
     ],
   );
 
@@ -376,8 +551,18 @@ function useGraphRenderer({
       onMouseMove: handleMouseMove,
       onMouseUp: handleMouseUp,
       onMouseLeave: handleMouseUp,
+      onTouchStart: handleTouchStart,
+      onTouchMove: handleTouchMove,
+      onTouchEnd: handleTouchEnd,
     }),
-    [handleMouseDown, handleMouseMove, handleMouseUp],
+    [
+      handleMouseDown,
+      handleMouseMove,
+      handleMouseUp,
+      handleTouchStart,
+      handleTouchMove,
+      handleTouchEnd,
+    ],
   );
 
   return {

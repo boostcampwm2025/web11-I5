@@ -12,6 +12,7 @@ import {
 } from "@/components/tabs/tabs";
 import VoiceInput from "./voice-input";
 import TextInput from "./text-input";
+import { ErrorMessage } from "./error-message";
 
 interface InputSectionProps {
   initialInputMode: "voice" | "text";
@@ -112,9 +113,7 @@ function InputSection({
           setIsSubmitting={setIsSubmitting}
           disabled={!!submissionId}
         />
-        {error && (
-          <p className="text-red-500 text-center text-sm mt-2">{error}</p>
-        )}
+        <ErrorMessage message={error} />
       </TabsContent>
 
       <TabsContent value="text">
@@ -123,9 +122,7 @@ function InputSection({
           isSubmitting={isSubmitting}
           disabled={!!submissionId}
         />
-        {error && (
-          <p className="text-red-500 text-center text-sm mt-2">{error}</p>
-        )}
+        <ErrorMessage message={error} />
       </TabsContent>
 
       <ImportanceRating

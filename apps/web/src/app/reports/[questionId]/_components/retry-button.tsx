@@ -5,19 +5,30 @@ import { RotateCcw } from "lucide-react";
 import QuestionModal from "@/app/daily/questions/_components/question-modal";
 import { Question } from "@/app/daily/questions/_types/types";
 import { Button } from "@/components/button/button";
+import { cn } from "@/lib/cn";
 
 interface RetryButtonProps {
   question: Question;
   className?: string;
   children?: React.ReactNode;
+  size?: "default" | "sm" | "lg";
 }
 
-function RetryButton({ question, children }: RetryButtonProps) {
+function RetryButton({
+  question,
+  children,
+  size,
+  className,
+}: RetryButtonProps) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   return (
     <>
-      <Button className="font-semibold" onClick={() => setIsModalOpen(true)}>
+      <Button
+        className={cn("font-semibold", className)}
+        size={size}
+        onClick={() => setIsModalOpen(true)}
+      >
         {children ?? (
           <>
             <RotateCcw className="w-4 h-4" />

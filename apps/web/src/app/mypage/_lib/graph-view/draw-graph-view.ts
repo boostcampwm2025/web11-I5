@@ -12,6 +12,12 @@ function getNodeColor(type: NodeType) {
     : GRAPH_COLOR_CONSTANT.KEYWORD_NODE;
 }
 
+/** 하이라이트용: 이 제출에서 추가된 노드·엣지만 강조할 때 사용 */
+export interface GraphHighlightSets {
+  nodeIds: Set<number>;
+  edgeIds: Set<number>;
+}
+
 function drawGraphView(
   ctx: CanvasRenderingContext2D,
   nodes: NodeMapType,
@@ -21,6 +27,7 @@ function drawGraphView(
   hoveredNode: number | null,
   textRenderScale: number = 0.5,
   showLabels: boolean = true,
+  highlight: GraphHighlightSets | null = null,
 ) {
   ctx.save();
   ctx.translate(offset.x, offset.y);
@@ -36,36 +43,38 @@ function drawGraphView(
   );
   ctx.lineWidth = clampedVisualWidth / scale;
 
+  const isEdgeHighlighted = (edgeId: number) =>
+    highlight != null && highlight.edgeIds.has(edgeId);
+
   edges.forEach((edge) => {
     const source = nodes.get(edge.sourceId);
     const target = nodes.get(edge.targetId);
     if (!source || !target) return;
 
-    // 호버된 노드에 직접 연결된 엣지만 하이라이트
+    // 호버된 노드에 직접 연결된 엣지 또는 제출 하이라이트
     const isDirectlyConnected =
       source.id === hoveredNode || target.id === hoveredNode;
+    const isSubmissionHighlight = isEdgeHighlighted(edge.id);
 
-    // 직접 연결된 경우만 하이라이트 강도 사용
-    const edgeHighlight = isDirectlyConnected
-      ? Math.max(source.displayHighlight, target.displayHighlight)
-      : 0;
+    const edgeHighlight = isSubmissionHighlight
+      ? 1
+      : isDirectlyConnected
+        ? Math.max(source.displayHighlight, target.displayHighlight)
+        : 0;
 
-    // 3가지 상태에 따른 알파 계산
-    // - Normal (hoveredNode === null): 0.5
-    // - Active (직접 연결됨): 1.0
-    // - Inactive (연결 안됨): NOT_HOVERED_ALPHA
     const NORMAL_EDGE_ALPHA = 0.5;
     const INACTIVE_ALPHA = GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA;
 
     let finalAlpha: number;
-    if (hoveredNode === null) {
-      // Normal 상태
+    if (highlight != null) {
+      // 하이라이트 모드: 제출에서 추가된 엣지는 진하게, 나머지는 흐리게
+      finalAlpha = isSubmissionHighlight ? 0.9 : INACTIVE_ALPHA;
+    } else if (hoveredNode === null) {
       finalAlpha = NORMAL_EDGE_ALPHA;
     } else {
-      // Active 또는 Inactive 상태
-      // edgeHighlight로 Active(1.0)와 Inactive(0.2) 사이를 보간
       finalAlpha = INACTIVE_ALPHA + edgeHighlight * (1 - INACTIVE_ALPHA);
     }
+
     ctx.strokeStyle = lerpColorWithAlpha(
       GRAPH_COLOR_CONSTANT.EDGE,
       GRAPH_COLOR_CONSTANT.HOVERED,
@@ -86,24 +95,36 @@ function drawGraphView(
     1,
     Math.max(0, (scale - textRenderScale) / textRenderScale),
   );
+  const isNodeHighlighted = (nodeId: number) =>
+    highlight != null && highlight.nodeIds.has(nodeId);
+
   nodes.forEach((node) => {
     const isHovered = node.id === hoveredNode;
+    const isSubmissionHighlight = isNodeHighlighted(node.id);
 
-    // displayRadius와 displayAlpha 사용 (애니메이션된 값)
     const radius = node.displayRadius;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
 
-    const nodeColor = isHovered
+    let nodeColor = isHovered
       ? GRAPH_COLOR_CONSTANT.HOVERED
       : getNodeColor(node.type);
-    const nodeRgba = hexToRgba(nodeColor, node.displayAlpha);
+    if (isSubmissionHighlight && !isHovered) {
+      nodeColor = GRAPH_COLOR_CONSTANT.HOVERED;
+    }
+    const alpha =
+      highlight != null
+        ? isSubmissionHighlight
+          ? 1
+          : GRAPH_COLOR_CONSTANT.NOT_HOVERED_ALPHA
+        : node.displayAlpha;
+    const nodeRgba = hexToRgba(nodeColor, alpha);
     ctx.fillStyle = `rgba(${nodeRgba.r}, ${nodeRgba.g}, ${nodeRgba.b}, ${nodeRgba.a})`;
     ctx.fill();
 
     if (showLabels && textAlpha > 0) {
-      const labelAlpha = node.displayAlpha * textAlpha;
+      const labelAlpha = alpha * textAlpha;
       const labelRgba = hexToRgba(GRAPH_COLOR_CONSTANT.LABEL, labelAlpha);
       ctx.fillStyle = `rgba(${labelRgba.r}, ${labelRgba.g}, ${labelRgba.b}, ${labelRgba.a})`;
       ctx.fillText(node.label, node.x, node.y + radius + 10);

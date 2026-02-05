@@ -115,7 +115,7 @@ describe('GraphService', () => {
 
   describe('createGraphFromEvaluation', () => {
     it('키워드가 없으면 트랜잭션을 실행하지 않고 조기 반환해야 한다', async () => {
-      await service.createGraphFromEvaluation(1, 10, '제목', []);
+      await service.createGraphFromEvaluation(1, 10, '제목', [], 100);
 
       expect(mockTransactionFn).not.toHaveBeenCalled();
     });
@@ -188,6 +188,7 @@ describe('GraphService', () => {
         questionId,
         questionTitle,
         keywords,
+        100, // submissionId
       );
 
       expect(mockTransactionFn).toHaveBeenCalled();
