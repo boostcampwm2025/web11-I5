@@ -23,7 +23,9 @@ async function MyPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const currentPage = parseInt(resolvedSearchParams.page || "1");
+  const parsedPage = parseInt(resolvedSearchParams.page || "1", 10);
+  const currentPage =
+    Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
 
   const user = await getCurrentUser();
   if (!user) {
