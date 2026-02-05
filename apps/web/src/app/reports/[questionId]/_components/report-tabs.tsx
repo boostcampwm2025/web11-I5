@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Tabs,
   TabsList,
@@ -6,29 +8,11 @@ import {
 } from "@/components/tabs/tabs";
 import { BarChart3, BookText, CircleCheckBig } from "lucide-react";
 import FeedbackSection from "./feedback/feedback-section";
-import { AnalysisStatus, ReportDetail } from "../_types/report-detail";
-import { Question } from "@/app/daily/questions/_types/types";
 import type { GraphData } from "@/app/mypage/_types/graph-view";
 import GraphView from "@/app/mypage/_components/graph-view/graph-view";
-
-type ReportQuestion = Question & {
-  categoryDisplay: string;
-  subCategory: string;
-};
-
-interface HistoryItem {
-  submissionId: number;
-  inputType: "VOICE" | "TEXT";
-  displayIndex: number;
-  status: AnalysisStatus;
-  duration: string;
-  answerContent: string;
-}
+import { useReportStatus } from "../_context/report-status-context";
 
 interface ReportTabsProps {
-  selectedAttempt: HistoryItem;
-  evaluation: ReportDetail;
-  question: ReportQuestion;
   /** 이 제출에서 추가된 그래프(노드·엣지). 없으면 null */
   submissionGraph: GraphData | null;
   /** 이 문제에 대한 전체 학습 그래프(서브그래프). 하이라이트 베이스용 */
@@ -36,15 +20,31 @@ interface ReportTabsProps {
 }
 
 function ReportTabs({
-  selectedAttempt,
-  evaluation,
-  question,
   submissionGraph,
   fullGraphForQuestion,
 }: ReportTabsProps) {
+  const { history, evaluations, selectedSubmissionId } = useReportStatus();
+
+  // Context에서 선택된 submission 찾기
+  const selectedAttempt = history.find(
+    (h) => h.submissionId === selectedSubmissionId,
+  );
+
+  // Context에서 evaluation 가져오기
+  const currentEvaluation = evaluations.get(selectedSubmissionId);
+
+  // 데이터가 없는 경우 로딩 상태 표시
+  if (!selectedAttempt || !currentEvaluation) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-sm text-slate-500">데이터를 불러오는 중...</div>
+      </div>
+    );
+  }
+
   const keywords =
-    evaluation.status === "COMPLETED"
-      ? evaluation.feedback.extractedKeywords
+    currentEvaluation.status === "COMPLETED"
+      ? currentEvaluation.feedback.extractedKeywords
       : [];
 
   // 베이스: 전체 누적 그래프가 있으면 사용, 없으면 제출 그래프만 사용
@@ -90,8 +90,7 @@ function ReportTabs({
         <FeedbackSection
           attempt={selectedAttempt.displayIndex}
           status={selectedAttempt.status}
-          data={evaluation}
-          question={question}
+          data={currentEvaluation}
         />
       </TabsContent>
 
@@ -128,8 +127,8 @@ function ReportTabs({
             </div>
 
             {keywords.length > 0 &&
-              evaluation.totalScore &&
-              evaluation.totalScore >= 30 && (
+              currentEvaluation.totalScore &&
+              currentEvaluation.totalScore >= 30 && (
                 <div className="mt-4 md:mt-6">
                   <h4 className="font-semibold text-xs md:text-sm text-slate-400 uppercase tracking-wider mb-2 md:mb-3">
                     CORE KEYWORDS

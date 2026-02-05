@@ -1,25 +1,23 @@
+"use client";
+
 import { AnalysisStatus, ReportDetail } from "../../_types/report-detail";
 import ScoreGauge from "./score-gauge";
 import AiFeedback from "./ai-feedback";
 import MetricsList from "./metrics-list";
 import { AlertCircle } from "lucide-react";
-import { Question } from "@/app/daily/questions/_types/types";
 import RetryButton from "../retry-button";
 import ReEvaluateButton from "../re-evaluate-button";
+import { useReportStatus } from "../../_context/report-status-context";
 
 interface FeedbackSectionProps {
   attempt: number;
   status: AnalysisStatus;
   data: ReportDetail;
-  question: Question;
 }
 
-function FeedbackSection({
-  attempt,
-  status,
-  data,
-  question,
-}: FeedbackSectionProps) {
+function FeedbackSection({ attempt, status, data }: FeedbackSectionProps) {
+  const { question } = useReportStatus();
+
   if (status === "PENDING") {
     const isSttPending =
       data.sttStatus === "IN_PROGRESS" || data.sttStatus === "PENDING";

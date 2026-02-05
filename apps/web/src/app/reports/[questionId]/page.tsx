@@ -5,6 +5,7 @@ import HistoryAccordion from "./_components/history/history-accordion";
 import { getReportPageData } from "./_lib/services/page-data";
 import ReportRefresh from "./_components/report-refresh";
 import ReportTabs from "./_components/report-tabs";
+import { ReportStatusProvider } from "./_context/report-status-context";
 
 interface ReportPageProps {
   params: Promise<{ questionId: string }>;
@@ -49,36 +50,33 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
           <ReportHeader question={question} highestScore={highestScore} />
         </div>
 
-        {/* 메인 레이아웃: 콘텐츠 + 히스토리 사이드바 */}
-        <div className="flex flex-col xl:flex-row-reverse xl:gap-8">
-          {/* 히스토리 사이드바: xl 이상에서 오른쪽 고정 */}
-          <aside className="mb-6 xl:mb-0 xl:w-72 xl:shrink-0 xl:sticky xl:top-24 xl:self-start">
-            <HistoryAccordion
-              history={history}
-              selectedId={selectedAttempt.submissionId}
-            />
-          </aside>
+        <ReportStatusProvider
+          initialHistory={history}
+          initialEvaluation={evaluation}
+          selectedSubmissionId={selectedAttempt.submissionId}
+          question={question}
+        >
+          {/* 메인 레이아웃: 콘텐츠 + 히스토리 사이드바 */}
+          <div className="flex flex-col xl:flex-row-reverse xl:gap-8">
+            {/* 히스토리 사이드바: xl 이상에서 오른쪽 고정 */}
+            <aside className="mb-6 xl:mb-0 xl:w-72 xl:shrink-0 xl:sticky xl:top-24 xl:self-start">
+              <HistoryAccordion />
+            </aside>
 
-          {/* 메인 콘텐츠 */}
-          <div
-            key={selectedAttempt.submissionId}
-            className="flex-1 min-w-0 animate-in fade-in duration-200"
-          >
-            <ReportTabs
-              selectedAttempt={selectedAttempt}
-              evaluation={evaluation}
-              question={question}
-              submissionGraph={submissionGraph}
-              fullGraphForQuestion={fullGraphForQuestion}
-            />
+            {/* 메인 콘텐츠 */}
+            <div
+              key={selectedAttempt.submissionId}
+              className="flex-1 min-w-0 animate-in fade-in duration-200"
+            >
+              <ReportTabs
+                submissionGraph={submissionGraph}
+                fullGraphForQuestion={fullGraphForQuestion}
+              />
+            </div>
           </div>
-        </div>
 
-        <ReportRefresh
-          pendingSubmissionIds={history
-            .filter((h) => h.status === "PENDING")
-            .map((h) => h.submissionId)}
-        />
+          <ReportRefresh />
+        </ReportStatusProvider>
         <div data-boostad-zone className="h-20 overflow-x-hidden"></div>
       </main>
     </>

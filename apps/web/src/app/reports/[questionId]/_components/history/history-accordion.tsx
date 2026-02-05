@@ -7,13 +7,11 @@ import { AlertCircle, ChevronDown, History } from "lucide-react";
 import { Spinner } from "@/components/spinner/spinner";
 import { ReportHistoryItem } from "../../_types/report-detail";
 import useMediaQuery from "@/hooks/use-media-query";
+import { useReportStatus } from "../../_context/report-status-context";
 
-interface HistoryAccordionProps {
-  history: ReportHistoryItem[];
-  selectedId: number;
-}
+function HistoryAccordion() {
+  const { history, evaluations, selectedSubmissionId } = useReportStatus();
 
-function HistoryAccordion({ history, selectedId }: HistoryAccordionProps) {
   const is5xlUp = useMediaQuery("(min-width: 1280px)");
   const [openValue, setOpenValue] = React.useState<"" | "history">("");
 
@@ -22,11 +20,14 @@ function HistoryAccordion({ history, selectedId }: HistoryAccordionProps) {
   }, [is5xlUp]);
 
   const renderStatus = (item: ReportHistoryItem) => {
+    const evaluation = evaluations.get(item.submissionId);
+    const totalScore = evaluation?.totalScore ?? item.totalScore;
+
     switch (item.status) {
       case "COMPLETED":
         return (
           <span className="text-sm font-bold text-slate-700">
-            {item.totalScore == null ? "점수 없음" : `${item.totalScore}점`}
+            {totalScore == null ? "점수 없음" : `${totalScore}점`}
           </span>
         );
       case "PENDING":
@@ -80,7 +81,7 @@ function HistoryAccordion({ history, selectedId }: HistoryAccordionProps) {
         <Accordion.Content className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
           <div className="border-t border-gray-100 px-4 py-3 md:px-5 md:py-4 space-y-2 overflow-y-auto max-h-96">
             {history.map((item) => {
-              const isSelected = item.submissionId === selectedId;
+              const isSelected = item.submissionId === selectedSubmissionId;
 
               return (
                 <Link
