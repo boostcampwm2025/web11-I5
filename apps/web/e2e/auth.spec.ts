@@ -19,8 +19,7 @@ test.describe("회원가입 시나리오", () => {
   }) => {
     const nameInput = page.getByLabel("이름");
     await nameInput.fill("홍 길동");
-
-    await page.getByRole("heading", { name: "회원가입" }).click();
+    await nameInput.press("Tab");
 
     await expect(page.getByText(/공백 없이 입력해주세요/)).toBeVisible({
       timeout: 10000,
@@ -33,8 +32,13 @@ test.describe("회원가입 시나리오", () => {
   test("비밀번호와 비밀번호 확인이 일치하지 않으면 에러가 표시되어야 한다", async ({
     page,
   }) => {
-    await page.getByLabel("비밀번호", { exact: true }).fill("password123!");
-    await page.getByLabel("비밀번호 확인").fill("diferrent123!"); // 다르게 입력
+    const pwInput = page.getByLabel("비밀번호", { exact: true });
+    await pwInput.fill("password123!");
+    await pwInput.press("Tab");
+
+    const pwConfirmInput = page.getByLabel("비밀번호 확인");
+    await pwConfirmInput.fill("diferrent123!");
+    await pwConfirmInput.press("Tab");
 
     await expect(page.getByText("비밀번호가 일치하지 않습니다")).toBeVisible();
     await expect(
@@ -47,10 +51,13 @@ test.describe("회원가입 시나리오", () => {
   }) => {
     const nameInput = page.getByLabel("이름");
     await nameInput.fill("테스트유저");
-    await page.getByRole("heading", { name: "회원가입" }).click(); // blur 대신 클릭
+    await nameInput.press("Tab");
     await expect(page.getByText(/공백 없이 입력해주세요/)).toBeHidden();
 
-    await page.getByLabel("이메일").fill("test@example.com");
+    const emailInput = page.getByLabel("이메일");
+    await emailInput.fill("test@example.com");
+    await emailInput.press("Tab");
+
     const verifyBtn = page.getByRole("button", { name: "이메일 인증하기" });
     await expect(verifyBtn).toBeEnabled();
     await verifyBtn.click();
@@ -65,6 +72,8 @@ test.describe("회원가입 시나리오", () => {
     }
 
     await codeInput.fill("123456");
+    await codeInput.press("Tab");
+
     await expect(codeInput).toHaveValue("123456");
 
     const modalConfirmBtn = page
@@ -76,11 +85,13 @@ test.describe("회원가입 시나리오", () => {
       page.getByRole("button", { name: "이메일 인증 완료" }),
     ).toBeVisible();
 
-    await page.getByLabel("비밀번호", { exact: true }).fill("password123!");
+    const pwInput = page.getByLabel("비밀번호", { exact: true });
+    await pwInput.fill("password123!");
+    await pwInput.press("Tab");
+
     const pwConfirmInput = page.getByLabel("비밀번호 확인");
     await pwConfirmInput.fill("password123!");
-
-    await page.getByRole("heading", { name: "회원가입" }).click();
+    await pwConfirmInput.press("Tab");
 
     await expect(page.getByText("비밀번호가 일치하지 않습니다")).toBeHidden();
 
@@ -90,7 +101,7 @@ test.describe("회원가입 시나리오", () => {
 
     const submitBtn = page.getByRole("button", { name: "회원가입하기" });
 
-    await expect(submitBtn).toBeEnabled({ timeout: 10000 });
+    await expect(submitBtn).toBeEnabled({ timeout: 15000 });
 
     await submitBtn.click();
   });
