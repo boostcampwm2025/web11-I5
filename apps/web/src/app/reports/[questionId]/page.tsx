@@ -22,8 +22,14 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
     ? parsedSubmissionId
     : undefined;
 
-  const { question, history, evaluation, highestScore } =
-    await getReportPageData(Number(questionId), validSubmissionId);
+  const {
+    question,
+    history,
+    evaluation,
+    highestScore,
+    submissionGraph,
+    fullGraphForQuestion,
+  } = await getReportPageData(Number(questionId), validSubmissionId);
 
   // submissionId가 없거나 유효하지 않으면 최신 submission으로 fallback
   const selectedAttempt = validSubmissionId
@@ -37,20 +43,14 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
   return (
     <>
       <Header />
-      <main className="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-15 min-h-main">
-        <div className="mb-6 md:mb-10">
+      <main className="w-full max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-15 min-h-main">
+        {/* 문제 헤더 */}
+        <div className="mb-8 md:mb-10">
           <ReportHeader question={question} highestScore={highestScore} />
         </div>
 
-        <div className="flex flex-col xl:flex-row-reverse xl:gap-8">
-          {/* 히스토리 사이드바: xl 이상에서 왼쪽 고정 */}
-          <aside className="mb-6 xl:mb-0 xl:w-80 xl:shrink-0">
-            <HistoryAccordion
-              history={history}
-              selectedId={selectedAttempt.submissionId}
-            />
-          </aside>
-
+        {/* 메인 레이아웃: 콘텐츠 + 히스토리 사이드바 */}
+        <div className="flex flex-col xl:flex-row xl:gap-8">
           {/* 메인 콘텐츠 */}
           <div
             key={selectedAttempt.submissionId}
@@ -60,8 +60,18 @@ async function ReportPage({ params, searchParams }: ReportPageProps) {
               selectedAttempt={selectedAttempt}
               evaluation={evaluation}
               question={question}
+              submissionGraph={submissionGraph}
+              fullGraphForQuestion={fullGraphForQuestion}
             />
           </div>
+
+          {/* 히스토리 사이드바: xl 이상에서 오른쪽 고정 */}
+          <aside className="mt-6 xl:mt-0 xl:w-72 xl:shrink-0 xl:sticky xl:top-24 xl:self-start">
+            <HistoryAccordion
+              history={history}
+              selectedId={selectedAttempt.submissionId}
+            />
+          </aside>
         </div>
 
         <ReportRefresh

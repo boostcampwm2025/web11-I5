@@ -19,11 +19,11 @@ async function Home() {
   return (
     <>
       <Header />
-      <main className="w-full h-full  flex flex-col bg-white overflow-x-hidden">
+      <main className="w-full flex flex-col bg-white overflow-x-hidden">
         <section className="w-full min-h-[calc(100svh-64px)] relative flex justify-center items-center overflow-hidden">
           <div
             className={cn(
-              "flex flex-col justify-center items-center z-10 w-full px-4 lg:px-0 py-8 md:py-16",
+              "flex flex-col justify-center items-center z-10 w-full px-4 lg:px-0 pb-8 md:pb-16 pt-20 md:pt-36",
               "pointer-events-none",
             )}
           >
