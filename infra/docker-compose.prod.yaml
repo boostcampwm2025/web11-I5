@@ -1,8 +1,15 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   db:
     container_name: malmanhae-db
     image: postgres:15-alpine
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "5432:5432"
     environment:
@@ -24,6 +31,7 @@ services:
     container_name: malmanhae-api
     image: ${DOCKERHUB_USERNAME}/malmanhae-api:latest
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "8000:8000"
     environment:
@@ -72,12 +80,14 @@ services:
     container_name: malmanhae-prometheus
     image: prom/prometheus:v3.8.1
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml:ro
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
     depends_on:
       - api
     networks:
@@ -87,6 +97,7 @@ services:
     container_name: malmanhae-grafana
     image: grafana/grafana:12.3.1
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "3001:3000"
     environment:
@@ -103,6 +114,7 @@ services:
     container_name: malmanhae-loki
     image: grafana/loki:2.9.4
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "3100:3100"
     command: ["-config.file=/etc/loki/local-config.yaml"]
@@ -117,6 +129,7 @@ services:
     container_name: malmanhae-promtail
     image: grafana/promtail:2.9.4
     restart: unless-stopped
+    logging: *default-logging
     command: ["-config.file=/etc/promtail/config.yaml"]
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
@@ -131,6 +144,7 @@ services:
     container_name: malmanhae-web
     image: ${DOCKERHUB_USERNAME}/malmanhae-web:latest
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "3000:3000"
     environment:
