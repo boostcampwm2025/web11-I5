@@ -1,23 +1,23 @@
-name: Deploy
+name: Deploy API
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'packages/**'
+      - 'infra/**'
 
 env:
   API_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/malmanhae-api
-  WEB_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/malmanhae-web
 
 jobs:
   build-and-push:
-    name: Build and Push Docker Images
+    name: Build and Push API Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -41,24 +41,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Web image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./apps/web/Dockerfile
-          push: true
-          platforms: linux/amd64
-          build-args: |
-            NEXT_PUBLIC_SOCKET_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
-            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-            NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
-          tags: |
-            ${{ env.WEB_IMAGE }}:latest
-            ${{ env.WEB_IMAGE }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
   deploy:
     name: Deploy to Server
     runs-on: ubuntu-latest
@@ -73,7 +55,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: infra/docker-compose.prod.yaml,infra/prometheus.yaml,infra/grafana-datasource.yaml,infra/loki-config.yaml,infra/promtail-config.yaml,nginx.conf
+          source: infra/docker-compose.prod.yaml
           target: ~/malmanhae
 
       - name: Deploy via SSH
@@ -82,7 +64,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DOCKERHUB_USERNAME,DB_PASSWORD,GEMINI_API_KEY,NCLOUD_CLOVA_SPEECH_INVOKE_URL,NCLOUD_CLOVA_SPEECH_SECRET_KEY,NCLOUD_OBJECT_STORAGE_ENDPOINT,NCLOUD_OBJECT_STORAGE_REGION,NCLOUD_OBJECT_STORAGE_ACCESS_KEY,NCLOUD_OBJECT_STORAGE_SECRET_KEY,NCLOUD_OBJECT_STORAGE_BUCKET,STT_CALLBACK_URL,JWT_SECRET,CORS_ALLOWED_ORIGINS,BOOSTAD_BLOG_KEY,GF_SECURITY_ADMIN_USER,GF_SECURITY_ADMIN_PASSWORD,MAIL_HOST,MAIL_PORT,MAIL_USER,MAIL_PASSWORD,MAIL_FROM,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_CALLBACK_URL,FRONTEND_URL
+          envs: DOCKERHUB_USERNAME,DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME,GEMINI_API_KEY,NCLOUD_CLOVA_SPEECH_INVOKE_URL,NCLOUD_CLOVA_SPEECH_SECRET_KEY,NCLOUD_OBJECT_STORAGE_ENDPOINT,NCLOUD_OBJECT_STORAGE_REGION,NCLOUD_OBJECT_STORAGE_ACCESS_KEY,NCLOUD_OBJECT_STORAGE_SECRET_KEY,NCLOUD_OBJECT_STORAGE_BUCKET,STT_CALLBACK_URL,JWT_SECRET,MAIL_HOST,MAIL_PORT,MAIL_USER,MAIL_PASSWORD,MAIL_FROM,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_CALLBACK_URL,FRONTEND_URL
           script: |
             cd ~/malmanhae
             docker compose -f infra/docker-compose.prod.yaml pull
@@ -91,7 +73,10 @@ jobs:
             docker image prune -f
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           NCLOUD_CLOVA_SPEECH_INVOKE_URL: ${{ secrets.NCLOUD_CLOVA_SPEECH_INVOKE_URL }}
           NCLOUD_CLOVA_SPEECH_SECRET_KEY: ${{ secrets.NCLOUD_CLOVA_SPEECH_SECRET_KEY }}
@@ -102,10 +87,6 @@ jobs:
           NCLOUD_OBJECT_STORAGE_BUCKET: ${{ secrets.NCLOUD_OBJECT_STORAGE_BUCKET }}
           STT_CALLBACK_URL: ${{ secrets.STT_CALLBACK_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
-          BOOSTAD_BLOG_KEY: ${{ secrets.BOOSTAD_BLOG_KEY }}
-          GF_SECURITY_ADMIN_USER: ${{ secrets.GF_SECURITY_ADMIN_USER }}
-          GF_SECURITY_ADMIN_PASSWORD: ${{ secrets.GF_SECURITY_ADMIN_PASSWORD }}
           MAIL_HOST: ${{ secrets.MAIL_HOST }}
           MAIL_PORT: ${{ secrets.MAIL_PORT }}
           MAIL_USER: ${{ secrets.MAIL_USER }}
