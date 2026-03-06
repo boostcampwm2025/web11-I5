@@ -44,3 +44,4 @@ pgdata/
 # ngrok
 ngrok.exe
 .secrets
+.env*.local

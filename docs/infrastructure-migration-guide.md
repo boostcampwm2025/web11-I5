@@ -32,8 +32,7 @@
 │  │ └─ /socket.io  │  │        │  EC2 (t3.micro 프리티어)   │
 │  ├────────────────┤  │        │  ┌─ Nginx (:80/:443)     │
 │  │ Next.js (:3000)│  │        │  │  └─ → API (:8000)     │
-│  │ NestJS (:8000) │  │        │  ├─ NestJS Docker (:8000)│
-│  │ PostgreSQL     │  │        │  └─ Prometheus/Grafana   │
+│  │ NestJS (:8000) │  │        │  └─ NestJS Docker (:8000)│
 │  └────────────────┘  │        └──────────┬───────────────┘
 └──────────────────────┘                   │ SSL (neon.tech)
                                 ┌──────────▼───────────────┐
@@ -579,14 +578,29 @@ curl https://api.malmanhae.com/nginx-health
 
 ### 4-1. Vercel 프로젝트 설정
 
-1. [Vercel Dashboard](https://vercel.com/dashboard)에서 **Add New → Project**
-2. **Import Git Repository**: `boostcampwm2025/web11-MMH`
-3. **Framework Preset**: Next.js (자동 감지)
-4. **Root Directory**: `apps/web` 설정 (모노레포이므로 반드시)
-5. **Build & Development Settings**:
-   - Build Command: 기본값 유지 (Vercel이 Turborepo 자동 감지)
-   - Output Directory: 기본값 유지
-   - Install Command: `pnpm install` (자동 감지)
+Vercel GitHub App을 사용할 수 없는 환경이므로, **Vercel CLI + GitHub Actions**로 배포합니다.
+
+1. Vercel CLI로 프로젝트 연결 (프로젝트 루트에서 실행):
+   ```bash
+   npm install -g vercel
+   vercel link
+   ```
+   - Team/Account 선택
+   - 기존 프로젝트 연결 또는 새 프로젝트 생성
+   - 완료 후 `.vercel/project.json`에서 `orgId`, `projectId` 확인
+
+2. Vercel Dashboard에서 프로젝트 설정 확인:
+   - **Root Directory**: `apps/web` (모노레포이므로 반드시)
+   - **Framework Preset**: Next.js (자동 감지)
+
+3. GitHub Secrets 등록:
+   - `VERCEL_TOKEN`: Vercel > Settings > Tokens에서 생성
+   - `VERCEL_ORG_ID`: `.vercel/project.json`의 `orgId`
+   - `VERCEL_PROJECT_ID`: `.vercel/project.json`의 `projectId`
+
+4. GitHub Actions 워크플로우 (`.github/workflows/deploy-web.yml`):
+   - `main` 브랜치 push 시 `apps/web/**` 또는 `packages/**` 변경 감지
+   - Vercel CLI로 `pull → build → deploy` 순서로 프로덕션 배포
 
 > **Vercel Hobby 플랜 제한:**
 >
@@ -696,11 +710,11 @@ const API_BASE_URL = process.env.API_URL || "http://localhost:8000";
 ### 4-7. 배포 확인
 
 ```bash
-# Vercel은 main 브랜치 푸시 시 자동 배포
-# PR 생성 시 Preview 배포 자동 생성
+# main 브랜치에 apps/web/** 또는 packages/** 변경 push 시
+# GitHub Actions가 Vercel CLI로 자동 배포
 
 # 수동 배포 (Vercel CLI)
-npx vercel --prod
+npx vercel --prod --token=<VERCEL_TOKEN>
 ```
 
 ---
@@ -785,7 +799,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: infra/docker-compose.prod.yaml,infra/prometheus.yaml,infra/grafana-datasource.yaml
+          source: infra/docker-compose.prod.yaml
           target: ~/malmanhae
 
       - name: Deploy via SSH
@@ -794,7 +808,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DOCKERHUB_USERNAME,DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME,GEMINI_API_KEY,NCLOUD_CLOVA_SPEECH_INVOKE_URL,NCLOUD_CLOVA_SPEECH_SECRET_KEY,NCLOUD_OBJECT_STORAGE_ENDPOINT,NCLOUD_OBJECT_STORAGE_REGION,NCLOUD_OBJECT_STORAGE_ACCESS_KEY,NCLOUD_OBJECT_STORAGE_SECRET_KEY,NCLOUD_OBJECT_STORAGE_BUCKET,STT_CALLBACK_URL,JWT_SECRET,CORS_ALLOWED_ORIGINS,MAIL_HOST,MAIL_PORT,MAIL_USER,MAIL_PASSWORD,MAIL_FROM,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_CALLBACK_URL,FRONTEND_URL,GF_SECURITY_ADMIN_USER,GF_SECURITY_ADMIN_PASSWORD
+          envs: DOCKERHUB_USERNAME,DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME,GEMINI_API_KEY,NCLOUD_CLOVA_SPEECH_INVOKE_URL,NCLOUD_CLOVA_SPEECH_SECRET_KEY,NCLOUD_OBJECT_STORAGE_ENDPOINT,NCLOUD_OBJECT_STORAGE_REGION,NCLOUD_OBJECT_STORAGE_ACCESS_KEY,NCLOUD_OBJECT_STORAGE_SECRET_KEY,NCLOUD_OBJECT_STORAGE_BUCKET,STT_CALLBACK_URL,JWT_SECRET,CORS_ALLOWED_ORIGINS,MAIL_HOST,MAIL_PORT,MAIL_USER,MAIL_PASSWORD,MAIL_FROM,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_CALLBACK_URL,FRONTEND_URL
           script: |
             cd ~/malmanhae
             docker-compose -f infra/docker-compose.prod.yaml pull
@@ -827,47 +841,21 @@ jobs:
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-          GF_SECURITY_ADMIN_USER: ${{ secrets.GF_SECURITY_ADMIN_USER }}
-          GF_SECURITY_ADMIN_PASSWORD: ${{ secrets.GF_SECURITY_ADMIN_PASSWORD }}
 ```
 
 > **기존 대비 변경 포인트:**
 >
-> - Web 이미지 빌드/푸시 단계 완전 제거 (Vercel이 처리)
+> - Web 이미지 빌드/푸시 단계 완전 제거 (Vercel CLI 워크플로우가 별도 처리)
 > - `nginx.conf` SCP 제거 (EC2 호스트에서 직접 관리)
 > - DB 관련 환경변수 NeonDB로 변경
 > - `BOOSTAD_BLOG_KEY` 등 프론트엔드 전용 변수 제거
+> - 모니터링(Prometheus/Grafana) 관련 환경변수 및 파일 SCP 제거
 
 ---
 
-## 6. Phase 5: 모니터링 전환
+## 6. Phase 5: 모니터링
 
-### 6-1. EC2 호스트에서 Prometheus + Grafana (기존 방식 유지)
-
-docker-compose.prod.yaml에 이미 포함되어 있으므로 별도 작업 불필요합니다.
-
-```yaml
-# infra/prometheus.yaml 변경
-scrape_configs:
-  - job_name: "nestjs-api"
-    static_configs:
-      - targets: ["malmanhae-api:8000"]
-    metrics_path: /metrics
-```
-
-### 6-2. Grafana 접속
-
-- `http://<EC2_ELASTIC_IP>:3001` 로 접속
-- 보안 그룹에 포트 3001을 추가하거나, SSH 터널 사용:
-  ```bash
-  # SSH 터널로 안전하게 접근 (보안 그룹에 3001 오픈 불필요)
-  ssh -i <KEY_FILE>.pem -L 3001:localhost:3001 ec2-user@<ELASTIC_IP>
-  # 브라우저에서 http://localhost:3001 접속
-  ```
-
-### 6-3. Loki/Promtail 간소화
-
-t3.micro 메모리(1GB)가 제한적이므로, Loki + Promtail은 제거하고 Docker 로그를 직접 확인하는 것을 권장합니다.
+모니터링 스택(Prometheus, Grafana)은 t3.micro 메모리(1GB) 제한으로 제거되었습니다. Docker 로그를 직접 확인하는 방식으로 운영합니다.
 
 ```bash
 # Docker 로그 직접 확인
@@ -876,29 +864,32 @@ docker logs malmanhae-api --tail 100 -f
 # 로그 로테이션은 docker-compose의 json-file 드라이버가 처리 (max-size: 10m, max-file: 3)
 ```
 
+> Sentry(프론트엔드)는 Vercel 환경에서 계속 사용됩니다.
+
 ---
 
 ## 7. Phase 6: 기존 인프라 정리
 
 ### 7-1. 삭제/변경할 파일
 
-| 파일                             | 액션            | 이유                                    |
-| -------------------------------- | --------------- | --------------------------------------- |
-| `apps/web/Dockerfile`            | **삭제**        | Vercel이 빌드 처리                      |
-| `nginx.conf`                     | **수정**        | API 전용 + SSL 설정으로 변경 (3-4 참고) |
-| `infra/docker-compose.prod.yaml` | **수정**        | DB/Web/Nginx 서비스 제거 (3-5 참고)     |
-| `infra/loki-config.yaml`         | **삭제** (선택) | 메모리 절약                             |
-| `infra/promtail-config.yaml`     | **삭제** (선택) | 메모리 절약                             |
+| 파일                             | 액션            | 이유                                       |
+| -------------------------------- | --------------- | ------------------------------------------ |
+| `apps/web/Dockerfile`            | **삭제**        | Vercel이 빌드 처리                         |
+| `nginx.conf`                     | **수정**        | API 전용 + SSL 설정으로 변경 (3-4 참고)    |
+| `infra/docker-compose.prod.yaml` | **수정**        | DB/Web/Nginx/모니터링 서비스 제거 (3-5 참고) |
+| `infra/loki-config.yaml`         | **삭제**        | 모니터링 스택 제거됨                       |
+| `infra/promtail-config.yaml`     | **삭제**        | 모니터링 스택 제거됨                       |
+| `infra/prometheus.yaml`          | **삭제**        | 모니터링 스택 제거됨                       |
+| `infra/grafana-datasource.yaml`  | **삭제**        | 모니터링 스택 제거됨                       |
 
 ### 7-2. 유지할 파일
 
-| 파일                              | 이유                  |
-| --------------------------------- | --------------------- |
-| `apps/api/Dockerfile`             | EC2에서 Docker 빌드용 |
-| `infra/docker-compose.local.yaml` | 로컬 개발용           |
-| `infra/docker-compose-infra.yaml` | 로컬 DB 개발용        |
-| `infra/prometheus.yaml`           | 모니터링 유지         |
-| `infra/grafana-datasource.yaml`   | Grafana 데이터소스    |
+| 파일                              | 이유                                    |
+| --------------------------------- | --------------------------------------- |
+| `apps/api/Dockerfile`             | EC2에서 Docker 빌드용                   |
+| `infra/docker-compose.local.yaml` | 로컬 개발용                             |
+| `infra/docker-compose-infra.yaml` | 로컬 DB 개발용                          |
+| `.github/workflows/deploy-web.yml`| Vercel CLI 기반 Next.js 배포 워크플로우 |
 
 ### 7-3. 기존 NCloud 서버 종료
 
@@ -945,23 +936,24 @@ docker logs malmanhae-api --tail 100 -f
 | `NCLOUD_OBJECT_STORAGE_*`    | 기존 값 유지                                             |
 | `STT_CALLBACK_URL`           | `https://api.malmanhae.com/...` (EC2 주소로 업데이트)    |
 | `MAIL_*`                     | 기존 값 유지                                             |
-| `GF_SECURITY_ADMIN_USER`     | Grafana 관리자 ID                                        |
-| `GF_SECURITY_ADMIN_PASSWORD` | Grafana 관리자 비밀번호                                  |
 
 ### GitHub Actions Secrets
 
-| 시크릿               | 용도                   |
-| -------------------- | ---------------------- |
-| `DOCKERHUB_USERNAME` | Docker Hub 이미지 빌드 |
-| `DOCKERHUB_TOKEN`    | Docker Hub 인증        |
-| `SSH_HOST`           | EC2 Elastic IP         |
-| `SSH_USERNAME`       | `ec2-user` / `ubuntu`  |
-| `SSH_PRIVATE_KEY`    | EC2 키 페어            |
-| `DB_HOST`            | NeonDB 호스트          |
-| `DB_USERNAME`        | NeonDB 사용자          |
-| `DB_PASSWORD`        | NeonDB 비밀번호        |
-| `DB_NAME`            | `neondb`               |
-| 나머지               | 기존과 동일            |
+| 시크릿                | 용도                            |
+| --------------------- | ------------------------------- |
+| `DOCKERHUB_USERNAME`  | Docker Hub 이미지 빌드          |
+| `DOCKERHUB_TOKEN`     | Docker Hub 인증                 |
+| `SSH_HOST`            | EC2 Elastic IP                  |
+| `SSH_USERNAME`        | `ec2-user` / `ubuntu`           |
+| `SSH_PRIVATE_KEY`     | EC2 키 페어                     |
+| `DB_HOST`             | NeonDB 호스트                   |
+| `DB_USERNAME`         | NeonDB 사용자                   |
+| `DB_PASSWORD`         | NeonDB 비밀번호                 |
+| `DB_NAME`             | `neondb`                        |
+| `VERCEL_TOKEN`        | Vercel CLI 인증 토큰            |
+| `VERCEL_ORG_ID`       | Vercel Organization ID          |
+| `VERCEL_PROJECT_ID`   | Vercel Project ID               |
+| 나머지                | 기존과 동일                     |
 
 ---
 
@@ -1050,8 +1042,10 @@ docker compose -f infra/docker-compose.prod.yaml up -d
 
 ### Phase 3: Vercel
 
-- [ ] Vercel 프로젝트 생성 및 GitHub 연결
+- [ ] `vercel link`로 프로젝트 연결 및 `orgId`, `projectId` 확인
+- [ ] GitHub Secrets에 `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` 등록
 - [ ] `next.config.ts`에서 `output: "standalone"` 제거
+- [ ] `.github/workflows/deploy-web.yml` 워크플로우 추가
 - [ ] Vercel 환경변수 설정
 - [ ] Google Cloud Console에서 OAuth 콜백 URL 업데이트
 - [ ] EC2 .env에서 `FRONTEND_URL`, `CORS_ALLOWED_ORIGINS` 업데이트
@@ -1066,12 +1060,14 @@ docker compose -f infra/docker-compose.prod.yaml up -d
 
 ### Phase 5: 모니터링
 
-- [ ] Prometheus + Grafana 동작 확인
-- [ ] Grafana SSH 터널 접속 테스트
+- [ ] Prometheus/Grafana 제거 확인 (docker-compose.prod.yaml에서 삭제됨)
+- [ ] Docker 로그 직접 확인 방식으로 전환
 
 ### Phase 6: 정리
 
 - [ ] `apps/web/Dockerfile` 삭제
+- [ ] `infra/prometheus.yaml`, `infra/grafana-datasource.yaml` 삭제
+- [ ] `infra/loki-config.yaml`, `infra/promtail-config.yaml` 삭제
 - [ ] 기존 인프라 파일 정리
 - [ ] 1~2주 안정 운영 확인
 - [ ] 기존 NCloud 서버 종료
