@@ -1,7 +1,14 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   postgres-db:
     container_name: postgres-db
     image: postgres:15-alpine
+    logging: *default-logging
     ports:
       - "5432:5432"
     env_file:

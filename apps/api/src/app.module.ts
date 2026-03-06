@@ -10,7 +10,7 @@ import {
 import { AnswerEvaluationModule } from './answer-evaluation/answer-evaluation.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { typeOrmModuleOptions } from './configs/typeorm.config';
+import { typeOrmModuleAsyncOptions } from './configs/typeorm.config';
 import { StreaksModule } from './streaks/streaks.module';
 import { UserModule } from './user/user.module';
 import { SttModule } from './stt/stt.module';
@@ -32,7 +32,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
       envFilePath: ['.env.local', '.env'],
     }),
     EventEmitterModule.forRoot(),
-    TypeOrmModule.forRoot(typeOrmModuleOptions),
+    TypeOrmModule.forRootAsync(typeOrmModuleAsyncOptions),
     // Prometheus 기본 설정 사용 (기본 메트릭 자동 수집)
     PrometheusModule.register(),
     AuthModule,

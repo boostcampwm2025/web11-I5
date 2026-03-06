@@ -20,4 +20,11 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('health')
+  @ApiOperation({ summary: '헬스 체크' })
+  @ApiResponse({ status: 200, description: 'OK' })
+  healthCheck(): { status: string } {
+    return { status: 'ok' };
+  }
 }
